@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/eaciit/toolkit"
 )
 
 func KillApp(err error) {
@@ -12,15 +14,16 @@ func KillApp(err error) {
 	os.Exit(100)
 }
 
-func FetchFilePathsWithExt(ext string) []string {
-	pathS, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
+func FetchFilePathsWithExt(resourcePath, ext string) []string {
 	var files []string
-	filepath.Walk(pathS, func(path string, f os.FileInfo, _ error) error {
+	filepath.Walk(resourcePath, func(path string, f os.FileInfo, _ error) error {
+		// exclude files under archive
+		if strings.Contains(path, filepath.Join(resourcePath, "archive")) {
+			return nil
+		}
+
 		if !f.IsDir() {
+			toolkit.Println(path)
 			if filepath.Ext(path) == ext {
 				files = append(files, path)
 			}

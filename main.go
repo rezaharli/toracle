@@ -39,19 +39,20 @@ func main() {
 		for {
 			fmt.Println("Reading Files.")
 
-			files := helpers.FetchFilePathsWithExt(".xlsx")
+			resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
+			files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
 
 			for _, file := range files {
 				err := helpers.ReadExcel(file)
 				if err == nil {
 					// move file if succeeded
 					toolkit.Println("Moving file to archive...")
-					archivePath := filepath.Join(clit.ExeDir(), "resource", "archive")
+					archivePath := filepath.Join(resourcePath, "archive")
 					if _, err := os.Stat(archivePath); os.IsNotExist(err) {
 						os.Mkdir(archivePath, 0755)
 					}
 
-					err := os.Rename(file, filepath.Join(clit.ExeDir(), "resource", "archive", filepath.Base(file)))
+					err := os.Rename(file, filepath.Join(resourcePath, "archive", filepath.Base(file)))
 					if err != nil {
 						log.Fatal(err)
 					}
