@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/eaciit/toolkit"
 )
 
 func KillApp(err error) {
@@ -23,7 +21,6 @@ func FetchFilePathsWithExt(resourcePath, ext string) []string {
 		}
 
 		if !f.IsDir() {
-			toolkit.Println(path)
 			if filepath.Ext(path) == ext {
 				files = append(files, path)
 			}
