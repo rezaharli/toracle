@@ -1,45 +1,37 @@
 {
-    "environment": "prod",
-    "host": "10.23.213.123",
-    "port": "9095",
-    "database": [{
-        "which": "oracle",
-        "enableEncryption": true,
-        "oracle": {
-            "username": "INFA_REP1_MM",
-            "password": "h7Wm4DS65CPT2JcxF_WSKK136JuB19fyfbj677J85_c=",
-            "host": "hklpdddas2a-scan.hk.standardchartered.com",
-            "port": "1622",
-            "service": "VMMETA_DEV.hk.standardchartered.com"
-        }
-    }, {
-        "which": "oracle",
-        "enableEncryption": true,
-        "oracle": {
-            "username": "INFA_REP1_MM",
-            "password": "h7Wm4DS65CPT2JcxF_WSKK136JuB19fyfbj677J85_c=",
-            "host": "hklpdpdas2b-scan.hk.standardchartered.com",
-            "port": "1622",
-            "service": "VMMETA_PROD.hk.standardchartered.com"
-        }
-    }],
-    "LDAP": {
-        "IsEnabled": "auto",
-        "Type": "ssl",
-        "ServerName": "10.20.160.230",
-        "Host": "10.20.160.230:1636",
-        "BaseDN": "ou=users,o=standardchartered",
-        "UserDN": "ou=users,o=standardchartered",
-        "UserAuthAttr": "cn",
-        "Certificate": "/axon_home/LDAP_Certificates/OUD/SCB Root Certification Authority.cer|/axon_home/LDAP_Certificates/OUD/SCB Issuing Certification Authority.cer",
-        "BindUsername": "",
-        "BindPassword": "6eb09ac544f6032a25a2a021639daf90e98fa381aa4098c2c753757244a1886be11e45464c",
-        "BindFilter": "",
-        "IsInsecureSkipVerify": "true",
-        "IsUsingEncryptedPassword": "true",
-        "DataFullName": "fullName",
-        "DataFirstName": "givenName",
-        "DataLastName": "",
-        "DataUserCountry": ""
+    "resourcePath": "/Users/rezaharli/go/src/git.eaciitapp.com/rezaharli/toracle/resource",
+    "interval": 60,
+    "months": ["January", "February", "March", "April", "May", "June", "July", "Agustus", "September", "October", "November", "December"],
+    "database": {
+        "username": "scbdc",
+        "password": "Password",
+        "host": "localhost",
+        "port": "1521",
+        "service": "orclcdb"
+    },
+    "monthlyColumnsMapping": {
+        "PERIOD": "", 
+        "ITEM_ID": "ET & EN",
+        "BOX_HANDLED": "BX Handled", 
+        "KWH_CONSUMPTION": "KWH Consumption", 
+        "KWH_REGENERATING": "KWH Regenerating", 
+        "TOTAL_KWH": "Total KWH", 
+        "EQUIPMENT_HOUR": "TH", 
+        "OPERATION_HOUR": "OP", 
+        "CORRECTIVE_MAINTENANCE": "CR", 
+        "PREVENTIVE_MAINTENANCE": "PM", 
+        "SHUTDOWN": "SD", 
+        "ACCIDENT": "A", 
+        "NUMBER_OF_BREAKDOWN": "NB"
+    },
+    "dailyColumnsMapping": {
+        "PERIOD": "Date", 
+        "ITEM_ID": "",
+        "EQUIPMENT_HOUR": "(Th)", 
+        "CORRECTIVE_MAINTENANCE": "CR", 
+        "PREVENTIVE_MAINTENANCE": "PM", 
+        "SHUTDOWN": "SD", 
+        "ACCIDENT": "A", 
+        "OPERATION_HOUR": "(OP)"
     }
 }
