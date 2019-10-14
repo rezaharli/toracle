@@ -115,6 +115,8 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 
 	headerRow := toolkit.ToString(firstDataRow - 1)
 
+	months := clit.Config("default", "months", []interface{}{}).([]interface{})
+
 	var headers []Header
 	for key, column := range columnsMapping {
 		isHeaderDetected := false
@@ -174,7 +176,20 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 				stringData = "0"
 			}
 
-			if header.DBFieldName == "ITEM_ID" {
+			if header.DBFieldName == "PERIOD" {
+				stringData := f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow-4))
+
+				monthYear := strings.Split(stringData, " ")
+				month := monthYear[2]
+				year := monthYear[3]
+
+				t, err := time.Parse("2006-1-02", year+"-"+toolkit.ToString(helpers.IndexOf(month, months)+1)+"-01")
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				rowData.Set(header.DBFieldName, t)
+			} else if header.DBFieldName == "ITEM_ID" {
 				resultRows := make([]toolkit.M, 0)
 				param := helpers.SqlQueryParam{
 					ItemName: strings.ReplaceAll(stringData, "-", ""),
@@ -188,6 +203,11 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 
 				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
+				stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if stringData == "" {
+					stringData = "0"
+				}
+
 				rowData.Set(header.DBFieldName, stringData)
 			}
 		}
@@ -289,12 +309,22 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 		for _, header := range headers {
 			currentRow := firstDataRow + index
 
-			stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-			if stringData == "" {
-				stringData = "0"
-			}
+			if header.DBFieldName == "PERIOD" {
+				style, _ := f.NewStyle(`{"number_format":15}`)
+				f.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
+				stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 
-			if header.DBFieldName == "ITEM_ID" {
+				if stringData == "" {
+					stringData = "0"
+				}
+
+				t, err := time.Parse("2-Jan-06", stringData)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				rowData.Set(header.DBFieldName, t)
+			} else if header.DBFieldName == "ITEM_ID" {
 				resultRows := make([]toolkit.M, 0)
 				param := helpers.SqlQueryParam{
 					ItemName: strings.ReplaceAll(sheetName, "-", ""),
@@ -308,6 +338,11 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 
 				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
+				stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if stringData == "" {
+					stringData = "0"
+				}
+
 				rowData.Set(header.DBFieldName, stringData)
 			}
 		}

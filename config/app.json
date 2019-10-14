@@ -1,6 +1,7 @@
 {
     "resourcePath": "/Users/rezaharli/go/src/git.eaciitapp.com/rezaharli/toracle/resource",
     "interval": 60,
+    "months": ["January", "February", "March", "April", "May", "June", "July", "Agustus", "September", "October", "November", "December"],
     "database": {
         "username": "scbdc",
         "password": "Password",
@@ -9,6 +10,7 @@
         "service": "orclcdb"
     },
     "monthlyColumnsMapping": {
+        "PERIOD": "", 
         "ITEM_ID": "ET & EN",
         "BOX_HANDLED": "BX Handled", 
         "KWH_CONSUMPTION": "KWH Consumption", 
@@ -23,6 +25,7 @@
         "NUMBER_OF_BREAKDOWN": "NB"
     },
     "dailyColumnsMapping": {
+        "PERIOD": "Date", 
         "ITEM_ID": "",
         "EQUIPMENT_HOUR": "(Th)", 
         "CORRECTIVE_MAINTENANCE": "CR", 

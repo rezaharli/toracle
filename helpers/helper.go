@@ -67,3 +67,12 @@ func ArrayContainsWhitespaceTrimmed(a []interface{}, x string) int {
 
 	return -1
 }
+
+func IndexOf(element string, data []interface{}) int {
+	for k, v := range data {
+		if strings.EqualFold(element, v.(string)) {
+			return k
+		}
+	}
+	return -1 //not found.
+}
