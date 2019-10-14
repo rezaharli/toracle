@@ -174,7 +174,7 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 				stringData = "0"
 			}
 
-			if header.DBFieldName == "ItemID" {
+			if header.DBFieldName == "ITEM_ID" {
 				resultRows := make([]toolkit.M, 0)
 				param := helpers.SqlQueryParam{
 					ItemName: strings.ReplaceAll(stringData, "-", ""),
@@ -186,7 +186,7 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 					log.Fatal(err)
 				}
 
-				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEMID"))
+				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
 				rowData.Set(header.DBFieldName, stringData)
 			}
@@ -294,7 +294,7 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 				stringData = "0"
 			}
 
-			if header.DBFieldName == "ItemID" {
+			if header.DBFieldName == "ITEM_ID" {
 				resultRows := make([]toolkit.M, 0)
 				param := helpers.SqlQueryParam{
 					ItemName: strings.ReplaceAll(sheetName, "-", ""),
@@ -306,7 +306,7 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 					log.Fatal(err)
 				}
 
-				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEMID"))
+				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
 				rowData.Set(header.DBFieldName, stringData)
 			}

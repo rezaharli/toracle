@@ -123,7 +123,7 @@ type SqlQueryParam struct {
 }
 
 func SelectItemID(param SqlQueryParam) error {
-	sqlQuery := "SELECT * FROM D_Item WHERE ItemName = '" + param.ItemName + "'"
+	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
 
 	conn := Database()
 	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)

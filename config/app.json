@@ -9,26 +9,26 @@
         "service": "orclcdb"
     },
     "monthlyColumnsMapping": {
-        "ItemID": "ET & EN",
-        "BoxHandled": "BX Handled", 
-        "KWHConsumption": "KWH Consumption", 
-        "KWHRegenerating": "KWH Regenerating", 
-        "TotalKWH": "Total KWH", 
-        "EquipmentHour": "TH", 
-        "OperationHour": "OP", 
-        "CorrectiveMaintenance": "CR", 
-        "PreventiveMaintenance": "PM", 
-        "Shutdown": "SD", 
-        "Accident": "A", 
-        "NumberOfBreakdown": "NB"
+        "ITEM_ID": "ET & EN",
+        "BOX_HANDLED": "BX Handled", 
+        "KWH_CONSUMPTION": "KWH Consumption", 
+        "KWH_REGENERATING": "KWH Regenerating", 
+        "TOTAL_KWH": "Total KWH", 
+        "EQUIPMENT_HOUR": "TH", 
+        "OPERATION_HOUR": "OP", 
+        "CORRECTIVE_MAINTENANCE": "CR", 
+        "PREVENTIVE_MAINTENANCE": "PM", 
+        "SHUTDOWN": "SD", 
+        "ACCIDENT": "A", 
+        "NUMBER_OF_BREAKDOWN": "NB"
     },
     "dailyColumnsMapping": {
-        "ItemID": "",
-        "EquipmentHour": "(Th)", 
-        "CorrectiveMaintenance": "CR", 
-        "PreventiveMaintenance": "PM", 
-        "Shutdown": "SD", 
-        "Accident": "A", 
-        "OperationHour": "(OP)"
+        "ITEM_ID": "",
+        "EQUIPMENT_HOUR": "(Th)", 
+        "CORRECTIVE_MAINTENANCE": "CR", 
+        "PREVENTIVE_MAINTENANCE": "PM", 
+        "SHUTDOWN": "SD", 
+        "ACCIDENT": "A", 
+        "OPERATION_HOUR": "(OP)"
     }
 }
