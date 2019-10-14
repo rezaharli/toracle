@@ -116,20 +116,3 @@ func Insert(param InsertParam) error {
 
 	return lastError
 }
-
-type SqlQueryParam struct {
-	ItemName string
-	Results  interface{}
-}
-
-func SelectItemID(param SqlQueryParam) error {
-	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
-
-	conn := Database()
-	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
-	defer cursor.Close()
-
-	err := cursor.Fetchs(param.Results, 0)
-
-	return err
-}

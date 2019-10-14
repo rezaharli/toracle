@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 	"github.com/xuri/excelize"
@@ -17,6 +18,23 @@ type AscController struct {
 
 func NewAscController() *AscController {
 	return new(AscController)
+}
+
+type SqlQueryParam struct {
+	ItemName string
+	Results  interface{}
+}
+
+func (c *AscController) selectItemID(param SqlQueryParam) error {
+	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	err := cursor.Fetchs(param.Results, 0)
+
+	return err
 }
 
 type Header struct {
@@ -64,13 +82,7 @@ func (c *AscController) ReadExcels() error {
 func (c *AscController) readExcel(filename string) error {
 	timeNow := time.Now()
 
-	toolkit.Println("\n================================================================================")
-	log.Println("Opening file", filepath.Base(filename), "\n")
-	f, err := excelize.OpenFile(filename)
-	if err != nil {
-		log.Println("Error open file. ERROR:", err)
-		return err
-	}
+	f, err := helpers.ReadExcel(filename)
 
 	log.Println("Processing sheets...")
 	for i, sheetName := range f.GetSheetMap() {
@@ -191,12 +203,12 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 				rowData.Set(header.DBFieldName, t)
 			} else if header.DBFieldName == "ITEM_ID" {
 				resultRows := make([]toolkit.M, 0)
-				param := helpers.SqlQueryParam{
+				param := SqlQueryParam{
 					ItemName: strings.ReplaceAll(stringData, "-", ""),
 					Results:  &resultRows,
 				}
 
-				err := helpers.SelectItemID(param)
+				err := c.selectItemID(param)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -326,12 +338,12 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 				rowData.Set(header.DBFieldName, t)
 			} else if header.DBFieldName == "ITEM_ID" {
 				resultRows := make([]toolkit.M, 0)
-				param := helpers.SqlQueryParam{
+				param := SqlQueryParam{
 					ItemName: strings.ReplaceAll(sheetName, "-", ""),
 					Results:  &resultRows,
 				}
 
-				err := helpers.SelectItemID(param)
+				err := c.selectItemID(param)
 				if err != nil {
 					log.Fatal(err)
 				}
