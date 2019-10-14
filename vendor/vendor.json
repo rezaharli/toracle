@@ -3,16 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "2jsbDTvwxafPp7FJjJ8IIFlTLjs=",
-			"path": "github.com/mohae/deepcopy",
-			"revision": "c48cc78d482608239f6c4c92a4abd87eb8761c90",
-			"revisionTime": "2017-09-29T03:49:55Z"
-		},
-		{
-			"checksumSHA1": "+lNWfKcA+zBJUuZt9bDc1rMLLJ4=",
-			"path": "github.com/xuri/excelize",
-			"revision": "99c9d04f67c0c835b5d884ac229b1883afbb9d03",
-			"revisionTime": "2018-09-06T12:10:00Z"
+			"checksumSHA1": "Xbufitmgz+IUNHEY07GSuhGwF6M=",
+			"path": "github.com/360EntSecGroup-Skylar/excelize",
+			"revision": "d96440edc480976e3ec48958c68e67f7a506ad32",
+			"revisionTime": "2018-05-15T13:00:56Z"
 		}
 	],
 	"rootPath": "git.eaciitapp.com/rezaharli/toracle"
