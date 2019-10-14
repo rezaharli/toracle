@@ -1,17 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 	"sync"
 	"time"
 
+	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
-	"github.com/eaciit/clit"
-
+	c "git.eaciitapp.com/rezaharli/toracle/controllers"
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
@@ -19,44 +17,26 @@ var wg sync.WaitGroup
 
 func main() {
 	clit.LoadConfigFromFlag("", "", filepath.Join(clit.ExeDir(), "config", "app.json"))
-
 	if err := clit.Commit(); err != nil {
-		helpers.KillApp(err)
+		toolkit.Println("Error reading config file, ERROR:", err.Error())
 	}
 	defer clit.Close()
 
 	conn := helpers.Database()
 	if conn != nil {
-		// do the loop
 		var ticker *time.Ticker = nil
 
-		loopInterval := clit.Config("default", "interval", 1).(float64)
-
 		if ticker == nil {
+			loopInterval := clit.Config("default", "interval", 1).(float64)
 			ticker = time.NewTicker(time.Duration(int(loopInterval)) * time.Minute)
 		}
 
+		// do the loop
 		for {
-			fmt.Println("Reading Files.")
-
-			resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-			files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
-
-			for _, file := range files {
-				err := helpers.ReadExcel(file)
-				if err == nil {
-					// move file if succeeded
-					toolkit.Println("Moving file to archive...")
-					archivePath := filepath.Join(resourcePath, "archive")
-					if _, err := os.Stat(archivePath); os.IsNotExist(err) {
-						os.Mkdir(archivePath, 0755)
-					}
-
-					err := os.Rename(file, filepath.Join(resourcePath, "archive", filepath.Base(file)))
-					if err != nil {
-						log.Fatal(err)
-					}
-				}
+			// READ ASC FILES
+			err := c.NewAscController().ReadExcels()
+			if err != nil {
+				log.Fatal(err.Error())
 			}
 
 			<-ticker.C

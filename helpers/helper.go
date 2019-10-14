@@ -2,9 +2,12 @@ package helpers
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/eaciit/clit"
 )
 
 func KillApp(err error) {
@@ -29,6 +32,21 @@ func FetchFilePathsWithExt(resourcePath, ext string) []string {
 	})
 
 	return files
+}
+
+func MoveToArchive(filePath string) {
+	log.Println("Moving file to archive...")
+	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
+
+	archivePath := filepath.Join(resourcePath, "archive")
+	if _, err := os.Stat(archivePath); os.IsNotExist(err) {
+		os.Mkdir(archivePath, 0755)
+	}
+
+	err := os.Rename(filePath, filepath.Join(resourcePath, "archive", filepath.Base(filePath)))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func ToCharStr(i int) string {

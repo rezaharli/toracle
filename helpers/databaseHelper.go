@@ -122,7 +122,7 @@ type SqlQueryParam struct {
 	Results  interface{}
 }
 
-func selectItemID(param SqlQueryParam) error {
+func SelectItemID(param SqlQueryParam) error {
 	sqlQuery := "SELECT * FROM D_Item WHERE ItemName = '" + param.ItemName + "'"
 
 	conn := Database()
