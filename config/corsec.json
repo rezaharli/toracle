@@ -1,0 +1,11 @@
+{
+    "columnsMapping": {
+        "PERIOD": "",
+        "CATEGORY": "",
+        "STATUS": "",
+        "ACTION_PROGRAM": "PROGRAM AKSI",
+        "PIC_DEPARTMENT": "DIVISI PENANGGUNG JAWAB",
+        "AREA": "DIVISI PENANGGUNG JAWAB",
+        "PROGRAM_PLAN": "DIVISI PENANGGUNG JAWAB"
+    }
+}
