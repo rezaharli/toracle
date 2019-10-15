@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"log"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -88,112 +87,128 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 	log.Println("ReadData", sheetName)
 	columnsMapping := clit.Config("corsec", "columnsMapping", nil).(map[string]interface{})
 
+	dataFound := false
 	firstDataRow := 0
 	i := 1
 	for {
-		if f.GetCellValue(sheetName, "A"+toolkit.ToString(i)) == "NO" {
+		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cellValue == "NO" {
+			dataFound = true
 			firstDataRow = i + 1
-			break
+		} else {
+			if dataFound == true {
+				break
+			}
 		}
 		i++
 	}
 
 	headerRow := toolkit.ToString(firstDataRow - 1)
+	toolkit.Println(headerRow)
 
 	var headers []Header
 	for key, column := range columnsMapping {
-		isHeaderDetected := false
-		i = 1
-
 		header := Header{
 			DBFieldName: key,
-			HeaderName:  "",
-			Column:      "",
-			Row:         "",
-		}
-
-		// search for particular header in excel
-		for {
-			currentCol := helpers.ToCharStr(i)
-			cellText := f.GetCellValue(sheetName, currentCol+headerRow)
-
-			if isHeaderDetected == false && strings.TrimSpace(cellText) != "" {
-				isHeaderDetected = true
-			}
-
-			if isHeaderDetected == true && strings.TrimSpace(cellText) == "" {
-				//kalo header ga nemu coba sekali lagi mbok bilih di atasnya
-				cellText = f.GetCellValue(sheetName, currentCol+toolkit.ToString(toolkit.ToInt(headerRow, "")-1))
-				if strings.TrimSpace(cellText) == "" {
-					cellText = f.GetCellValue(sheetName, currentCol+toolkit.ToString(toolkit.ToInt(headerRow, "")-2))
-					if strings.TrimSpace(cellText) == "" {
-						break
-					}
-				}
-			}
-
-			if isHeaderDetected {
-				if strings.Replace(column.(string), " ", "", -1) == strings.Replace(cellText, " ", "", -1) {
-					header.HeaderName = cellText
-					header.Column = currentCol
-					header.Row = headerRow
-
-					break
-				}
-			}
-
-			i++
+			Column:      column.(string),
 		}
 
 		headers = append(headers, header)
 	}
 
-	toolkit.Println(headers)
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
+	currentCategory := ""
+	currentArea := ""
+
 	//iterate over rows
 	for index := 0; true; index++ {
 		rowData := toolkit.M{}
 		currentRow := firstDataRow + index
 
+		styleID, err := f.GetCellStyle(sheetName, "D"+toolkit.ToString(currentRow))
+		if err != nil {
+			toolkit.Println("1")
+			log.Fatal(err)
+		}
+		fillID := f.Styles.CellXfs.Xf[styleID].FillID
+		fgColor := f.Styles.Fills.Fill[fillID].PatternFill.FgColor
+
+		color := fgColor.RGB
+		number, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		if err != nil {
+			toolkit.Println("2")
+			log.Fatal(err)
+		}
+
+		if fgColor.Theme != nil && number == "" {
+			srgbClr := f.Theme.ThemeElements.ClrScheme.Children[*fgColor.Theme].SrgbClr.Val
+			color = excelize.ThemeColor(srgbClr, fgColor.Tint)
+		}
+
+		if color == "FFEAF1DD" || color == "FF00B0F0" {
+			newCategory, err := f.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
+			if err != nil {
+				toolkit.Println("3")
+				log.Fatal(err)
+			}
+
+			if newCategory != currentCategory {
+				currentArea = ""
+			}
+
+			currentCategory = newCategory
+
+			continue
+		} else if color == "FFFFF2CC" {
+			currentArea, err = f.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
+			if err != nil {
+				toolkit.Println("4")
+				log.Fatal(err)
+			}
+
+			continue
+		}
+
 		isRowEmpty := true
 		for _, header := range headers {
 			if header.DBFieldName == "PERIOD" {
-				// style, _ := f.NewStyle(`{"number_format":15}`)
-				// f.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
-				// stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				// stringData = strings.ReplaceAll(stringData, "'", "")
+				trimSuffix := func(s, suffix string) string {
+					if strings.HasSuffix(s, suffix) {
+						s = s[:len(s)-len(suffix)]
+					}
+					return s
+				}
 
-				// var t time.Time
-				// if stringData != "" {
-				// 	isRowEmpty = false
-				// 	t, err = time.Parse("2-Jan-06", stringData)
-				// 	if err != nil {
-				// 		t, err = time.Parse("02/01/2006", stringData)
-				// 		if err != nil {
-				// 			log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-				// 		}
-				// 	}
-				// }
+				filename := trimSuffix(filepath.Base(f.Path), filepath.Ext(f.Path))
+				splittedFilename := strings.Split(filename, " ")
 
-				// rowData.Set(header.DBFieldName, t)
+				year := splittedFilename[len(splittedFilename)-3]
+				month := splittedFilename[len(splittedFilename)-1]
+
+				t, err := time.Parse("02/January/2006", "01/"+month+"/"+year)
+				if err != nil {
+					log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+				}
+
+				rowData.Set(header.DBFieldName, t)
+			} else if header.DBFieldName == "STATUS" {
+				rowData.Set(header.DBFieldName, "")
+			} else if header.DBFieldName == "CATEGORY" {
+				rowData.Set(header.DBFieldName, currentCategory)
+			} else if header.DBFieldName == "AREA" {
+				rowData.Set(header.DBFieldName, currentArea)
 			} else {
-				styleID := f.GetCellStyle(sheetName, "D8")
-				fillID := f.Styles.CellXfs.Xf[styleID].FillID
-				fgColor := f.Styles.Fills.Fill[fillID].PatternFill.FgColor
-
-				toolkit.Println(f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow)))
-				toolkit.Println(sheetName, "D8", fgColor, fgColor.RGB)
-				// if fgColor.Theme != nil {
-				// 	f.
-				// 	srgbClr := f.Theme.ThemeElements.ClrScheme.Children[*fgColor.Theme].SrgbClr.Val
-				// 	return excelize.ThemeColor(srgbClr, fgColor.Tint)
-				// }
-				// return fgColor.RGB
-
-				os.Exit(100)
-				stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					toolkit.Println("5", sheetName, header.Column, toolkit.ToString(currentRow))
+					log.Fatal(err)
+				}
 				stringData = strings.ReplaceAll(stringData, "'", "''")
 
 				if len(stringData) > 300 {
@@ -213,7 +228,7 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 		}
 
 		param := helpers.InsertParam{
-			TableName: "F_CORSEC_INCIDENT",
+			TableName: "F_CORSEC_RKM",
 			Data:      rowData,
 		}
 
