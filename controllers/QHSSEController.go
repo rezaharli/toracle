@@ -88,7 +88,12 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 	firstDataRow := 0
 	i := 1
 	for {
-		if f.GetCellValue(sheetName, "A"+toolkit.ToString(i)) == "NO." {
+		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cellValue == "NO." {
 			firstDataRow = i + 1
 			break
 		}
@@ -112,7 +117,10 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 		// search for particular header in excel
 		for {
 			currentCol := helpers.ToCharStr(i)
-			cellText := f.GetCellValue(sheetName, currentCol+headerRow)
+			cellText, err := f.GetCellValue(sheetName, currentCol+headerRow)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			if isHeaderDetected == false && strings.TrimSpace(cellText) != "" {
 				isHeaderDetected = true
@@ -151,7 +159,11 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 			if header.DBFieldName == "PERIOD" {
 				style, _ := f.NewStyle(`{"number_format":15}`)
 				f.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
-				stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				stringData = strings.ReplaceAll(stringData, "'", "")
 
 				var t time.Time
@@ -168,7 +180,11 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 
 				rowData.Set(header.DBFieldName, t)
 			} else {
-				stringData := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				stringData = strings.ReplaceAll(stringData, "'", "''")
 
 				if len(stringData) > 300 {

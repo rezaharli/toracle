@@ -3,10 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "Xbufitmgz+IUNHEY07GSuhGwF6M=",
+			"checksumSHA1": "aN9x71EDHkxQyI5LujdcisdmbJA=",
 			"path": "github.com/360EntSecGroup-Skylar/excelize",
-			"revision": "d96440edc480976e3ec48958c68e67f7a506ad32",
-			"revisionTime": "2018-05-15T13:00:56Z"
+			"revision": "af100372a0823e9eb6cc9caa722a64c33975cce7",
+			"revisionTime": "2019-10-10T14:40:37Z"
 		}
 	],
 	"rootPath": "git.eaciitapp.com/rezaharli/toracle"
