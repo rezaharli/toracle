@@ -1,0 +1,13 @@
+{
+    "columnsMapping": {
+        "PERIOD": "TANGGAL TERBIT", 
+        "TYPE": "JENIS",
+        "CATEGORY": "KATEGORI", 
+        "LOCATION": "LOKASI", 
+        "LEVEL_INCIDENT": "TINGKAT TEMUAN", 
+        "DESCRIPTION": "Uraian kejadian", 
+        "ACTION": "Perbaikan, Tindakan Perbaikan, & Tindakan Pencegahan", 
+        "PIC": "Penanggung Jawab", 
+        "STATUS": "Status"
+    }
+}

@@ -24,7 +24,7 @@ func FetchFilePathsWithExt(resourcePath, ext string) []string {
 		}
 
 		if !f.IsDir() {
-			if filepath.Ext(path) == ext {
+			if strings.EqualFold(filepath.Ext(path), ext) {
 				files = append(files, path)
 			}
 		}

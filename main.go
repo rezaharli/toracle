@@ -16,10 +16,21 @@ import (
 var wg sync.WaitGroup
 
 func main() {
-	clit.LoadConfigFromFlag("", "", filepath.Join(clit.ExeDir(), "config", "app.json"))
+	clit.LoadConfigFromFlag("config", "default", filepath.Join(clit.ExeDir(), "config", "app.json"))
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
 	}
+
+	clit.LoadConfigFromFlag("config", "asc", filepath.Join(clit.ExeDir(), "config", "asc.json"))
+	if err := clit.Commit(); err != nil {
+		toolkit.Println("Error reading config file, ERROR:", err.Error())
+	}
+
+	clit.LoadConfigFromFlag("config", "qhsse", filepath.Join(clit.ExeDir(), "config", "qhsse.json"))
+	if err := clit.Commit(); err != nil {
+		toolkit.Println("Error reading config file, ERROR:", err.Error())
+	}
+
 	defer clit.Close()
 
 	conn := helpers.Database()
@@ -35,6 +46,12 @@ func main() {
 		for {
 			// READ ASC FILES
 			err := c.NewAscController().ReadExcels()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			// READ QHSSE FILES
+			err = c.NewQhsseController().ReadExcels()
 			if err != nil {
 				log.Fatal(err.Error())
 			}

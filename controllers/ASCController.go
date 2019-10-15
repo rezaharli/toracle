@@ -6,43 +6,36 @@ import (
 	"strings"
 	"time"
 
-	"git.eaciitapp.com/rezaharli/toracle/helpers"
-	"git.eaciitapp.com/sebar/dbflex"
+	"github.com/360EntSecGroup-Skylar/excelize"
+
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
-	"github.com/xuri/excelize"
+
+	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type AscController struct {
+	*Base
 }
 
 func NewAscController() *AscController {
 	return new(AscController)
 }
 
-type SqlQueryParam struct {
-	ItemName string
-	Results  interface{}
-}
+func (c *AscController) ReadExcels() error {
+	for _, file := range c.FetchFiles() {
+		err := c.readExcel(file)
+		if err == nil {
+			// move file if read succeeded
+			helpers.MoveToArchive(file)
+			log.Println("Done.")
+		} else {
+			return err
+		}
+	}
 
-func (c *AscController) selectItemID(param SqlQueryParam) error {
-	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
-
-	conn := helpers.Database()
-	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
-	defer cursor.Close()
-
-	err := cursor.Fetchs(param.Results, 0)
-
-	return err
-}
-
-type Header struct {
-	DBFieldName string
-	HeaderName  string
-
-	Column string
-	Row    string
+	return nil
 }
 
 func (c *AscController) FetchFiles() []string {
@@ -62,21 +55,6 @@ func (c *AscController) FetchFiles() []string {
 
 	log.Println("Scanning finished. ASC files found:", len(resourceFiles))
 	return resourceFiles
-}
-
-func (c *AscController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			helpers.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (c *AscController) readExcel(filename string) error {
@@ -113,7 +91,7 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 
 	toolkit.Println()
 	log.Println("ReadMonthlyData", sheetName)
-	columnsMapping := clit.Config("default", "monthlyColumnsMapping", nil).(map[string]interface{})
+	columnsMapping := clit.Config("asc", "monthlyColumnsMapping", nil).(map[string]interface{})
 
 	firstDataRow := 0
 	i := 1
@@ -127,7 +105,7 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 
 	headerRow := toolkit.ToString(firstDataRow - 1)
 
-	months := clit.Config("default", "months", []interface{}{}).([]interface{})
+	months := clit.Config("asc", "months", []interface{}{}).([]interface{})
 
 	var headers []Header
 	for key, column := range columnsMapping {
@@ -247,7 +225,7 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 
 	toolkit.Println()
 	log.Println("ReadDailyData", sheetName)
-	columnsMapping := clit.Config("default", "dailyColumnsMapping", nil).(map[string]interface{})
+	columnsMapping := clit.Config("asc", "dailyColumnsMapping", nil).(map[string]interface{})
 
 	firstDataRow := 0
 	i := 1
@@ -374,5 +352,22 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 		log.Println("SUCCESS Processing", rowCount, "rows")
 	}
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+type SqlQueryParam struct {
+	ItemName string
+	Results  interface{}
+}
+
+func (c *AscController) selectItemID(param SqlQueryParam) error {
+	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	err := cursor.Fetchs(param.Results, 0)
+
 	return err
 }
