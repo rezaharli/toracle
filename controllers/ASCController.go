@@ -229,7 +229,7 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 	}
 
 	param := helpers.InsertParam{
-		TableName: "F_EquipmentMonthly",
+		TableName: "F_ENG_EQUIPMENT_MONTHLY",
 		Data:      rowDatas,
 	}
 
@@ -364,7 +364,7 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 	}
 
 	param := helpers.InsertParam{
-		TableName: "F_EquipmentDaily",
+		TableName: "F_ENG_EQUIPMENT_DAILY",
 		Data:      rowDatas,
 	}
 
