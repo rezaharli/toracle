@@ -36,6 +36,11 @@ func main() {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
 	}
 
+	clit.LoadConfigFromFlag("config", "keluhan", filepath.Join(clit.ExeDir(), "config", "keluhan.json"))
+	if err := clit.Commit(); err != nil {
+		toolkit.Println("Error reading config file, ERROR:", err.Error())
+	}
+
 	defer clit.Close()
 
 	conn := helpers.Database()
@@ -63,6 +68,12 @@ func main() {
 
 			// READ CORSEC FILES
 			err = c.NewCorsecController().ReadExcels()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			// READ Keluhan FILES
+			err = c.NewKeluhanController().ReadExcels()
 			if err != nil {
 				log.Fatal(err.Error())
 			}

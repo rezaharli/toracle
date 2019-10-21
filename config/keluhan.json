@@ -1,0 +1,14 @@
+{
+    "columnsMapping": {
+        "PERIOD": "D", 
+        "TYPE": "",
+        "CATEGORY": "", 
+        "LOCATION": "B", 
+        "LEVEL_INCIDENT": "", 
+        "DESCRIPTION": "F", 
+        "ACTION": "G", 
+        "PIC": "", 
+        "STATUS": "H",
+        "DUE_DATE": ""
+    }
+}
