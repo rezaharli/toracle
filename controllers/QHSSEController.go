@@ -120,7 +120,7 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 
 		isRowEmpty := true
 		for _, header := range headers {
-			if header.DBFieldName == "PERIOD" {
+			if header.DBFieldName == "PERIOD" || header.DBFieldName == "DUE_DATE" {
 				style, _ := f.NewStyle(`{"number_format":15}`)
 				f.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
 				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
@@ -129,6 +129,7 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 				}
 
 				stringData = strings.ReplaceAll(stringData, "'", "")
+				stringData = strings.ReplaceAll(stringData, "`", "")
 
 				var t time.Time
 				if stringData != "" {
@@ -137,7 +138,10 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 					if err != nil {
 						t, err = time.Parse("02/01/2006", stringData)
 						if err != nil {
-							log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+							t, err = time.Parse("2/1/2006", stringData)
+							if err != nil {
+								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+							}
 						}
 					}
 				}
