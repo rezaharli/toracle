@@ -100,47 +100,11 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 		i++
 	}
 
-	headerRow := toolkit.ToString(firstDataRow - 1)
-
 	var headers []Header
 	for key, column := range columnsMapping {
-		isHeaderDetected := false
-		i = 1
-
 		header := Header{
 			DBFieldName: key,
-			HeaderName:  "",
-			Column:      "",
-			Row:         "",
-		}
-
-		// search for particular header in excel
-		for {
-			currentCol := helpers.ToCharStr(i)
-			cellText, err := f.GetCellValue(sheetName, currentCol+headerRow)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if isHeaderDetected == false && strings.TrimSpace(cellText) != "" {
-				isHeaderDetected = true
-			}
-
-			if isHeaderDetected == true && strings.TrimSpace(cellText) == "" {
-				break
-			}
-
-			if isHeaderDetected {
-				if strings.Replace(column.(string), " ", "", -1) == strings.Replace(cellText, " ", "", -1) {
-					header.HeaderName = cellText
-					header.Column = currentCol
-					header.Row = headerRow
-
-					break
-				}
-			}
-
-			i++
+			Column:      column.(string),
 		}
 
 		headers = append(headers, header)

@@ -107,9 +107,6 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 		i++
 	}
 
-	headerRow := toolkit.ToString(firstDataRow - 1)
-	toolkit.Println(headerRow)
-
 	var headers []Header
 	for key, column := range columnsMapping {
 		header := Header{
