@@ -63,9 +63,11 @@ func (c *KeluhanController) readExcel(filename string) error {
 
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
-		err = c.ReadData(f, sheetName)
-		if err != nil {
-			log.Println("Error reading monthly data. ERROR:", err)
+		if strings.Contains(sheetName, "Rekap") {
+			err = c.ReadData(f, sheetName)
+			if err != nil {
+				log.Println("Error reading monthly data. ERROR:", err)
+			}
 		}
 	}
 
