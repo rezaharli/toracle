@@ -123,6 +123,10 @@ func (c *KeluhanController) ReadData(f *excelize.File, sheetName string) error {
 		isRowEmpty := true
 		for _, header := range headers {
 			if header.Column == "" {
+				if header.DBFieldName == "TYPE" {
+					rowData.Set(header.DBFieldName, "Keluhan Pelanggan")
+				}
+
 				continue
 			}
 
