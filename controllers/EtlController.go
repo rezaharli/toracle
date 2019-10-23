@@ -29,7 +29,7 @@ func (c *EtlController) ReadExcels() error {
 		err := c.readExcel(file)
 		if err == nil {
 			// move file if read succeeded
-			// helpers.MoveToArchive(file)
+			helpers.MoveToArchive(file)
 			log.Println("Done.")
 		} else {
 			return err
