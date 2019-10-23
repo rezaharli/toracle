@@ -2,10 +2,13 @@
     "columnsMapping": {
         "PERIOD": "",
         "CATEGORY": "D",
+        "STATUS": "",
         "ACTION_PROGRAM": "G",
         "PIC_DEPARTMENT": "Q",
         "AREA": "D",
         "PROGRAM_PLAN": "D",
-        "STATUS": ""
+        "TARGET_OUTPUT": "I",
+        "PORTION": "H",
+        "REALISATION": "W"
     }
 }

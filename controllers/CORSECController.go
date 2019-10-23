@@ -195,7 +195,45 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 
 				rowData.Set(header.DBFieldName, t)
 			} else if header.DBFieldName == "STATUS" {
-				rowData.Set(header.DBFieldName, "")
+				var getStringData func(row int) string
+
+				getStringData = func(row int) string {
+					isProses, err := f.GetCellValue(sheetName, "AA"+toolkit.ToString(row))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					isSelesai, err := f.GetCellValue(sheetName, "AB"+toolkit.ToString(row))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					stringData := ""
+					if strings.TrimSpace(isProses) != "" {
+						stringData = "proses"
+					}
+					if strings.TrimSpace(isSelesai) != "" {
+						stringData = "selesai"
+					}
+
+					if strings.TrimSpace(stringData) == "" {
+						stringData = getStringData(row - 1)
+					}
+
+					return stringData
+				}
+
+				stringData := strings.ReplaceAll(getStringData(currentRow), "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				if stringData != "" {
+					isRowEmpty = false
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
 			} else if header.DBFieldName == "CATEGORY" {
 				rowData.Set(header.DBFieldName, currentCategory)
 			} else if header.DBFieldName == "AREA" {
@@ -203,7 +241,6 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 			} else {
 				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					toolkit.Println("5", sheetName, header.Column, toolkit.ToString(currentRow))
 					log.Fatal(err)
 				}
 				stringData = strings.ReplaceAll(stringData, "'", "''")
