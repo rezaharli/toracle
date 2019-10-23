@@ -17,26 +17,12 @@ var wg sync.WaitGroup
 
 func main() {
 	clit.LoadConfigFromFlag("config", "default", filepath.Join(clit.ExeDir(), "config", "app.json"))
-	if err := clit.Commit(); err != nil {
-		toolkit.Println("Error reading config file, ERROR:", err.Error())
-	}
-
 	clit.LoadConfigFromFlag("config", "asc", filepath.Join(clit.ExeDir(), "config", "asc.json"))
-	if err := clit.Commit(); err != nil {
-		toolkit.Println("Error reading config file, ERROR:", err.Error())
-	}
-
 	clit.LoadConfigFromFlag("config", "qhsse", filepath.Join(clit.ExeDir(), "config", "qhsse.json"))
-	if err := clit.Commit(); err != nil {
-		toolkit.Println("Error reading config file, ERROR:", err.Error())
-	}
-
 	clit.LoadConfigFromFlag("config", "corsec", filepath.Join(clit.ExeDir(), "config", "corsec.json"))
-	if err := clit.Commit(); err != nil {
-		toolkit.Println("Error reading config file, ERROR:", err.Error())
-	}
-
 	clit.LoadConfigFromFlag("config", "keluhan", filepath.Join(clit.ExeDir(), "config", "keluhan.json"))
+	clit.LoadConfigFromFlag("config", "etl", filepath.Join(clit.ExeDir(), "config", "etl.json"))
+
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
 	}
@@ -74,6 +60,12 @@ func main() {
 
 			// READ Keluhan FILES
 			err = c.NewKeluhanController().ReadExcels()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			// READ ETL FILES
+			err = c.NewEtlController().ReadExcels()
 			if err != nil {
 				log.Fatal(err.Error())
 			}

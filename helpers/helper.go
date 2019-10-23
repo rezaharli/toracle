@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/eaciit/clit"
@@ -49,11 +50,35 @@ func MoveToArchive(filePath string) {
 	}
 }
 
-func ToCharStr(i int) string {
-	var arr = [...]string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-		"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
+func ToCharStr(num int) string {
+	var letters = []interface{}{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
 
-	return arr[i-1]
+	letter := ""
+	strNum := strconv.FormatInt(int64(num), 26)
+	for i := len(strNum) - 1; i >= 0; i-- {
+		angka, err := strconv.Atoi(strNum[i:(i + 1)])
+
+		if err != nil {
+			foundIndex := IndexOf(strNum[i:(i+1)], letters)
+			if foundIndex != -1 {
+				angka = foundIndex + 10
+			}
+		}
+
+		if i != 0 && angka == 0 {
+			tmp, _ := strconv.Atoi(strNum[(i - 1):i])
+			tmp = tmp - 1
+			strNum = strconv.Itoa(tmp) + strNum[i:(i+1)]
+
+			angka = 26
+		}
+
+		if angka != 0 {
+			letter = letters[angka-1].(string) + letter
+		}
+	}
+
+	return letter
 }
 
 func ArrayContainsWhitespaceTrimmed(a []interface{}, x string) int {

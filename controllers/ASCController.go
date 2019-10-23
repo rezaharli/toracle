@@ -402,11 +402,6 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 	return err
 }
 
-type SqlQueryParam struct {
-	ItemName string
-	Results  interface{}
-}
-
 func (c *AscController) selectItemID(param SqlQueryParam) error {
 	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
 

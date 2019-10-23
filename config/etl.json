@@ -1,0 +1,49 @@
+{
+    "GRK": {
+        "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+        "columnsMapping": {
+            "PERIOD": "B", 
+            "LISTRIK": "D", 
+            "BBMPertadex": "F", 
+            "BBMHSD": "H"
+        }
+    },
+    "EnergyBBM": {
+        "months": ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"],
+        "columnsMapping": {
+            "Period": "", 
+            "ItemID": "C", 
+            "EnergyType": "", 
+            "TotalConsumption": "",
+            "TotalProduction": ""
+        }
+    },
+    "EnergyListrik": {
+        "months": ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"],
+        "columnsMapping": {
+            "Period": "", 
+            "ItemID": "C", 
+            "EnergyType": "", 
+            "TotalConsumption": "",
+            "TotalProduction": ""
+        }
+    },
+    "EnergyCO2": {
+        "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+        "columnsMapping": {
+            "Period": "", 
+            "ProduksiCuker": "D", 
+            "GSUListrik": "E", 
+            "ConveyorListrik": "F",
+            "BBMCuker": "I",
+            "ProduksiContainer": "M",
+            "STSListrik": "N",
+            "ASCListrik": "O",
+            "CTTBBM": "T",
+            "SCBBM": "V",
+            "RSBBM": "W",
+            "FKBBM": "X",
+            "EmptyHandlerBBM": "Y"
+        }
+    }
+}
