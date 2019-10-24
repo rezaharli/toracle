@@ -45,7 +45,8 @@
             "SC_BBM": "V",
             "RS_BBM": "W",
             "FK_BBM": "X",
-            "EMPTY_HANDLER_BBM": "Y"
+            "EMPTY_HANDLER_BBM": "Y",
+            "TB_BBM": "S"
         }
     }
 }
