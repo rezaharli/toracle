@@ -229,10 +229,6 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 					stringData = stringData[0:300]
 				}
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
-
 				rowData.Set(header.DBFieldName, stringData)
 			} else if header.DBFieldName == "CATEGORY" {
 				rowData.Set(header.DBFieldName, currentCategory)
@@ -261,6 +257,7 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 			break
 		}
 
+		toolkit.Println(rowData)
 		param := helpers.InsertParam{
 			TableName: "F_CORSEC_RKM",
 			Data:      rowData,
