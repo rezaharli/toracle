@@ -224,7 +224,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 		}
 
 		param := helpers.InsertParam{
-			TableName: "F_QHSSE_EnergyGRK",
+			TableName: "F_QHSSE_ENERGYGRK",
 			Data:      rowData,
 		}
 
@@ -326,16 +326,16 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 				Column:      column.(string),
 			}
 
-			if key == "Period" {
+			if key == "PERIOD" {
 				header.Value = monthHeader.HeaderName
 				header.Column = monthHeader.Column
 			}
 
-			if key == "TotalConsumption" {
+			if key == "TOTAL_CONSUMPTION" {
 				header.Column = monthHeader.Column
 			}
 
-			if key == "TotalProduction" {
+			if key == "TOTAL_PRODUCTION" {
 				header.Column = helpers.ToCharStr(monthHeader.ColumnNumber + 1)
 			}
 
@@ -366,7 +366,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 			}
 
 			for _, header := range headers {
-				if header.DBFieldName == "Period" {
+				if header.DBFieldName == "PERIOD" {
 					splitted := strings.Split(sheetName, " ")
 					stringDataYear := splitted[len(splitted)-1]
 
@@ -392,7 +392,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 					}
 
 					rowData.Set(header.DBFieldName, t)
-				} else if header.DBFieldName == "ItemId" {
+				} else if header.DBFieldName == "ITEM_ID" {
 					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
@@ -413,8 +413,12 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 						isRowEmpty = false
 					}
 
-					rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
-				} else if header.DBFieldName == "EnergyType" {
+					if len(resultRows) > 0 {
+						rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
+					} else {
+						rowData.Set(header.DBFieldName, nil)
+					}
+				} else if header.DBFieldName == "ENERGY_TYPE" {
 					splitted := strings.Split(sheetName, " ")
 					stringData := splitted[1]
 
@@ -447,7 +451,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 			}
 
 			param := helpers.InsertParam{
-				TableName: "F_QHSSE_EnergyItem",
+				TableName: "F_QHSSE_ENERGY_ITEM",
 				Data:      rowData,
 			}
 
@@ -550,16 +554,16 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 				Column:      column.(string),
 			}
 
-			if key == "Period" {
+			if key == "PERIOD" {
 				header.Value = monthHeader.HeaderName
 				header.Column = monthHeader.Column
 			}
 
-			if key == "TotalConsumption" {
+			if key == "TOTAL_CONSUMPTION" {
 				header.Column = helpers.ToCharStr(monthHeader.ColumnNumber + 2)
 			}
 
-			if key == "TotalProduction" {
+			if key == "TOTAL_PRODUCTION" {
 				header.Column = helpers.ToCharStr(monthHeader.ColumnNumber + 3)
 			}
 
@@ -590,7 +594,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 			}
 
 			for _, header := range headers {
-				if header.DBFieldName == "Period" {
+				if header.DBFieldName == "PERIOD" {
 					splitted := strings.Split(sheetName, " ")
 					stringDataYear := splitted[len(splitted)-1]
 
@@ -616,7 +620,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 					}
 
 					rowData.Set(header.DBFieldName, t)
-				} else if header.DBFieldName == "ItemId" {
+				} else if header.DBFieldName == "ITEM_ID" {
 					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
@@ -637,8 +641,12 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 						isRowEmpty = false
 					}
 
-					rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
-				} else if header.DBFieldName == "EnergyType" {
+					if len(resultRows) > 0 {
+						rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
+					} else {
+						rowData.Set(header.DBFieldName, nil)
+					}
+				} else if header.DBFieldName == "ENERGY_TYPE" {
 					splitted := strings.Split(sheetName, " ")
 					stringData := splitted[1]
 
@@ -671,7 +679,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 			}
 
 			param := helpers.InsertParam{
-				TableName: "F_QHSSE_EnergyItem",
+				TableName: "F_QHSSE_ENERGY_ITEM",
 				Data:      rowData,
 			}
 
@@ -756,7 +764,7 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 		}
 
 		for _, header := range headers {
-			if strings.EqualFold(header.DBFieldName, "Period") {
+			if strings.EqualFold(header.DBFieldName, "PERIOD") {
 				stringDataYear, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
@@ -813,7 +821,7 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 		}
 
 		param := helpers.InsertParam{
-			TableName: "F_QHSSE_EnergyCO2",
+			TableName: "F_QHSSE_ENERGY_CO2",
 			Data:      rowData,
 		}
 
