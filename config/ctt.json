@@ -1,0 +1,18 @@
+{
+    "Daily": {
+        "months": ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"],
+        "columnsMapping": {
+            "PERIOD": "",
+            "ITEM_ID": "A",
+            "START_TIME": "B",
+            "END_TIME": "E",
+            "DOWN_TIME": "H",
+            "DESCRIPTION": "J",
+            "ACTION": "M",
+            "SPARE_PART": "T",
+            "QTY": "W",
+            "STATUS_PART": "Y",
+            "STATUS": "AB"
+        }
+    }
+}

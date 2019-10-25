@@ -50,6 +50,18 @@ func MoveToArchive(filePath string) {
 	}
 }
 
+func CharStrToNum(char string) int {
+	var letters = []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
+
+	for i, letter := range letters {
+		if strings.EqualFold(letter, char) {
+			return i + 1
+		}
+	}
+
+	return 0
+}
+
 func ToCharStr(num int) string {
 	var letters = []interface{}{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
 
