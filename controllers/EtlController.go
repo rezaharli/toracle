@@ -842,7 +842,7 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 }
 
 func (c *EtlController) selectItemID(param SqlQueryParam) error {
-	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
+	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = TRIM('" + param.ItemName + "')"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
