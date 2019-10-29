@@ -13,5 +13,26 @@
             "STATUS_PART": "Y",
             "STATUS": "AB"
         }
+    },
+    "Monthly": {
+        "columnsMapping": {
+            "PERIOD": "",
+            "ITEM_ID": "B",
+            "BOX_HANDLED": "F",
+            "KWH_CONSUMPTION": "",
+            "KWH_REGENERATING": "",
+            "TOTAL_KWH": "",
+            "EQUIPMENT_HOUR": "G",
+            "OPERATION_HOUR": "H",
+            "CORRECTIVE_MAINTENANCE": "",
+            "PREVENTIVE_MAINTENANCE": "J",
+            "SHUTDOWN": "O",
+            "ACCIDENT": "N",
+            "NUMBER_OF_BREAKDOWN": "M",
+            "EHRM": "I",
+            "BREAKDOWN": "K",
+            "TROUBLE_SHOOT": "L",
+            "FUEL_USED": "P"
+        }
     }
 }

@@ -65,7 +65,7 @@ func (c *QhsseController) readExcel(filename string) error {
 	for _, sheetName := range f.GetSheetMap() {
 		err = c.ReadData(f, sheetName)
 		if err != nil {
-			log.Println("Error reading monthly data. ERROR:", err)
+			log.Println("Error reading data. ERROR:", err)
 		}
 	}
 

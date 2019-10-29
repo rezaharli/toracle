@@ -68,28 +68,28 @@ func (c *EtlController) readExcel(filename string) error {
 		if strings.Contains(sheetName, "GRK") {
 			err = c.ReadDataGRK(f, sheetName)
 			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
+				log.Println("Error reading data. ERROR:", err)
 			}
 		}
 
 		if strings.Contains(sheetName, "Konsumsi BBM per Alat") {
 			err = c.ReadDataEnergyItemBBM(f, sheetName)
 			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
+				log.Println("Error reading data. ERROR:", err)
 			}
 		}
 
 		if strings.Contains(sheetName, "Konsumsi Listrik per Alat") {
 			err = c.ReadDataEnergyItemListrik(f, sheetName)
 			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
+				log.Println("Error reading data. ERROR:", err)
 			}
 		}
 
 		if strings.Contains(sheetName, "Energy Performance") {
 			err = c.ReadDataPerformance(f, sheetName)
 			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
+				log.Println("Error reading data. ERROR:", err)
 			}
 		}
 	}

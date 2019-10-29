@@ -65,10 +65,16 @@ func (c *CttController) readExcel(filename string) error {
 
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
-		if strings.EqualFold(sheetName, "Daily") {
-			err = c.ReadDataDaily(f, sheetName)
+		// if strings.EqualFold(sheetName, "Daily") {
+		// 	err = c.ReadDataDaily(f, sheetName)
+		// 	if err != nil {
+		// 		log.Println("Error reading data. ERROR:", err)
+		// 	}
+		// } else
+		if strings.EqualFold(sheetName, "EQP") {
+			err = c.ReadDataMonthly(f, sheetName)
 			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
+				log.Println("Error reading data. ERROR:", err)
 			}
 		}
 	}
@@ -289,6 +295,193 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 
 			param := helpers.InsertParam{
 				TableName: "F_ENG_CTT_DAILY",
+				Data:      rowData,
+			}
+
+			err = helpers.Insert(param)
+			if err != nil {
+				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			} else {
+				log.Println("Row", currentRow, "inserted.")
+			}
+			rowCount++
+		}
+
+		row++
+
+		if err == nil {
+			log.Println("SUCCESS Processing", rowCount, "rows\n")
+		}
+	}
+
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	config := clit.Config("ctt", "Monthly", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
+
+	var currentPeriod time.Time
+
+	var err error
+
+	//iterate into groups of data
+	notPeriodCount := 0
+	periodFound := false
+	row := 1
+	for {
+		firstDataRow := 0
+		notPeriodCount = 0
+
+		//search for period
+		for {
+			if row >= 1 {
+				style, _ := f.NewStyle(`{"number_format":15}`)
+				f.SetCellStyle(sheetName, "A"+toolkit.ToString(row), "A"+toolkit.ToString(row), style)
+				stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				splitted := strings.Split(stringData, " ")
+				monthYear := ""
+				if len(splitted) >= 2 {
+					monthYear = "1-" + splitted[len(splitted)-2] + "-" + splitted[len(splitted)-1]
+				}
+
+				//check if value is a period
+				t, err := time.Parse("2-January-2006", monthYear)
+				if err == nil {
+					notPeriodCount = 0
+
+					stringDataAcuan, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row-1))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if !strings.Contains(stringDataAcuan, "EQUIPMENT PERFORMANCE DATA") {
+						row++
+						continue
+					}
+
+					currentPeriod = t
+					firstDataRow = row + 5
+
+					stringData, err = f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if strings.EqualFold(strings.TrimSpace(stringData), strings.TrimSpace("NO")) {
+						firstDataRow = firstDataRow + 1
+					}
+
+					periodFound = true
+					break
+				}
+			}
+
+			if notPeriodCount > 200 {
+				periodFound = false
+				break
+			}
+
+			notPeriodCount++
+			row++
+		}
+
+		if !periodFound {
+			break
+		}
+
+		var headers []Header
+		for key, column := range columnsMapping {
+			header := Header{
+				DBFieldName: key,
+				Column:      column.(string),
+			}
+
+			headers = append(headers, header)
+		}
+
+		//iterate over rows
+		rowCount := 0
+		currentItemID := ""
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
+			row = currentRow
+			dontInsert := false
+
+			stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if strings.Contains(stringData, "Total") {
+				break
+			}
+
+			for _, header := range headers {
+				if header.DBFieldName == "PERIOD" {
+					rowData.Set(header.DBFieldName, currentPeriod)
+				} else if header.DBFieldName == "ITEM_ID" {
+					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if currentItemID == stringData {
+						dontInsert = true
+					}
+
+					currentItemID = stringData
+
+					resultRows := make([]toolkit.M, 0)
+					param := SqlQueryParam{
+						ItemName: strings.ReplaceAll(stringData, "-", ""),
+						Results:  &resultRows,
+					}
+
+					err = c.selectItemID(param)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if len(resultRows) > 0 {
+						rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
+					} else {
+						rowData.Set(header.DBFieldName, nil)
+					}
+				} else if header.Column == "" {
+					rowData.Set(header.DBFieldName, "")
+				} else {
+					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
+
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			if dontInsert {
+				continue
+			}
+
+			param := helpers.InsertParam{
+				TableName: "F_ENG_EQUIPMENT_MONTHLY",
 				Data:      rowData,
 			}
 
