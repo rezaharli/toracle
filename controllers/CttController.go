@@ -65,13 +65,12 @@ func (c *CttController) readExcel(filename string) error {
 
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
-		// if strings.EqualFold(sheetName, "Daily") {
-		// 	err = c.ReadDataDaily(f, sheetName)
-		// 	if err != nil {
-		// 		log.Println("Error reading data. ERROR:", err)
-		// 	}
-		// } else
-		if strings.EqualFold(sheetName, "EQP") {
+		if strings.EqualFold(sheetName, "Daily") {
+			err = c.ReadDataDaily(f, sheetName)
+			if err != nil {
+				log.Println("Error reading data. ERROR:", err)
+			}
+		} else if strings.EqualFold(sheetName, "EQP") {
 			err = c.ReadDataMonthly(f, sheetName)
 			if err != nil {
 				log.Println("Error reading data. ERROR:", err)
