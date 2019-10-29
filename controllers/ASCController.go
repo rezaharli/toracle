@@ -48,7 +48,7 @@ func (c *AscController) FetchFiles() []string {
 			continue
 		}
 
-		if strings.Contains(filepath.Base(file), "ASC") {
+		if strings.Contains(filepath.Base(file), "Equipment Performance ASC") {
 			resourceFiles = append(resourceFiles, file)
 		}
 	}

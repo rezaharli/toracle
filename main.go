@@ -23,6 +23,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "keluhan", filepath.Join(clit.ExeDir(), "config", "keluhan.json"))
 	clit.LoadConfigFromFlag("config", "etl", filepath.Join(clit.ExeDir(), "config", "etl.json"))
 	clit.LoadConfigFromFlag("config", "ctt", filepath.Join(clit.ExeDir(), "config", "ctt.json"))
+	clit.LoadConfigFromFlag("config", "readiness", filepath.Join(clit.ExeDir(), "config", "readiness.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -73,6 +74,12 @@ func main() {
 
 			// READ CTT FILES
 			err = c.NewCttController().ReadExcels()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			// READ Readiness FILES
+			err = c.NewReadinessController().ReadExcels()
 			if err != nil {
 				log.Fatal(err.Error())
 			}
