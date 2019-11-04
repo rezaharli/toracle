@@ -24,6 +24,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "etl", filepath.Join(clit.ExeDir(), "config", "etl.json"))
 	clit.LoadConfigFromFlag("config", "ctt", filepath.Join(clit.ExeDir(), "config", "ctt.json"))
 	clit.LoadConfigFromFlag("config", "readiness", filepath.Join(clit.ExeDir(), "config", "readiness.json"))
+	clit.LoadConfigFromFlag("config", "investment", filepath.Join(clit.ExeDir(), "config", "investment.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -80,6 +81,12 @@ func main() {
 
 			// READ Readiness FILES
 			err = c.NewReadinessController().ReadExcels()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			// READ Investment FILES
+			err = c.NewInvestmentController().ReadExcels()
 			if err != nil {
 				log.Fatal(err.Error())
 			}

@@ -1,0 +1,17 @@
+{
+    "months": ["Januari", "Februari", "Eng", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
+    "columnsMapping": {
+        "PERIOD": "",
+        "PROJECT_NAME": "D",
+        "CATEGORY": "D",
+        "AKTIVA": "D",
+        "CONTRACT_NO": "O",
+        "CONTRACT_VALUE": "P",
+        "PROJECT_BUDGET": "G",
+        "BUDGET_REALISATION": "R",
+        "PIC_DEPARTMENT": "AK",
+        "INVESTMENT_BUDGET": "N",
+        "PRPOSAL_VALUE": "H",
+        "PAYMENT_REALISATION": "S"
+    }
+}
