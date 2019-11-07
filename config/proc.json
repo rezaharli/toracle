@@ -1,0 +1,26 @@
+{
+    "url": "https://eproc.pelindo.co.id/api/DataAnpers?",
+    "username": "ttl",
+    "password": "#ttl2019",
+    "summary": {
+        "columnsMapping": {
+            "KODE_PAKET": "kode_paket",
+            "TANGGAL_PEMBUATAN": "tanggal_pembuatan",
+            "TAHUN_ANGGARAN": "tahun_anggaran",
+            "UNIT_KERJA": "unit_kerja",
+            "URAIAN_PAKET_LELANG": "uraian_paket_lelang",
+            "JENIS_PEKERJAAN": "jenis_pekerjaan",
+            "HPS": "hps",
+            "UPDATE_DATE": "tanggal_update"
+        }
+    },
+    "detail": {
+        "columnsMapping": {
+            "KODE_PAKET": "kode_paket",
+            "TAHAPAN_LELANG": "tahapan_lelang",
+            "UPDATE_DATE": "tanggal_update",
+            "START_DATE": "",
+            "END_DATE": ""
+        }
+    }
+}

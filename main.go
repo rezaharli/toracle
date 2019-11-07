@@ -25,6 +25,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "ctt", filepath.Join(clit.ExeDir(), "config", "ctt.json"))
 	clit.LoadConfigFromFlag("config", "readiness", filepath.Join(clit.ExeDir(), "config", "readiness.json"))
 	clit.LoadConfigFromFlag("config", "investment", filepath.Join(clit.ExeDir(), "config", "investment.json"))
+	clit.LoadConfigFromFlag("config", "proc", filepath.Join(clit.ExeDir(), "config", "proc.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -36,60 +37,86 @@ func main() {
 	if conn != nil {
 		var ticker *time.Ticker = nil
 
+		var totalRunInADay int
 		if ticker == nil {
 			loopInterval := clit.Config("default", "interval", 1).(float64)
-			ticker = time.NewTicker(time.Duration(int(loopInterval)) * time.Minute)
+			durationInterval := time.Duration(int(loopInterval)) * time.Minute
+
+			dailyInterval := time.Duration(24) * time.Hour
+			totalRunInADay = int(dailyInterval.Hours() / durationInterval.Hours())
+
+			ticker = time.NewTicker(durationInterval)
 		}
 
 		// do the loop
+		firstTimer := true
+		i := 0
 		for {
-			// READ ASC FILES
-			err := c.NewAscController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			go func() {
+				// READ ASC FILES
+				err := c.NewAscController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 
-			// READ QHSSE FILES
-			err = c.NewQhsseController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				// READ QHSSE FILES
+				err = c.NewQhsseController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 
-			// READ CORSEC FILES
-			err = c.NewCorsecController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				// READ CORSEC FILES
+				err = c.NewCorsecController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 
-			// READ Keluhan FILES
-			err = c.NewKeluhanController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				// READ Keluhan FILES
+				err = c.NewKeluhanController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 
-			// READ ETL FILES
-			err = c.NewEtlController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				// READ ETL FILES
+				err = c.NewEtlController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 
-			// READ CTT FILES
-			err = c.NewCttController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				// READ CTT FILES
+				err = c.NewCttController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 
-			// READ Readiness FILES
-			err = c.NewReadinessController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				// READ Readiness FILES
+				err = c.NewReadinessController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 
-			// READ Investment FILES
-			err = c.NewInvestmentController().ReadExcels()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				// READ Investment FILES
+				err = c.NewInvestmentController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// READ Proc API DAILY
+				if i%totalRunInADay == 0 {
+					procController := c.NewProcController()
+					procController.FirstTimer = firstTimer
+					err = procController.ReadAPI()
+					if err != nil {
+						log.Fatal(err.Error())
+					}
+
+					firstTimer = false
+				}
+
+				i++
+				toolkit.Println()
+				log.Println("Waiting...\n")
+			}()
 
 			<-ticker.C
 		}
