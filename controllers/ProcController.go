@@ -341,11 +341,10 @@ func (c *ProcController) InsertDetail(detail map[string]interface{}) error {
 		Data:      rowData,
 	}
 
+	log.Println("Inserting data detail kode paket", rowData.GetString("KODE_PAKET"))
 	err := helpers.Insert(param)
 	if err != nil {
 		log.Fatal("Error inserting data, ERROR:", err.Error())
-	} else {
-		log.Println("Data detail kode paket", rowData.GetString("KODE_PAKET"), "inserted.")
 	}
 
 	return nil
