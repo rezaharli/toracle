@@ -154,13 +154,17 @@ func (c *ProcController) InsertSummary(summary map[string]interface{}) error {
 			var t time.Time
 			var err error
 			if date != "" {
-				t, err = time.Parse("2006-01-02", date)
-				if err != nil {
-					t, err = time.Parse("02-01-2006", date)
-					if err != nil {
-						t, err = time.Parse("02-JAN-2006", date)
-						if err != nil {
+				timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
+				for i, timeFormat := range timeFormats {
+					t, err = time.Parse(timeFormat, date)
+
+					if err == nil {
+						break
+					} else {
+						if i == len(timeFormats)-1 {
 							log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+						} else {
+							continue
 						}
 					}
 				}
@@ -223,13 +227,17 @@ func (c *ProcController) InsertDetail(detail map[string]interface{}) error {
 			var t time.Time
 			var err error
 			if date != "" {
-				t, err = time.Parse("2006-01-02", date)
-				if err != nil {
-					t, err = time.Parse("02-01-2006", date)
-					if err != nil {
-						t, err = time.Parse("02-JAN-2006", date)
-						if err != nil {
+				timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
+				for i, timeFormat := range timeFormats {
+					t, err = time.Parse(timeFormat, date)
+
+					if err == nil {
+						break
+					} else {
+						if i == len(timeFormats)-1 {
 							log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+						} else {
+							continue
 						}
 					}
 				}
@@ -245,26 +253,34 @@ func (c *ProcController) InsertDetail(detail map[string]interface{}) error {
 				date = date + "-" + detail["jam_awal"].(string)
 
 				if date != "" {
-					t, err = time.Parse("2006-01-02-15:04", date)
-					if err != nil {
-						t, err = time.Parse("02-01-2006-15:04", date)
-						if err != nil {
-							t, err = time.Parse("02-JAN-2006-15:04", date)
-							if err != nil {
+					timeFormats := []string{"2006-01-02-15:04", "02-01-2006-15:04", "02-JAN-2006-15:04", "02-JAN-06-15:04"}
+					for i, timeFormat := range timeFormats {
+						t, err = time.Parse(timeFormat, date)
+
+						if err == nil {
+							break
+						} else {
+							if i == len(timeFormats)-1 {
 								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+							} else {
+								continue
 							}
 						}
 					}
 				}
 			} else {
 				if date != "" {
-					t, err = time.Parse("2006-01-02", date)
-					if err != nil {
-						t, err = time.Parse("02-01-2006", date)
-						if err != nil {
-							t, err = time.Parse("02-JAN-2006", date)
-							if err != nil {
+					timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
+					for i, timeFormat := range timeFormats {
+						t, err = time.Parse(timeFormat, date)
+
+						if err == nil {
+							break
+						} else {
+							if i == len(timeFormats)-1 {
 								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+							} else {
+								continue
 							}
 						}
 					}
@@ -281,26 +297,34 @@ func (c *ProcController) InsertDetail(detail map[string]interface{}) error {
 				date = date + "-" + detail["jam_akhir"].(string)
 
 				if date != "" {
-					t, err = time.Parse("2006-01-02-15:04", date)
-					if err != nil {
-						t, err = time.Parse("02-01-2006-15:04", date)
-						if err != nil {
-							t, err = time.Parse("02-JAN-2006-15:04", date)
-							if err != nil {
+					timeFormats := []string{"2006-01-02-15:04", "02-01-2006-15:04", "02-JAN-2006-15:04", "02-JAN-06-15:04"}
+					for i, timeFormat := range timeFormats {
+						t, err = time.Parse(timeFormat, date)
+
+						if err == nil {
+							break
+						} else {
+							if i == len(timeFormats)-1 {
 								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+							} else {
+								continue
 							}
 						}
 					}
 				}
 			} else {
 				if date != "" {
-					t, err = time.Parse("2006-01-02", date)
-					if err != nil {
-						t, err = time.Parse("02-01-2006", date)
-						if err != nil {
-							t, err = time.Parse("02-JAN-2006", date)
-							if err != nil {
+					timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
+					for i, timeFormat := range timeFormats {
+						t, err = time.Parse(timeFormat, date)
+
+						if err == nil {
+							break
+						} else {
+							if i == len(timeFormats)-1 {
 								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
+							} else {
+								continue
 							}
 						}
 					}
