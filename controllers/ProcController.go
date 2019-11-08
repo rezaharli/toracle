@@ -195,11 +195,10 @@ func (c *ProcController) InsertSummary(summary map[string]interface{}) error {
 		Data:      rowData,
 	}
 
+	log.Println("Inserting data summary kode paket", rowData.GetString("KODE_PAKET"))
 	err := helpers.Insert(param)
 	if err != nil {
 		log.Fatal("Error inserting data, ERROR:", err.Error())
-	} else {
-		log.Println("Data summary kode paket", rowData.GetString("KODE_PAKET"), "inserted.")
 	}
 
 	return nil
