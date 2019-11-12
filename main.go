@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/eaciit/clit"
@@ -12,8 +11,6 @@ import (
 	c "git.eaciitapp.com/rezaharli/toracle/controllers"
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
-
-var wg sync.WaitGroup
 
 func main() {
 	clit.LoadConfigFromFlag("config", "default", filepath.Join(clit.ExeDir(), "config", "app.json"))
@@ -26,6 +23,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "readiness", filepath.Join(clit.ExeDir(), "config", "readiness.json"))
 	clit.LoadConfigFromFlag("config", "investment", filepath.Join(clit.ExeDir(), "config", "investment.json"))
 	clit.LoadConfigFromFlag("config", "proc", filepath.Join(clit.ExeDir(), "config", "proc.json"))
+	clit.LoadConfigFromFlag("config", "equipmentPerformance", filepath.Join(clit.ExeDir(), "config", "equipmentPerformance.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -101,6 +99,18 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				// READ Equipment FILES
+				err = c.NewEquipmentPerformance10STSController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// READ Equipment FILES
+				err = c.NewEquipmentPerformance5SCController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				// READ Proc API DAILY
 				if i%totalRunInADay == 0 {
 					procController := c.NewProcController()
@@ -115,15 +125,12 @@ func main() {
 
 				i++
 				toolkit.Println()
-				log.Println("Waiting...\n")
+				log.Println("Waiting...")
+				toolkit.Println()
 			}()
 
 			<-ticker.C
 		}
 		//loop ends
-
-		wg.Add(1)
-		// do normal task here
-		wg.Wait()
 	}
 }

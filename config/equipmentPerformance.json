@@ -1,0 +1,42 @@
+{
+    "10STS": {
+        "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "October", "November", "Desember"],
+        "columnsMapping": {
+            "PERIOD": "",
+            "ITEM_ID": "B",
+            "BOX_HANDLED": "C",
+            "KWH_CONSUMPTION": "",
+            "KWH_REGENERATING": "",
+            "TOTAL_KWH": "D",
+            "EQUIPMENT_HOUR": "E",
+            "OPERATION_HOUR": "F",
+            "CORRECTIVE_MAINTENANCE": "J",
+            "PREVENTIVE_MAINTENANCE": "I",
+            "SHUTDOWN": "H",
+            "ACCIDENT": "G",
+            "NUMBER_OF_BREAKDOWN": "K"
+        }
+    },
+    "5SC": {
+        "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oct", "November", "Desember"],
+        "columnsMapping": {
+            "PERIOD": "",
+            "ITEM_ID": "B",
+            "BOX_HANDLED": "C",
+            "KWH_CONSUMPTION": "",
+            "KWH_REGENERATING": "",
+            "TOTAL_KWH": "",
+            "EQUIPMENT_HOUR": "D",
+            "OPERATION_HOUR": "E",
+            "CORRECTIVE_MAINTENANCE": "",
+            "PREVENTIVE_MAINTENANCE": "J",
+            "SHUTDOWN": "H",
+            "ACCIDENT": "I",
+            "NUMBER_OF_BREAKDOWN": "M",
+            "EHRM": "F",
+            "BREAKDOWN": "",
+            "TROUBLE_SHOOT": "L",
+            "FUEL_USED": "N"
+        }
+    }
+}
