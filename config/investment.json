@@ -1,5 +1,5 @@
 {
-    "months": ["Januari", "Februari", "Eng", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
+    "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
     "columnsMapping": {
         "PERIOD": "",
         "PROJECT_NAME": "D",

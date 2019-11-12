@@ -63,7 +63,7 @@ func (c *InvestmentController) readExcel(filename string) error {
 
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
-		if strings.Contains(sheetName, "LAP INVESTASI ENG") {
+		if !strings.Contains(sheetName, "LAP INVESTASI ENG") {
 			err = c.ReadData(f, sheetName)
 			if err != nil {
 				log.Println("Error reading data. ERROR:", err)
@@ -152,21 +152,16 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 		skipRow := false
 		for _, header := range headers {
 			if header.DBFieldName == "PERIOD" {
-				stringDataYear, err := f.GetCellValue(sheetName, "B10")
-				if err != nil {
-					log.Fatal(err)
-				}
+				splittedFilename := strings.Split(f.Path, " ")
+				year := splittedFilename[len(splittedFilename)-7]
 
-				splitted := strings.Split(stringDataYear, " ")
-				year := splitted[len(splitted)-4]
-
-				splitted = strings.Split(sheetName, " ")
+				splitted := strings.Split(sheetName, " ")
 				stringDataMonth := splitted[len(splitted)-1]
 
 				stringData := "1/" + toolkit.ToString(helpers.IndexOf(stringDataMonth, months)+1) + "/" + year
 
 				var t time.Time
-				if stringDataYear != "" {
+				if stringDataMonth != "" {
 					t, err = time.Parse("2-Jan-06", stringData)
 					if err != nil {
 						t, err = time.Parse("02/01/2006", stringData)
@@ -270,6 +265,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 					log.Fatal(err)
 				}
 				stringData = strings.ReplaceAll(stringData, "'", "''")
+				stringData = strings.ReplaceAll(stringData, "-", "")
 
 				if stringData != "" {
 					isRowEmpty = false
