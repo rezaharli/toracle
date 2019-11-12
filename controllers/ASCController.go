@@ -174,15 +174,6 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 		for _, header := range headers {
 			currentRow := firstDataRow + index
 
-			stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if stringData == "" {
-				stringData = "0"
-			}
-
 			if header.DBFieldName == "PERIOD" {
 				stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow-4))
 				if err != nil {
@@ -200,13 +191,22 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 
 				rowData.Set(header.DBFieldName, t)
 			} else if header.DBFieldName == "ITEM_ID" {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if stringData == "" {
+					stringData = "0"
+				}
+
 				resultRows := make([]toolkit.M, 0)
 				param := SqlQueryParam{
 					ItemName: strings.ReplaceAll(stringData, "-", ""),
 					Results:  &resultRows,
 				}
 
-				err := c.selectItemID(param)
+				err = c.selectItemID(param)
 				if err != nil {
 					log.Fatal(err)
 				}
