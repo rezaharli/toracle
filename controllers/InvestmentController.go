@@ -140,12 +140,46 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 			log.Fatal(err)
 		}
 
+		namaAktiva, err := f.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//reset category cekno nemu category baru setiap nemu jumlah
+		if strings.Contains(strings.ToUpper(namaAktiva), strings.ToUpper("jumlah")) {
+			currentCategory = ""
+			continue
+		}
+
+		//menentukan apakah aktiva/category/projectname
 		if number != "" && codingMask == "" {
 			isAktiva = true
-		} else if number == "" && codingMask != "" {
-			isCategory = true
-		} else if number != "" && codingMask != "" {
-			isProjectName = true
+		} else {
+			isKananEmpty := true
+			skipHeaderCheck := []interface{}{"PERIOD", "PROJECT_NAME", "CATEGORY", "AKTIVA"}
+
+			for _, header := range headers {
+				if helpers.IndexOf(header.DBFieldName, skipHeaderCheck) != -1 {
+					continue
+				}
+
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if stringData != "" {
+					isKananEmpty = false
+				}
+			}
+
+			if isKananEmpty == true && currentAktiva != "" && currentCategory == "" {
+				isCategory = true
+			} else {
+				if currentAktiva != "" && currentCategory != "" {
+					isProjectName = true
+				}
+			}
 		}
 
 		isRowEmpty := true
