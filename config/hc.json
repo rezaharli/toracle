@@ -1,0 +1,106 @@
+{
+    "username": "sappi",
+    "password": "123456",
+    "training": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "columnsMapping": {
+            "PLAN_VERSION": "PLVAR",
+            "OBJECT_TYPE": "OTYPE",
+            "COST_EST_NUMBER": "OBJID",
+            "DESCRIPTION": "STEXT",
+            "START_DATE": "BEGDA",
+            "END_DATE": "ENDDA",
+            "COUNT_NORMAL": "ZCOUNT_NORM",
+            "COST_CENTER": "ZCOST_CENTER",
+            "DEPARTMENT": "ZDEPT"
+        }
+    },
+    "summary": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "columnsMapping": {
+            "MONTH": "ZMONTH",
+            "YEAR": "ZYEAR",
+            "DEPARTMENT": "ZDEPT",
+            "MTD": "ZCOUNT_MONTH",
+            "YTD": "ZCOUNT_YTD",
+            "SOURCE": "201/301A/301B"
+        }
+    },
+    "gender": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "columnsMapping": {
+            "MONTH": "ZMONTH",
+            "YEAR": "ZYEAR",
+            "EMPLOYEE_GROUP": "ZEMP_GROUP",
+            "MAN": "ZGEN_MAN",
+            "WOMAN": "ZGEN_WMN",
+            "SERVICE_CENTER_DIRECT": "ZSER_DIR",
+            "SERVICE_CENTER_INDIRECT": "ZSER_IND",
+            "SERVICE_CENTER_SUPPORT": "ZSER_SUP",
+            "EDUCATION_AB": "ZEDU_AB",
+            "EDUCATION_05": "ZEDU_05",
+            "EDUCATION_06": "ZEDU_06",
+            "EDUCATION_07": "ZEDU_07",
+            "EDUCATION_08": "ZEDU_08",
+            "AGE_30": "ZAGE_30",
+            "AGE_31_35": "ZAGE_3135",
+            "AGE_36_40": "ZAGE_3640",
+            "AGE_41_45": "ZAGE_4145",
+            "AGE_46_50": "ZAGE_4650",
+            "AGE_50": "ZAGE_50",
+            "SOURCE": "103/303A/303B"
+        }
+    },
+    "education": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "columnsMapping": {
+            "PERSONNEL_NUMBER": "PERNR",
+            "ACTION_TYPE": "MASSN",
+            "JOIN_DATE": "BEGDA",
+            "PERSONEL_SUB_AREA": "BTRTL",
+            "EMPLOYEE_GROUP": "PERSG",
+            "EDUCATIONAL": "SLART",
+            "START_DATE": "ZBEGDA",
+            "END_DATE": "ZENDDA"
+        }
+    },
+    "status": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "columnsMapping": {
+            "MONTH": "ZMONTH",
+            "YEAR": "ZYEAR",
+            "DEPARTMENT": "ZDEPT",
+            "PERB_PELINDO": "ZCOUNT_PEL",
+            "TTL": "ZCOUNT_TTL",
+            "PKWT": "ZCOUNT_PKWT"
+        }
+    },
+    "productivity": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "columnsMapping": {
+            "PERSONNEL_NUMBER": "PERNR",
+            "ACTION_TYPE": "MASSN",
+            "START_DATE": "BEGDA",
+            "END_DATE": "ENDDA",
+            "PERSONNEL_SUB_AREA": "BTRTL",
+            "POSITION": "PLANS",
+            "PLAN_TIME": "ZPLAN_TIME",
+            "REAL_TIME": "ZREAL_TIME",
+            "DEPARTMENT": "ZDEPT",
+            "COUNT_DAY": "ZCOUNT_DAY"
+        }
+    },
+    "attendance": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "columnsMapping": {
+            "PERSONNEL_NUMBER": "PERNR",
+            "ACTION_TYPE": "MASSN",
+            "START_DATE": "BEGDA",
+            "END_DATE": "ENDDA",
+            "PERSONNEL_SUB_AREA": "BTRTL",
+            "ABSENCE_TYPE": "AWART",
+            "COUNT_DAYS": "KALTG",
+            "DEPARTMENT": "ZDEPT"
+        }
+    }
+}

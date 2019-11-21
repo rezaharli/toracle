@@ -24,6 +24,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "investment", filepath.Join(clit.ExeDir(), "config", "investment.json"))
 	clit.LoadConfigFromFlag("config", "proc", filepath.Join(clit.ExeDir(), "config", "proc.json"))
 	clit.LoadConfigFromFlag("config", "equipmentPerformance", filepath.Join(clit.ExeDir(), "config", "equipmentPerformance.json"))
+	clit.LoadConfigFromFlag("config", "hc", filepath.Join(clit.ExeDir(), "config", "hc.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -35,19 +36,19 @@ func main() {
 	if conn != nil {
 		var ticker *time.Ticker = nil
 
-		var totalRunInADay int
+		// var totalRunInADay int
 		if ticker == nil {
 			loopInterval := clit.Config("default", "interval", 1).(float64)
 			durationInterval := time.Duration(int(loopInterval)) * time.Minute
 
-			dailyInterval := time.Duration(24) * time.Hour
-			totalRunInADay = int(dailyInterval.Hours() / durationInterval.Hours())
+			// dailyInterval := time.Duration(24) * time.Hour
+			// totalRunInADay = int(dailyInterval.Hours() / durationInterval.Hours())
 
 			ticker = time.NewTicker(durationInterval)
 		}
 
 		// do the loop
-		firstTimer := true
+		// firstTimer := true
 		i := 0
 		for {
 			go func() {
@@ -112,16 +113,26 @@ func main() {
 				}
 
 				// READ Proc API DAILY
-				if i%totalRunInADay == 0 {
-					procController := c.NewProcController()
-					procController.FirstTimer = firstTimer
-					err = procController.ReadAPI()
-					if err != nil {
-						log.Fatal(err.Error())
-					}
+				// if i%totalRunInADay == 0 {
+				// 	procController := c.NewProcController()
+				// 	procController.FirstTimer = firstTimer
+				// 	err = procController.ReadAPI()
+				// 	if err != nil {
+				// 		log.Fatal(err.Error())
+				// 	}
 
-					firstTimer = false
+				// 	firstTimer = false
+				// }
+
+				// READ Hc API DAILY
+				// if i%totalRunInADay == 0 {
+				hcController := c.NewHcController()
+				hcController.FirstTimer = false
+				err = hcController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
 				}
+				// }
 
 				i++
 				toolkit.Println()
