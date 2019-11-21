@@ -17,7 +17,6 @@ import (
 
 type HcController struct {
 	*Base
-	FirstTimer bool
 }
 
 func NewHcController() *HcController {
@@ -25,7 +24,7 @@ func NewHcController() *HcController {
 }
 
 func (c *HcController) ReadAPI() error {
-	log.Println("\n--------------------------------------\nReading HC API, fromFirst: " + toolkit.ToString(c.FirstTimer))
+	log.Println("\n--------------------------------------\nReading HC API")
 
 	results, err := c.FetchTraining()
 	if err != nil {

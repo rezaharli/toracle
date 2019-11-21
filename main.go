@@ -112,6 +112,14 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				// READ Hc API
+				hcController := c.NewHcController()
+				hcController.FirstTimer = false
+				err = hcController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				// READ Proc API DAILY
 				if i%totalRunInADay == 0 {
 					procController := c.NewProcController()
@@ -122,14 +130,6 @@ func main() {
 					}
 
 					firstTimer = false
-				}
-
-				// READ Hc API
-				hcController := c.NewHcController()
-				hcController.FirstTimer = false
-				err = hcController.ReadAPI()
-				if err != nil {
-					log.Fatal(err.Error())
 				}
 
 				i++
