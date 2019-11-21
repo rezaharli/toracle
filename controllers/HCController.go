@@ -2,9 +2,7 @@ package controllers
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +11,7 @@ import (
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
+	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/rezaharli/toracle/models"
 )
 
@@ -98,18 +97,14 @@ func (c *HcController) FetchTraining() ([]toolkit.M, error) {
 		return nil, err
 	}
 
-	// if r.SoapBody.Resp.Status != "200" {
-	// 	return nil, err
-	// }
-
 	results := make([]toolkit.M, 0)
 	for _, value := range r.Body.Urn.ZHCDT003.Item {
 		result, _ := toolkit.ToM(value)
 		results = append(results, result)
 	}
 
-	res2B, _ := json.MarshalIndent(results, "", "		")
-	fmt.Println(string(res2B))
+	// res2B, _ := json.MarshalIndent(results, "", "		")
+	// fmt.Println(string(res2B))
 
 	return results, err
 }
@@ -130,7 +125,7 @@ func (c *HcController) InsertDatas(results []toolkit.M) error {
 }
 
 func (c *HcController) InsertResult(data toolkit.M) error {
-	config := clit.Config("hc", "summary", nil).(map[string]interface{})
+	config := clit.Config("hc", "training", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	var headers []Header
@@ -149,16 +144,16 @@ func (c *HcController) InsertResult(data toolkit.M) error {
 	}
 
 	toolkit.Println(rowData)
-	// param := helpers.InsertParam{
-	// 	TableName: "F_HC_SUMMARY",
-	// 	Data:      rowData,
-	// }
+	param := helpers.InsertParam{
+		TableName: "F_HC_TRAINING",
+		Data:      rowData,
+	}
 
 	log.Println("Inserting data training")
-	// err := helpers.Insert(param)
-	// if err != nil {
-	// 	log.Fatal("Error inserting data, ERROR:", err.Error())
-	// }
+	err := helpers.Insert(param)
+	if err != nil {
+		log.Fatal("Error inserting data, ERROR:", err.Error())
+	}
 
 	return nil
 }
