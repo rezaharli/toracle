@@ -33,7 +33,7 @@ func (c *HcController) ReadAPI() error {
 		return err
 	}
 
-	err = c.InsertDatas(results)
+	err = c.InsertTrainingDatas(results)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -109,22 +109,10 @@ func (c *HcController) FetchTraining() ([]toolkit.M, error) {
 	return results, err
 }
 
-func (c *HcController) InsertDatas(results []toolkit.M) error {
+func (c *HcController) InsertTrainingDatas(results []toolkit.M) error {
 	log.Println("inserting data....")
-
 	var err error
 
-	for _, result := range results {
-		err = c.InsertResult(result)
-		if err != nil {
-			return err
-		}
-	}
-
-	return err
-}
-
-func (c *HcController) InsertResult(data toolkit.M) error {
 	config := clit.Config("hc", "training", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
@@ -138,22 +126,24 @@ func (c *HcController) InsertResult(data toolkit.M) error {
 		headers = append(headers, header)
 	}
 
-	rowData := toolkit.M{}
-	for _, header := range headers {
-		rowData.Set(header.DBFieldName, data[header.Column])
+	for _, result := range results {
+		rowData := toolkit.M{}
+		for _, header := range headers {
+			rowData.Set(header.DBFieldName, result[header.Column])
+		}
+
+		// toolkit.Println(rowData)
+		param := helpers.InsertParam{
+			TableName: "F_HC_TRAINING",
+			Data:      rowData,
+		}
+
+		log.Println("Inserting data training")
+		err := helpers.Insert(param)
+		if err != nil {
+			log.Fatal("Error inserting data, ERROR:", err.Error())
+		}
 	}
 
-	// toolkit.Println(rowData)
-	param := helpers.InsertParam{
-		TableName: "F_HC_TRAINING",
-		Data:      rowData,
-	}
-
-	log.Println("Inserting data training")
-	err := helpers.Insert(param)
-	if err != nil {
-		log.Fatal("Error inserting data, ERROR:", err.Error())
-	}
-
-	return nil
+	return err
 }
