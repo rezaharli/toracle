@@ -143,7 +143,7 @@ func (c *HcController) InsertResult(data toolkit.M) error {
 		rowData.Set(header.DBFieldName, data[header.Column])
 	}
 
-	toolkit.Println(rowData)
+	// toolkit.Println(rowData)
 	param := helpers.InsertParam{
 		TableName: "F_HC_TRAINING",
 		Data:      rowData,
