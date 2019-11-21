@@ -2,19 +2,18 @@ package controllers
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
+	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
-	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/rezaharli/toracle/models"
 )
 
 type HcController struct {
@@ -29,13 +28,13 @@ func NewHcController() *HcController {
 func (c *HcController) ReadAPI() error {
 	log.Println("\n--------------------------------------\nReading HC API, fromFirst: " + toolkit.ToString(c.FirstTimer))
 
-	summaries, err := c.FetchTraining()
+	results, err := c.FetchTraining()
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	err = c.InsertDatas(summaries)
+	err = c.InsertDatas(results)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -44,26 +43,25 @@ func (c *HcController) ReadAPI() error {
 	return err
 }
 
-func (c *HcController) FetchTraining() ([]interface{}, error) {
+func (c *HcController) FetchTraining() ([]toolkit.M, error) {
 	log.Println("FetchTraining")
 	config := clit.Config("hc", "training", map[string]interface{}{}).(map[string]interface{})
 
 	payload := []byte(strings.TrimSpace(`
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">
-			<soapenv:Header/>
 			<soapenv:Body>
-			<urn:ZFM_HC_006>
-				<!--You may enter the following 5 items in any order-->
-				<!--Optional:-->
-				<!--Fiscal Period-->
-					<DATE_FROM xmlns="">20190101</DATE_FROM>
-					<!--Year for which levy is to be carried out-->
-					<DATE_TO xmlns="">20191031</DATE_TO>
-					<!--HC Dashboard-->
-					<ZHCDT003 xmlns="">
-						<item></item>
-					</ZHCDT003>
-			</urn:ZFM_HC_006>
+				<urn:ZFM_HC_006>
+					<!--You may enter the following 5 items in any order-->
+					<!--Optional:-->
+					<!--Fiscal Period-->
+						<DATE_FROM xmlns="">20190101</DATE_FROM>
+						<!--Year for which levy is to be carried out-->
+						<DATE_TO xmlns="">20191031</DATE_TO>
+						<!--HC Dashboard-->
+						<ZHCDT003 xmlns="">
+							<item></item>
+						</ZHCDT003>
+				</urn:ZFM_HC_006>
 			</soapenv:Body>
 	</soapenv:Envelope>`,
 	))
@@ -80,13 +78,7 @@ func (c *HcController) FetchTraining() ([]interface{}, error) {
 	request.Header.Set("Content-Type", "application/xml")
 	request.SetBasicAuth(username, password)
 
-	client := http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
+	client := http.Client{}
 
 	resp, err := client.Do(request)
 	if err != nil {
@@ -98,49 +90,46 @@ func (c *HcController) FetchTraining() ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
-	result := make([]interface{}, 0)
-	err = json.Unmarshal([]byte(string(body)), &result)
+	r := &models.Response{}
+	err = xml.Unmarshal(body, &r)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, err
+	// if r.SoapBody.Resp.Status != "200" {
+	// 	return nil, err
+	// }
+
+	results := make([]toolkit.M, 0)
+	for _, value := range r.Body.Urn.ZHCDT003.Item {
+		result, _ := toolkit.ToM(value)
+		results = append(results, result)
+	}
+
+	res2B, _ := json.MarshalIndent(results, "", "		")
+	fmt.Println(string(res2B))
+
+	return results, err
 }
 
-func (c *HcController) InsertDatas(summaries []interface{}) error {
+func (c *HcController) InsertDatas(results []toolkit.M) error {
 	log.Println("inserting data....")
 
 	var err error
 
-	for _, summary := range summaries {
-		summaryMap := summary.(map[string]interface{})
-
-		err = c.InsertSummary(summaryMap)
+	for _, result := range results {
+		err = c.InsertResult(result)
 		if err != nil {
 			return err
-		}
-
-		for key, value := range summaryMap {
-			if key == "detail" {
-				details := value.([]interface{})
-
-				for _, detail := range details {
-					detailMap := detail.(map[string]interface{})
-
-					err = c.InsertDetail(detailMap)
-					if err != nil {
-						return err
-					}
-				}
-			}
 		}
 	}
 
 	return err
 }
 
-func (c *HcController) InsertSummary(summary map[string]interface{}) error {
+func (c *HcController) InsertResult(data toolkit.M) error {
 	config := clit.Config("hc", "summary", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
@@ -156,204 +145,20 @@ func (c *HcController) InsertSummary(summary map[string]interface{}) error {
 
 	rowData := toolkit.M{}
 	for _, header := range headers {
-		if header.DBFieldName == "TANGGAL_PEMBUATAN" || header.DBFieldName == "UPDATE_DATE" {
-			date := summary[header.Column].(string)
-
-			var t time.Time
-			var err error
-			if date != "" {
-				timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
-				for i, timeFormat := range timeFormats {
-					t, err = time.Parse(timeFormat, date)
-
-					if err == nil {
-						break
-					} else {
-						if i == len(timeFormats)-1 {
-							log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-						} else {
-							continue
-						}
-					}
-				}
-			}
-
-			rowData.Set(header.DBFieldName, t)
-		} else if header.DBFieldName == "TAHUN_ANGGARAN" || header.DBFieldName == "HPS" {
-			var number float64
-			var err error
-
-			if summary[header.Column] != nil {
-				value := summary[header.Column].(string)
-
-				number, err = strconv.ParseFloat(value, 64)
-				if err != nil {
-					log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-				}
-			}
-
-			rowData.Set(header.DBFieldName, number)
-		} else {
-			rowData.Set(header.DBFieldName, summary[header.Column])
-		}
+		rowData.Set(header.DBFieldName, data[header.Column])
 	}
 
-	param := helpers.InsertParam{
-		TableName: "F_HC_SUMMARY",
-		Data:      rowData,
-	}
+	toolkit.Println(rowData)
+	// param := helpers.InsertParam{
+	// 	TableName: "F_HC_SUMMARY",
+	// 	Data:      rowData,
+	// }
 
-	log.Println("Inserting data summary kode paket", rowData.GetString("KODE_PAKET"))
-	err := helpers.Insert(param)
-	if err != nil {
-		log.Fatal("Error inserting data, ERROR:", err.Error())
-	}
-
-	return nil
-}
-
-func (c *HcController) InsertDetail(detail map[string]interface{}) error {
-	config := clit.Config("hc", "detail", nil).(map[string]interface{})
-	columnsMapping := config["columnsMapping"].(map[string]interface{})
-
-	var headers []Header
-	for dbFieldName, attributeName := range columnsMapping {
-		header := Header{
-			DBFieldName: dbFieldName,
-			Column:      attributeName.(string),
-		}
-
-		headers = append(headers, header)
-	}
-
-	rowData := toolkit.M{}
-	for _, header := range headers {
-		if header.DBFieldName == "UPDATE_DATE" {
-			date := detail[header.Column].(string)
-
-			var t time.Time
-			var err error
-			if date != "" {
-				timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
-				for i, timeFormat := range timeFormats {
-					t, err = time.Parse(timeFormat, date)
-
-					if err == nil {
-						break
-					} else {
-						if i == len(timeFormats)-1 {
-							log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-						} else {
-							continue
-						}
-					}
-				}
-			}
-
-			rowData.Set(header.DBFieldName, t)
-		} else if header.DBFieldName == "START_DATE" {
-			date := detail["tanggal_awal"].(string)
-
-			var t time.Time
-			var err error
-			if detail["jam_awal"] != nil {
-				date = date + "-" + detail["jam_awal"].(string)
-
-				if date != "" {
-					timeFormats := []string{"2006-01-02-15:04", "02-01-2006-15:04", "02-JAN-2006-15:04", "02-JAN-06-15:04"}
-					for i, timeFormat := range timeFormats {
-						t, err = time.Parse(timeFormat, date)
-
-						if err == nil {
-							break
-						} else {
-							if i == len(timeFormats)-1 {
-								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-							} else {
-								continue
-							}
-						}
-					}
-				}
-			} else {
-				if date != "" {
-					timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
-					for i, timeFormat := range timeFormats {
-						t, err = time.Parse(timeFormat, date)
-
-						if err == nil {
-							break
-						} else {
-							if i == len(timeFormats)-1 {
-								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-							} else {
-								continue
-							}
-						}
-					}
-				}
-			}
-
-			rowData.Set(header.DBFieldName, t)
-		} else if header.DBFieldName == "END_DATE" {
-			date := detail["tanggal_akhir"].(string)
-
-			var t time.Time
-			var err error
-			if detail["jam_akhir"] != nil {
-				date = date + "-" + detail["jam_akhir"].(string)
-
-				if date != "" {
-					timeFormats := []string{"2006-01-02-15:04", "02-01-2006-15:04", "02-JAN-2006-15:04", "02-JAN-06-15:04"}
-					for i, timeFormat := range timeFormats {
-						t, err = time.Parse(timeFormat, date)
-
-						if err == nil {
-							break
-						} else {
-							if i == len(timeFormats)-1 {
-								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-							} else {
-								continue
-							}
-						}
-					}
-				}
-			} else {
-				if date != "" {
-					timeFormats := []string{"2006-01-02", "02-01-2006", "02-JAN-2006", "02-JAN-06"}
-					for i, timeFormat := range timeFormats {
-						t, err = time.Parse(timeFormat, date)
-
-						if err == nil {
-							break
-						} else {
-							if i == len(timeFormats)-1 {
-								log.Println("Error getting value for", header.DBFieldName, "ERROR:", err)
-							} else {
-								continue
-							}
-						}
-					}
-				}
-			}
-
-			rowData.Set(header.DBFieldName, t)
-		} else {
-			rowData.Set(header.DBFieldName, detail[header.Column])
-		}
-	}
-
-	param := helpers.InsertParam{
-		TableName: "F_HC_DETAIL",
-		Data:      rowData,
-	}
-
-	log.Println("Inserting data detail kode paket", rowData.GetString("KODE_PAKET"))
-	err := helpers.Insert(param)
-	if err != nil {
-		log.Fatal("Error inserting data, ERROR:", err.Error())
-	}
+	log.Println("Inserting data training")
+	// err := helpers.Insert(param)
+	// if err != nil {
+	// 	log.Fatal("Error inserting data, ERROR:", err.Error())
+	// }
 
 	return nil
 }
