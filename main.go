@@ -114,7 +114,6 @@ func main() {
 
 				// READ Hc API
 				hcController := c.NewHcController()
-				hcController.FirstTimer = false
 				err = hcController.ReadAPI()
 				if err != nil {
 					log.Fatal(err.Error())
