@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
@@ -128,7 +129,17 @@ func (c *HcController) InsertTrainingDatas(results []toolkit.M) error {
 	for _, result := range results {
 		rowData := toolkit.M{}
 		for _, header := range headers {
-			rowData.Set(header.DBFieldName, result[header.Column])
+			if header.DBFieldName == "START_DATE" || header.DBFieldName == "END_DATE" {
+				dateString := result[header.Column].(string)
+				t, err := time.Parse("2006-01-02", dateString)
+				if err != nil {
+					log.Fatal("Error parsing time, ERROR:", err.Error())
+				}
+
+				rowData.Set(header.DBFieldName, t)
+			} else {
+				rowData.Set(header.DBFieldName, result[header.Column])
+			}
 		}
 
 		// toolkit.Println(rowData)
