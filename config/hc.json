@@ -15,15 +15,34 @@
             "DEPARTMENT": "ZDEPT"
         }
     },
-    "summary": {
-        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+    "summary201": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_201_SRC_BC_EMPL_TRAINING_201",
         "columnsMapping": {
             "MONTH": "ZMONTH",
             "YEAR": "ZYEAR",
             "DEPARTMENT": "ZDEPT",
             "MTD": "ZCOUNT_MONTH",
-            "YTD": "ZCOUNT_YTD",
-            "SOURCE": "201/301A/301B"
+            "YTD": "ZCOUNT_YTD"
+        }
+    },
+    "summary301A": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_301A_SRC_BC_EMPL_TRAINING_301A",
+        "columnsMapping": {
+            "MONTH": "ZMONTH",
+            "YEAR": "ZYEAR",
+            "DEPARTMENT": "ZDEPT",
+            "MTD": "ZCOUNT_MONTH",
+            "YTD": "ZCOUNT_YTD"
+        }
+    },
+    "summary301B": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_301B_SRC_BC_EMPL_TRAINING_301B",
+        "columnsMapping": {
+            "MONTH": "ZMONTH",
+            "YEAR": "ZYEAR",
+            "DEPARTMENT": "ZDEPT",
+            "MTD": "ZCOUNT_MONTH",
+            "YTD": "ZCOUNT_YTD"
         }
     },
     "gender": {

@@ -131,6 +131,27 @@ func main() {
 					firstTimer = false
 				}
 
+				// READ Hc API Summary 201
+				hcsumController := c.NewHcSummaryController()
+				err := hcsumController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// READ Hc API Summary 301A
+				hcsum301AController := c.NewHcSummary301AController()
+				err = hcsum301AController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// READ Hc API Summary 301B
+				hcsum301BController := c.NewHcSummary301BController()
+				err = hcsum301BController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				i++
 				toolkit.Println()
 				log.Println("Waiting...")
