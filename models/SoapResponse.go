@@ -86,3 +86,105 @@ type SummaryResponse301B struct {
 		} `xml:"ZFM_HC_301B.Response"`
 	}
 }
+
+type GenderResponse struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			ZHRST03 struct {
+				Item []struct {
+					ZMONTH     string
+					ZYEAR      string
+					ZEMP_GROUP string
+					ZGEN_MAN   string
+					ZGEN_WMN   string
+					ZSER_DIR   string
+					ZSER_IND   string
+					ZSER_SUP   string
+					ZEDU_AB    string
+					ZEDU_05    string
+					ZEDU_06    string
+					ZEDU_07    string
+					ZEDU_08    string
+					ZAGE_30    string
+					ZAGE_3135  string
+					ZAGE_3640  string
+					ZAGE_4145  string
+					ZAGE_4650  string
+					ZAGE_50    string
+				} `xml:"item"`
+			} `xml:"ZHRST03"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_103.Response"`
+	}
+}
+
+type GenderDashboardAResponse struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			ZHRST13 struct {
+				Item []struct {
+					ZMONTH     string
+					ZYEAR      string
+					ZEMP_GROUP string
+					ZGEN_MAN   string
+					ZGEN_WMN   string
+					ZSER_DIR   string
+					ZSER_IND   string
+					ZSER_SUP   string
+					ZEDU_AB    string
+					ZEDU_05    string
+					ZEDU_06    string
+					ZEDU_07    string
+					ZEDU_08    string
+					ZAGE_30    string
+					ZAGE_3135  string
+					ZAGE_3640  string
+					ZAGE_4145  string
+					ZAGE_4650  string
+					ZAGE_50    string
+				} `xml:"item"`
+			} `xml:"ZHRST13"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_303A.Response"`
+	}
+}
+
+type GenderDashboardBResponse struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			ZHRST13 struct {
+				Item []struct {
+					ZMONTH     string
+					ZYEAR      string
+					ZEMP_GROUP string
+					ZGEN_MAN   string
+					ZGEN_WMN   string
+					ZSER_DIR   string
+					ZSER_IND   string
+					ZSER_SUP   string
+					ZEDU_AB    string
+					ZEDU_05    string
+					ZEDU_06    string
+					ZEDU_07    string
+					ZEDU_08    string
+					ZAGE_30    string
+					ZAGE_3135  string
+					ZAGE_3640  string
+					ZAGE_4145  string
+					ZAGE_4650  string
+					ZAGE_50    string
+				} `xml:"item"`
+			} `xml:"ZHRST13"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_303B.Response"`
+	}
+}

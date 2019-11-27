@@ -152,6 +152,12 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				genderController := c.NewGenderController()
+				err = genderController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				i++
 				toolkit.Println()
 				log.Println("Waiting...")

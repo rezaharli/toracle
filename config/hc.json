@@ -45,8 +45,8 @@
             "YTD": "ZCOUNT_YTD"
         }
     },
-    "gender": {
-        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+    "genderdashboard": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_GENDER_DASHBOARD_SRC_BC_EMPL_GENDER_DASHBOARD",
         "columnsMapping": {
             "MONTH": "ZMONTH",
             "YEAR": "ZYEAR",
@@ -66,8 +66,55 @@
             "AGE_36_40": "ZAGE_3640",
             "AGE_41_45": "ZAGE_4145",
             "AGE_46_50": "ZAGE_4650",
-            "AGE_50": "ZAGE_50",
-            "SOURCE": "103/303A/303B"
+            "AGE_50": "ZAGE_50"
+        }
+    },
+    "genderdashboarda": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_GENDER_DASHBOARD_A_SRC_BC_EMPL_GENDER_DASHBOARD_A",
+        "columnsMapping": {
+            "MONTH": "ZMONTH",
+            "YEAR": "ZYEAR",
+            "EMPLOYEE_GROUP": "ZEMP_GROUP",
+            "MAN": "ZGEN_MAN",
+            "WOMAN": "ZGEN_WMN",
+            "SERVICE_CENTER_DIRECT": "ZSER_DIR",
+            "SERVICE_CENTER_INDIRECT": "ZSER_IND",
+            "SERVICE_CENTER_SUPPORT": "ZSER_SUP",
+            "EDUCATION_AB": "ZEDU_AB",
+            "EDUCATION_05": "ZEDU_05",
+            "EDUCATION_06": "ZEDU_06",
+            "EDUCATION_07": "ZEDU_07",
+            "EDUCATION_08": "ZEDU_08",
+            "AGE_30": "ZAGE_30",
+            "AGE_31_35": "ZAGE_3135",
+            "AGE_36_40": "ZAGE_3640",
+            "AGE_41_45": "ZAGE_4145",
+            "AGE_46_50": "ZAGE_4650",
+            "AGE_50": "ZAGE_50"
+        }
+    },
+    "genderdashboardb": {
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_GENDER_DASHBOARD_B_SRC_BC_EMPL_GENDER_DASHBOARD_B",
+        "columnsMapping": {
+            "MONTH": "ZMONTH",
+            "YEAR": "ZYEAR",
+            "EMPLOYEE_GROUP": "ZEMP_GROUP",
+            "MAN": "ZGEN_MAN",
+            "WOMAN": "ZGEN_WMN",
+            "SERVICE_CENTER_DIRECT": "ZSER_DIR",
+            "SERVICE_CENTER_INDIRECT": "ZSER_IND",
+            "SERVICE_CENTER_SUPPORT": "ZSER_SUP",
+            "EDUCATION_AB": "ZEDU_AB",
+            "EDUCATION_05": "ZEDU_05",
+            "EDUCATION_06": "ZEDU_06",
+            "EDUCATION_07": "ZEDU_07",
+            "EDUCATION_08": "ZEDU_08",
+            "AGE_30": "ZAGE_30",
+            "AGE_31_35": "ZAGE_3135",
+            "AGE_36_40": "ZAGE_3640",
+            "AGE_41_45": "ZAGE_4145",
+            "AGE_46_50": "ZAGE_4650",
+            "AGE_50": "ZAGE_50"
         }
     },
     "education": {
