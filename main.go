@@ -133,7 +133,7 @@ func main() {
 
 				// READ Hc API Summary 201
 				hcsumController := c.NewHcSummaryController()
-				err := hcsumController.ReadAPI()
+				err = hcsumController.ReadAPI()
 				if err != nil {
 					log.Fatal(err.Error())
 				}
