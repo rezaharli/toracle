@@ -118,7 +118,7 @@
         }
     },
     "education": {
-        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_EDUCATION_SRC_BC_EMPL_EDUCATION",
         "columnsMapping": {
             "PERSONNEL_NUMBER": "PERNR",
             "ACTION_TYPE": "MASSN",
@@ -131,7 +131,7 @@
         }
     },
     "status": {
-        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_STATUS_SRC_BC_EMPL_STATUS",
         "columnsMapping": {
             "MONTH": "ZMONTH",
             "YEAR": "ZYEAR",
@@ -142,7 +142,7 @@
         }
     },
     "productivity": {
-        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_PRODUCTIVITY_SRC_BC_EMPL_PRODUCTIVITY",
         "columnsMapping": {
             "PERSONNEL_NUMBER": "PERNR",
             "ACTION_TYPE": "MASSN",
@@ -157,7 +157,7 @@
         }
     },
     "attendance": {
-        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
+        "url": "http://sappittl.teluklamong.co.id:50000/WSAdapter/CC_ABSEN_WT_SRC_BC_ABSEN_WT",
         "columnsMapping": {
             "PERSONNEL_NUMBER": "PERNR",
             "ACTION_TYPE": "MASSN",

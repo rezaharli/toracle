@@ -158,6 +158,30 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				educationController := c.NewEducationController()
+				err = educationController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				attendanceController := c.NewAttendanceController()
+				err = attendanceController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				statusController := c.NewStatusController()
+				err = statusController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				productivityController := c.NewProductivityController()
+				err = productivityController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				i++
 				toolkit.Println()
 				log.Println("Waiting...")

@@ -188,3 +188,95 @@ type GenderDashboardBResponse struct {
 		} `xml:"ZFM_HC_303B.Response"`
 	}
 }
+
+type EducationResponse struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName  xml.Name
+			ZHCDT002 struct {
+				Item []struct {
+					PERNR  string
+					MASSN  string
+					BEGDA  string
+					BTRTL  string
+					PERSG  string
+					SLART  string
+					ZBEGDA string
+					ZENDDA string
+				} `xml:"item"`
+			} `xml:"ZHCDT002"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_004.Response"`
+	}
+}
+
+type StatusResponse struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			ZHRST02 struct {
+				Item []struct {
+					ZMONTH      string
+					ZYEAR       string
+					ZDEPT       string
+					ZCOUNT_PEL  string
+					ZCOUNT_TTL  string
+					ZCOUNT_PKWT string
+				} `xml:"item"`
+			} `xml:"ZHRST02"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_102.Response"`
+	}
+}
+
+type ProductivityResponse struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName  xml.Name
+			ZHCDT004 struct {
+				Item []struct {
+					PERNR      string
+					MASSN      string
+					BEGDA      string
+					ENDDA      string
+					BTRTL      string
+					PLANS      string
+					ZPLAN_TIME string
+					ZREAL_TIME string
+					ZDEPT      string
+					ZCOUNT_DAY string
+				} `xml:"item"`
+			} `xml:"ZHCDT004"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_007.Response"`
+	}
+}
+
+type AttendanceResponse struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName  xml.Name
+			ZHCDT005 struct {
+				Item []struct {
+					PERNR string
+					MASSN string
+					BEGDA string
+					ENDDA string
+					BTRTL string
+					AWART string
+					KALTG string
+					ZDEPT string
+				} `xml:"item"`
+			} `xml:"ZHCDT005"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_008.Response"`
+	}
+}
