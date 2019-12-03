@@ -25,6 +25,8 @@ func main() {
 	clit.LoadConfigFromFlag("config", "proc", filepath.Join(clit.ExeDir(), "config", "proc.json"))
 	clit.LoadConfigFromFlag("config", "equipmentPerformance", filepath.Join(clit.ExeDir(), "config", "equipmentPerformance.json"))
 	clit.LoadConfigFromFlag("config", "hc", filepath.Join(clit.ExeDir(), "config", "hc.json"))
+	clit.LoadConfigFromFlag("config", "petikemas", filepath.Join(clit.ExeDir(), "config", "petikemas.json"))
+	clit.LoadConfigFromFlag("config", "ftw", filepath.Join(clit.ExeDir(), "config", "ftw.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -36,19 +38,19 @@ func main() {
 	if conn != nil {
 		var ticker *time.Ticker = nil
 
-		//var totalRunInADay int
+		var totalRunInADay int
 		if ticker == nil {
 			loopInterval := clit.Config("default", "interval", 1).(float64)
 			durationInterval := time.Duration(int(loopInterval)) * time.Minute
 
-			//dailyInterval := time.Duration(24) * time.Hour
-			//totalRunInADay = int(dailyInterval.Hours() / durationInterval.Hours())
+			dailyInterval := time.Duration(24) * time.Hour
+			totalRunInADay = int(dailyInterval.Hours() / durationInterval.Hours())
 
 			ticker = time.NewTicker(durationInterval)
 		}
 
 		// do the loop
-		//firstTimer := true
+		firstTimer := true
 		i := 0
 		for {
 			go func() {
@@ -112,24 +114,30 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				// READ FTW FILES
+				err = c.NewFTWController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// READ Proc API DAILY
+				if i%totalRunInADay == 0 {
+					procController := c.NewProcController()
+					procController.FirstTimer = firstTimer
+					err = procController.ReadAPI()
+					if err != nil {
+						log.Fatal(err.Error())
+					}
+
+					firstTimer = false
+				}
+
 				// READ Hc API
 				hcController := c.NewHcController()
 				err = hcController.ReadAPI()
 				if err != nil {
 					log.Fatal(err.Error())
 				}
-
-				// // READ Proc API DAILY
-				// if i%totalRunInADay == 0 {
-				// 	procController := c.NewProcController()
-				// 	procController.FirstTimer = firstTimer
-				// 	err = procController.ReadAPI()
-				// 	if err != nil {
-				// 		log.Fatal(err.Error())
-				// 	}
-
-				// 	firstTimer = false
-				// }
 
 				// READ Hc API Summary 201
 				hcsumController := c.NewHcSummaryController()

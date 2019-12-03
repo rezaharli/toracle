@@ -1,0 +1,20 @@
+{
+    "months": ["Jan", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
+    "columnsMapping": {
+        "PERIOD": "A",
+        "EMPLOYEE_NAME": "B",
+        "POSITION": "C",
+        "COMPANY": "D",
+        "GROUP_SHIFT": "E",
+        "SYSTOLE": "F",
+        "DYSTOLE": "G",
+        "NADI": "H",
+        "TEMP": "I",
+        "SAO2": "J",
+        "GCS": "K",
+        "STATUS": "L",
+        "ACTION": "M",
+        "AFTER_ACTION": "N",
+        "DESCRIPTION": "O"
+    }
+}
