@@ -27,6 +27,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "hc", filepath.Join(clit.ExeDir(), "config", "hc.json"))
 	clit.LoadConfigFromFlag("config", "petikemas", filepath.Join(clit.ExeDir(), "config", "petikemas.json"))
 	clit.LoadConfigFromFlag("config", "ftw", filepath.Join(clit.ExeDir(), "config", "ftw.json"))
+	clit.LoadConfigFromFlag("config", "marketshare", filepath.Join(clit.ExeDir(), "config", "marketshare.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -192,6 +193,11 @@ func main() {
 
 				productivityController := c.NewProductivityController()
 				err = productivityController.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				err = c.NewMarketShareController().ReadExcels()
 				if err != nil {
 					log.Fatal(err.Error())
 				}

@@ -1,0 +1,8 @@
+{
+    "months": ["Jan", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
+    "columnsMapping": {
+        "PERIOD" : "A",
+        "TERMINAL" : "B",
+        "TONASE" : "C"
+    }
+}
