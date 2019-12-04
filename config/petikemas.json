@@ -1,0 +1,10 @@
+{
+    "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
+    "columnsMapping": {
+        "TAHUN": "",
+        "DOM_INT": "A",
+        "BOX": "",
+        "TEUS": "",
+        "TERMINAL": ""
+    }
+}

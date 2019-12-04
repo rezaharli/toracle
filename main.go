@@ -114,6 +114,12 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				// READ Petikemas FILES
+				err = c.NewRekapPetikemasController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				// READ FTW FILES
 				err = c.NewFTWController().ReadExcels()
 				if err != nil {
