@@ -121,6 +121,12 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				// READ Induksi FILES
+				err = c.NewInduksiController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				// READ FTW FILES
 				err = c.NewFTWController().ReadExcels()
 				if err != nil {

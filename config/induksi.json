@@ -1,0 +1,8 @@
+{
+    "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
+    "columnsMapping": {
+        "PERIOD": "",
+        "JENIS_INDUKSI": "B",
+        "JUMLAH_INDUKSI": ""
+    }
+}
