@@ -1,0 +1,9 @@
+{
+    "months": ["JANUARI", "FEBRUARI", "MARET", "Apr", "MEI", "JUNI", "JULI", "AGUSTUS", "Sep", "OKTOBER", "Nov", "DESEMBER"],
+    "columnsMapping": {
+        "PERIOD": "",
+        "COMPANY_NAME": "C",
+        "MAN_POWER": "H",
+        "MAN_HOUR": "L"
+    }
+}

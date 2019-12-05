@@ -29,6 +29,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "ftw", filepath.Join(clit.ExeDir(), "config", "ftw.json"))
 	clit.LoadConfigFromFlag("config", "marketshare", filepath.Join(clit.ExeDir(), "config", "marketshare.json"))
 	clit.LoadConfigFromFlag("config", "induksi", filepath.Join(clit.ExeDir(), "config", "induksi.json"))
+	clit.LoadConfigFromFlag("config", "kinerja", filepath.Join(clit.ExeDir(), "config", "kinerja.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -128,6 +129,12 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				// READ Kinerja FILES
+				err = c.NewKinerjaController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
 				// READ FTW FILES
 				err = c.NewFTWController().ReadExcels()
 				if err != nil {
@@ -138,7 +145,7 @@ func main() {
 				if i%totalRunInADay == 0 {
 					procController := c.NewProcController()
 					procController.FirstTimer = firstTimer
-					err = procController.ReadAPI()
+					// err = procController.ReadAPI()
 					if err != nil {
 						log.Fatal(err.Error())
 					}
