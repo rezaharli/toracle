@@ -28,6 +28,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "petikemas", filepath.Join(clit.ExeDir(), "config", "petikemas.json"))
 	clit.LoadConfigFromFlag("config", "ftw", filepath.Join(clit.ExeDir(), "config", "ftw.json"))
 	clit.LoadConfigFromFlag("config", "marketshare", filepath.Join(clit.ExeDir(), "config", "marketshare.json"))
+	clit.LoadConfigFromFlag("config", "induksi", filepath.Join(clit.ExeDir(), "config", "induksi.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())

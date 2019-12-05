@@ -83,7 +83,7 @@ func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	// columnsMapping := clit.Config("petikemas", "columnsMapping", nil).(map[string]interface{})
+	months := clit.Config("induksi", "months", []interface{}{}).([]interface{})
 
 	firstDataRow := 0
 	i := 1
@@ -133,6 +133,14 @@ func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
 			break
 		}
 
+		sheetnameSplitted := strings.Split(sheetName, " ")
+		tahun := sheetnameSplitted[len(sheetnameSplitted)-1]
+
+		period, err := time.Parse("2-1-2006", "1-"+toolkit.ToString(helpers.IndexOf(cellValueBulan, months)+1)+"-"+tahun)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		emptyCount := 0
 
 		//iterate over rows
@@ -140,7 +148,7 @@ func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
 			obj := toolkit.M{}
 			currentRow := firstDataRow + j
 
-			obj.Set("PERIOD", cellValueBulan)
+			obj.Set("PERIOD", period)
 
 			//mengambil Value di kolom
 			cellValueJenisInduksi, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
