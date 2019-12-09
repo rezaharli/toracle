@@ -1,0 +1,12 @@
+{
+    "months": ["Jan", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agt", "Sep", "Okt", "Nov", "Des"],
+    "columnsMapping": {
+        "SUB_DIR": "",
+        "POSITION": "",
+        "PIII": "G",
+        "TTL": "H",
+        "PKWT": "I",
+        "PDS": "J",
+        "JENIS_PEGAWAI": "F"
+    }
+}
