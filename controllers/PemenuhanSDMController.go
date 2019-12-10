@@ -114,8 +114,6 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 		i++
 	}
 
-	toolkit.Println("---------->", firstDataRow)
-
 	var headers []Header
 	for key, column := range columnsMapping {
 		header := Header{
@@ -145,14 +143,16 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 			log.Fatal(err)
 		}
 
-		//check if value is a period
-		if stringData != "" {
+		//check if value is a SUB_DIR
+		if strings.TrimSpace(stringData) != "" {
 			stringSubDir, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			currentSubDir = stringSubDir
+			if strings.TrimSpace(stringSubDir) != "" {
+				currentSubDir = stringSubDir
+			}
 
 			continue
 		}
@@ -195,6 +195,8 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 			if emptyRowCount >= 10 {
 				break
 			}
+
+			continue
 		}
 
 		if skipRow {
