@@ -31,6 +31,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "induksi", filepath.Join(clit.ExeDir(), "config", "induksi.json"))
 	clit.LoadConfigFromFlag("config", "kinerja", filepath.Join(clit.ExeDir(), "config", "kinerja.json"))
 	clit.LoadConfigFromFlag("config", "pemenuhansdm", filepath.Join(clit.ExeDir(), "config", "pemenuhansdm.json"))
+	clit.LoadConfigFromFlag("config", "rkap", filepath.Join(clit.ExeDir(), "config", "rkap.json"))
 
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
@@ -144,6 +145,12 @@ func main() {
 
 				// READ Pemenuhan SDM FILES
 				err = c.NewPemenuhanSDMController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// READ Pemenuhan SDM FILES
+				err = c.NewRKAPController().ReadExcels()
 				if err != nil {
 					log.Fatal(err.Error())
 				}
