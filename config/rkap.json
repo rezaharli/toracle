@@ -3,10 +3,11 @@
     "columnsMapping": {
         "TAHUN": "",
         "BULAN": "",
-        "D_I": "",
-        "CUSTOMER": "",
+        "D_I_C": "",
         "BOX": "",
         "TEUS": "",
-        "CUKER": ""
+        "CUKER": "",
+        "GT": "",
+        "UNIT": ""
     }
 }

@@ -63,7 +63,7 @@ func (c *RKAPController) readExcel(filename string) error {
 
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
-		if sheetName == "KK Internasional" || sheetName == "KK Domestik" {
+		if sheetName == "Arus Rinci (N)" {
 			err = c.ReadData(f, sheetName)
 			if err != nil {
 				log.Println("Error reading data. ERROR:", err)
@@ -85,10 +85,9 @@ func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	// columnsMapping := clit.Config("rkap", "columnsMapping", nil).(map[string]interface{})
 	months := clit.Config("rkap", "months", nil).([]interface{})
 
-	tahunCell, err := f.GetCellValue(sheetName, "BD3")
+	tahunCell, err := f.GetCellValue(sheetName, "S5")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,44 +95,17 @@ func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
 	splitted := strings.Split(tahunCell, " ")
 	currentTahun := splitted[len(splitted)-1]
 
-	firstDataRow := 0
-	i := 1
-	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if cellValue == "NO." {
-			cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if cellValue == "NO." {
-				i++
-				continue
-			} else {
-				firstDataRow = i + 1
-
-				break
-			}
-		}
-		i++
-	}
-
 	objs := make([]toolkit.M, 0)
-
 	for i := 0; true; i++ {
 		//iterate col
-		col := "BD"
+		col := "S"
 		colInNumber := helpers.CharStrToNum(col)
 		colInNumber = colInNumber + i
 		col = helpers.ToCharStr(colInNumber)
 
-		rowBulan := "4"
+		rowBulan := "6"
 
-		//mengambil tahun
+		//mengambil bulan
 		cellValueBulan, err := f.GetCellValue(sheetName, col+rowBulan)
 		if err != nil {
 			log.Fatal(err)
@@ -147,70 +119,30 @@ func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
 			continue //bukan bulan
 		}
 
-		emptyCount := 0
+		DICs := toolkit.M{}
+		DICs.Set("D", toolkit.M{}.Set("BOX", "180").Set("TEUS", "181").Set("GT", "24").Set("UNIT", "23"))
+		DICs.Set("I", toolkit.M{}.Set("BOX", "119").Set("TEUS", "120").Set("GT", "22").Set("UNIT", "21"))
+		DICs.Set("C", toolkit.M{}.Set("CUKER", "38").Set("GT", "26").Set("UNIT", "25"))
 
-		currentCustomer := ""
-
-		//iterate over rows
-		for j := 0; true; j++ {
+		for dic, kinds := range DICs {
 			obj := toolkit.M{}
-			currentRow := firstDataRow + j
-
-			cellValueAnalisa, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			//mengambil Value di kolom
-			cellValueCustomer, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
-			}
-			currentCustomer = cellValueCustomer
-
-			cellValueSatuan, err := f.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if strings.Contains(cellValueAnalisa, "KEBUTUHAN ANALISA") {
-				break
-			}
-
-			if strings.ToUpper(strings.TrimSpace(cellValueSatuan)) != strings.ToUpper("Box") {
-				emptyCount++
-				continue
-			} else {
-				emptyCount = 0
-			}
 
 			obj.Set("TAHUN", currentTahun)
 			obj.Set("BULAN", helpers.IndexOf(cellValueBulan, months)+1)
+			obj.Set("D_I_C", dic)
 
-			if strings.Contains(sheetName, "Internasional") {
-				obj.Set("D_I", "I")
-			} else {
-				obj.Set("D_I", "D")
+			for kind, row := range kinds.(toolkit.M) {
+				cellValue, err := f.GetCellValue(sheetName, col+row.(string))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				obj.Set(kind, cellValue)
 			}
 
-			obj.Set("CUSTOMER", currentCustomer)
-
-			cellValue, err := f.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			obj.Set("BOX", cellValue)
-			obj.Set("TEUS", "")
-			obj.Set("CUKER", "")
-
-			if emptyCount >= 10 {
-				break
-			}
-
+			toolkit.Println(obj)
 			objs = append(objs, obj)
 		}
-	}
 
 	for _, obj := range objs {
 		param := helpers.InsertParam{

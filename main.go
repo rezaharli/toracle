@@ -33,6 +33,8 @@ func main() {
 	clit.LoadConfigFromFlag("config", "pemenuhansdm", filepath.Join(clit.ExeDir(), "config", "pemenuhansdm.json"))
 	clit.LoadConfigFromFlag("config", "rkap", filepath.Join(clit.ExeDir(), "config", "rkap.json"))
 
+	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
+
 	if err := clit.Commit(); err != nil {
 		toolkit.Println("Error reading config file, ERROR:", err.Error())
 	}
@@ -55,7 +57,6 @@ func main() {
 		}
 
 		// do the loop
-		firstTimer := true
 		i := 0
 		for {
 			go func() {

@@ -1,6 +1,7 @@
 {
     "resourcePath": "/Users/rezaharli/go/src/git.eaciitapp.com/rezaharli/toracle/resource",
     "interval": 5,
+    "fetchApiFromFirstTime": false,
     "database": {
         "username": "scbdc",
         "password": "Password",
