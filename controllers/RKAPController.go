@@ -143,6 +143,7 @@ func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
 			toolkit.Println(obj)
 			objs = append(objs, obj)
 		}
+	}
 
 	for _, obj := range objs {
 		param := helpers.InsertParam{
