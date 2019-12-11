@@ -180,7 +180,7 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 					stringData = strings.ReplaceAll(stringData, "-", "")
 
-					if stringData != "" {
+					if strings.TrimSpace(stringData) != "" {
 						isRowEmpty = false
 					}
 
