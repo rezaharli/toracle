@@ -1,0 +1,86 @@
+{
+    "username": "ttlsupport",
+    "password": "teluklamong17",
+    "year" : "2019",
+    "lb1": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZLB_LB1_SRC_BC_ZLB_LB1",
+        "columnsMapping": {
+            "NO_REK" : "NOREK",
+            "POS_NE" : "POSNER",
+            "MTD" : "TGLA",
+            "YTD" : "TGLB"
+        }
+    },
+    "lb2": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZLB_LB2_SRC_BC_ZLB_LB2",
+        "columnsMapping": {
+            "NO_REK"    : "RACCT",
+            "URAIAN"	: "TXT50",
+            "ANGGARAN"	: "BUDGET",
+            "YTD"	    : "AKUM_BLN_INI",
+            "YTD_LAST"	: "AKUM_THN_LALU",
+            "DEVIASI_A"	: "DEVIASI_A",
+            "DEVIASI_B"	: "DEVIASI_B",
+            "MTD"	    : "BLN_INI"
+        }
+    },
+    "lb4": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZLB_LB4_SRC_BC_ZLB_LB4",
+        "columnsMapping": {
+            "NO_REK"	    :"HKONT",
+            "GL_TEXT"	    :"TEXT",
+            "KELOMPOK"	    :"JENIS",
+            "INCOME_MTD"	:"CURRENT_MONTH_IN",
+            "EXP_MTD"	    :"CURRENT_MONTH_OUT",
+            "INCOME_YTD"	:"AKUM_MONTH_IN",
+            "EXP_YTD"	    :"AKUM_MONTH_OUT"
+        }
+    },
+    "lb5": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZLB_LB5_SRC_BC_ZLB_LB5",
+        "columnsMapping": {
+            "KETERANGAN":"KETER",
+            "FORMULA":"FORM",
+            "HASIL" :"HASIL"
+        }
+    },
+    "lb13": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZLB_LB13_SRC_BC_ZLB_LB13",
+        "columnsMapping": {
+            "PUSAT"	            :"RACCT",
+            "JENIS"	            :"KOSTL",
+            "URAIAN"	            :"TXT50",
+            "ANGGARAN"	        :"BUDGET",
+            "MTD"	                :"BLN_INI",
+            "YTD"	                :"AKUM_BLN_INI",
+            "SELISIH_ANGGARAN"	:"PERSEN_ANGGARAN",
+            "SISA_ANGGARAN"	    :"SISA_ANGGARAN"
+        }
+    },
+    "lb10": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZLB_LB10_SRC_BC_ZLB_LB10",
+        "columnsMapping": {
+            "NO_REK"	            :"RACCT",
+            "URAIAN"	            :"TXT50",
+            "ANGGARAN"	        :"BUDGET",
+            "MTD"	                :"BLN_INI",
+            "YTD"	                :"AKUM_BLN_INI",
+            "SELISIH_ANGGARAN"	:"PERSEN_ANGGARAN",
+            "SISA_ANGGARAN"	    :"SISA_ANGGARAN"
+
+        }
+    },
+    "lb11": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZLB_LB11_SRC_BC_ZLB_LB11",
+        "columnsMapping": {
+            "NO_REK"	            :"RACCT",
+            "URAIAN"	            :"TXT50",
+            "ANGGARAN"	        :"BUDGET",
+            "MTD"	                :"BLN_INI",
+            "YTD"	                :"AKUM_BLN_INI",
+            "SELISIH_ANGGARAN"	:"PERSEN_ANGGARAN",
+            "SISA_ANGGARAN"	    :"SISA_ANGGARAN"
+
+        }
+    }
+}

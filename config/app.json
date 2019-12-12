@@ -1,12 +1,12 @@
 {
     "resourcePath": "/Users/rezaharli/go/src/git.eaciitapp.com/rezaharli/toracle/resource",
-    "interval": 5,
+    "interval": 20,
     "fetchApiFromFirstTime": false,
     "database": {
-        "username": "scbdc",
-        "password": "Password",
-        "host": "localhost",
+        "username": "DWH",
+        "password": "lamong2019",
+        "host": "10.110.5.15",
         "port": "1521",
-        "service": "orclcdb"
+        "service": "oracledev"
     }
 }

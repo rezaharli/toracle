@@ -5,11 +5,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/eaciit/clit"
-	"github.com/eaciit/toolkit"
-
 	c "git.eaciitapp.com/rezaharli/toracle/controllers"
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"github.com/eaciit/clit"
+	"github.com/eaciit/toolkit"
 )
 
 func main() {
@@ -32,6 +31,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "kinerja", filepath.Join(clit.ExeDir(), "config", "kinerja.json"))
 	clit.LoadConfigFromFlag("config", "pemenuhansdm", filepath.Join(clit.ExeDir(), "config", "pemenuhansdm.json"))
 	clit.LoadConfigFromFlag("config", "rkap", filepath.Join(clit.ExeDir(), "config", "rkap.json"))
+	clit.LoadConfigFromFlag("config", "lb", filepath.Join(clit.ExeDir(), "config", "lb.json"))
 
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
@@ -55,6 +55,7 @@ func main() {
 
 			ticker = time.NewTicker(durationInterval)
 		}
+		isExecute := true
 
 		// do the loop
 		i := 0
@@ -227,6 +228,52 @@ func main() {
 				}
 
 				err = c.NewMarketShareController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				lb1Controller := c.NewLB1Controller()
+				err = lb1Controller.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				lb2Controller := c.NewLB2Controller()
+				err = lb2Controller.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				lb4Controller := c.NewLB4Controller()
+				err = lb4Controller.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				if isExecute {
+					isExecute = false
+					lb13Controller := c.NewLB13Controller()
+					err = lb13Controller.ReadAPI()
+					if err != nil {
+						log.Fatal(err.Error())
+					}
+
+				}
+
+				lb5Controller := c.NewLB5Controller()
+				err = lb5Controller.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				lb10Controller := c.NewLB10Controller()
+				err = lb10Controller.ReadAPI()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				lb11Controller := c.NewLB11Controller()
+				err = lb11Controller.ReadAPI()
 				if err != nil {
 					log.Fatal(err.Error())
 				}

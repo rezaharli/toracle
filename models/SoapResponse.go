@@ -280,3 +280,190 @@ type AttendanceResponse struct {
 		} `xml:"ZFM_HC_008.Response"`
 	}
 }
+
+type LB1Response struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					NO      string
+					NOREK   string
+					POSNER  string
+					TGLA    string
+					TGLB    string
+					NOREK2  string
+					POSNER2 string
+					TGL2A   string
+					TGL2B   string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_FI_11.Response"`
+	}
+}
+
+type LB2Response struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					RACCT           string
+					KOSTL           string
+					TXT50           string
+					BUDGET          string
+					BLN_INI         string
+					AKUM_BLN_INI    string
+					AKUM_BLN_LALU   string
+					AKUM_THN_LALU   string
+					DEVIASI_A       string
+					DEVIASI_B       string
+					DEVIASI_C       string
+					PERSEN_ANGGARAN string
+					SISA_ANGGARAN   string
+					WAERS           string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_FI_12.Response"`
+	}
+}
+
+type LB4Response struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					HKONT             string
+					JENIS             string
+					PREV_MONTH_IN     string
+					PREV_MONTH_OUT    string
+					CURRENT_MONTH_IN  string
+					CURRENT_MONTH_OUT string
+					AKUM_MONTH_IN     string
+					AKUM_MONTH_OUT    string
+					TEXT              string
+					WAERS             string
+					FLAG_DIS_IN       string
+					FLAG_DIS_OUT      string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_FI_14.Response"`
+	}
+}
+
+type LB5Response struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					NO     string
+					KETER  string
+					FORM   string
+					HASIL  string
+					HASILD string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_FI_15.Response"`
+	}
+}
+
+type LB13Response struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					RACCT           string
+					KOSTL           string
+					TXT50           string
+					BUDGET          string
+					BLN_INI         string
+					AKUM_BLN_INI    string
+					AKUM_BLN_LALU   string
+					AKUM_THN_LALU   string
+					DEVIASI_A       string
+					DEVIASI_B       string
+					DEVIASI_C       string
+					PERSEN_ANGGARAN string
+					SISA_ANGGARAN   string
+					WAERS           string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_FI_23.Response"`
+	}
+}
+
+type LB10Response struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					RACCT           string
+					KOSTL           string
+					TXT50           string
+					BUDGET          string
+					BLN_INI         string
+					AKUM_BLN_INI    string
+					AKUM_BLN_LALU   string
+					AKUM_THN_LALU   string
+					DEVIASI_A       string
+					DEVIASI_B       string
+					DEVIASI_C       string
+					PERSEN_ANGGARAN string
+					SISA_ANGGARAN   string
+					WAERS           string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_FI_20.Response"`
+	}
+}
+
+type LB11Response struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					RACCT           string
+					KOSTL           string
+					TXT50           string
+					BUDGET          string
+					BLN_INI         string
+					AKUM_BLN_INI    string
+					AKUM_BLN_LALU   string
+					AKUM_THN_LALU   string
+					DEVIASI_A       string
+					DEVIASI_B       string
+					DEVIASI_C       string
+					PERSEN_ANGGARAN string
+					SISA_ANGGARAN   string
+					WAERS           string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_FI_21.Response"`
+	}
+}
