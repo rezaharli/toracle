@@ -325,7 +325,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 				log.Println("SUCCESS Processing", rowCount, "rows\n")
 			}
 		} else {
-			log.Println("Skipping", currentPeriod.Format("2006-01-02"), "\n")
+			log.Println("Skipping", currentPeriod.Format("2006-01-02"))
 		}
 
 		row++
@@ -351,6 +351,8 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 	notPeriodCount := 0
 	periodFound := false
 	row := 1
+	isPeriodDeleted := map[time.Time]bool{}
+
 	for {
 		firstDataRow := 0
 		notPeriodCount = 0
@@ -424,6 +426,29 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 			}
 
 			headers = append(headers, header)
+		}
+
+		// check if data exists
+		// sqlQuery := "DELETE FROM F_ENG_EQUIPMENT_MONTHLY WHERE trunc(period) = TO_DATE('" + currentPeriod.Format("2006-01-02") + "', 'YYYY-MM-DD')"
+
+		if isPeriodDeleted[currentPeriod] == false {
+			log.Println("Deleting period", currentPeriod.Format("2006-01-02"))
+
+			sql := "DELETE FROM F_ENG_EQUIPMENT_MONTHLY WHERE trunc(period) = TO_DATE('" + currentPeriod.Format("2006-01-02") + "', 'YYYY-MM-DD')"
+
+			conn := helpers.Database()
+			query, err := conn.Prepare(dbflex.From("F_ENG_EQUIPMENT_MONTHLY").SQL(sql))
+			if err != nil {
+				log.Println(err)
+			}
+
+			_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+			if err != nil {
+				log.Println(err)
+			}
+
+			log.Println("Period", currentPeriod.Format("2006-01-02"), "deleted.")
+			isPeriodDeleted[currentPeriod] = true
 		}
 
 		//iterate over rows
