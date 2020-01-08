@@ -7,7 +7,7 @@
         "columnsMapping": {
             "NO_REK" : "NOREK",
             "POS_NE" : "POSNER",
-            "MTD" : "TGLA",
+            "YTD_LAST" : "TGLA",
             "YTD" : "TGLB"
         }
     },

@@ -15,6 +15,7 @@ import (
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/rezaharli/toracle/models"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type LB1Controller struct {
@@ -29,36 +30,63 @@ func (c *LB1Controller) ReadAPI() error {
 	log.Println("\n--------------------------------------\nReading LB1 API")
 	var err error
 
-	year := clit.Config("lb", "year", nil).(string)
+	lastmonth, lastyear := 0, 0
+	paramstartyear := clit.Config("lb", "year", nil).(string)
+	startyear, err := strconv.Atoi(paramstartyear)
 	thisMonth := int(time.Now().Month())
-	if year == strconv.Itoa(time.Now().Year()) {
-		for i := 1; i <= thisMonth; i++ {
-			payload := c.SetParamBody(year, strconv.Itoa(i))
-			results, err := c.GetAPIDatas(payload, strconv.Itoa(i), year)
-			if err != nil {
-				log.Println(err.Error())
-				return err
-			}
+	thisYear := time.Now().Year()
+	monthcounter := 1
+	latest, err := c.GetLatestData()
 
-			err = c.InsertAPIDatas(results, "lb1")
-			if err != nil {
-				log.Println(err.Error())
-				return err
+	if len(latest) == 0 {
+		toolkit.Println("FETCHING DATA FROM START PERIOD")
+		for {
+			if thisMonth+1 == monthcounter && thisYear == startyear {
+				break
+			}
+			if monthcounter <= 12 {
+				toolkit.Println(startyear, monthcounter)
+				monthparam := strconv.Itoa(monthcounter)
+				yearparam := strconv.Itoa(startyear)
+				err = c.ExecProcess(yearparam, monthparam)
+
+				if monthcounter == 12 {
+					if startyear < thisYear {
+						startyear++
+					}
+					monthcounter = 1
+				} else {
+					monthcounter++
+				}
 			}
 		}
-	} else {
-		for i := 1; i <= 12; i++ {
-			payload := c.SetParamBody(year, strconv.Itoa(i))
-			results, err := c.GetAPIDatas(payload, strconv.Itoa(i), year)
-			if err != nil {
-				log.Println(err.Error())
-				return err
+	} else if len(latest) > 3 {
+		toolkit.Println("DELETING THIS PERIOD")
+		for i := 0; i < 3; i++ {
+			toolkit.Println(latest[i].GetInt("TAHUN"), latest[i].GetInt("BULAN"))
+			lastmonth = latest[i].GetInt("BULAN")
+			lastyear = latest[i].GetInt("TAHUN")
+			err = c.DeleteSelectedData(lastyear, lastmonth)
+		}
+		toolkit.Println("FETCHING THIS PERIOD")
+		for {
+			if thisMonth+1 == lastmonth && thisYear == lastyear {
+				break
 			}
+			if lastmonth <= 12 {
+				toolkit.Println(lastyear, lastmonth)
+				monthparam := strconv.Itoa(monthcounter)
+				yearparam := strconv.Itoa(startyear)
+				err = c.ExecProcess(yearparam, monthparam)
 
-			err = c.InsertAPIDatas(results, "lb1")
-			if err != nil {
-				log.Println(err.Error())
-				return err
+				if lastmonth == 12 {
+					if lastyear < thisYear {
+						lastyear++
+					}
+					lastmonth = 1
+				} else {
+					lastmonth++
+				}
 			}
 		}
 	}
@@ -144,7 +172,7 @@ func (c *LB1Controller) InsertAPIDatas(results []toolkit.M, jsonconf string) err
 			Data:      rowData,
 		}
 
-		log.Println("Inserting data API")
+		// log.Println("Inserting data API")
 		err := helpers.Insert(param)
 		if err != nil {
 			log.Fatal("Error inserting data, ERROR:", err.Error())
@@ -175,4 +203,46 @@ func (c *LB1Controller) SetParamBody(year string, month string) []byte {
 	))
 
 	return payload
+}
+
+func (c *LB1Controller) GetLatestData() ([]toolkit.M, error) {
+	sqlQuery := "SELECT DISTINCT TAHUN,BULAN,TAHUN||''||BULAN AS TAHUNBULAN FROM F_FA_NERACA_KOMP ORDER BY TAHUN DESC,BULAN DESC"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	res := []toolkit.M{}
+	err := cursor.Fetchs(&res, 0)
+
+	return res, err
+}
+
+func (c *LB1Controller) DeleteSelectedData(year int, month int) error {
+	conn := helpers.Database()
+	var res interface{}
+	res, err := conn.Execute(
+		dbflex.
+			From("F_FA_NERACA_KOMP").
+			Where(dbflex.And(dbflex.Eq("BULAN", month), dbflex.Eq("TAHUN", year))).
+			Delete(), nil)
+	toolkit.Println(res)
+	return err
+}
+
+func (c *LB1Controller) ExecProcess(year string, month string) error {
+	payload := c.SetParamBody(year, month)
+	results, err := c.GetAPIDatas(payload, month, year)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	err = c.InsertAPIDatas(results, "lb1")
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return err
 }
