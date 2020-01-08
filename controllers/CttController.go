@@ -160,157 +160,175 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 		//iterate over rows
 		currentItemID := ""
 
-		for index := 0; true; index++ {
-			rowData := toolkit.M{}
-			currentRow := firstDataRow + index
-			row = currentRow
-			isRowEmpty := true
-			dontInsert := false
+		tablename := "F_ENG_CTT_DAILY"
 
-			for _, header := range headers {
-				if header.DBFieldName == "PERIOD" {
-					rowData.Set(header.DBFieldName, currentPeriod)
-				} else if header.DBFieldName == "ITEM_ID" {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-					if err != nil {
-						log.Fatal(err)
-					}
+		// check if data exists
+		sqlQuery := "SELECT * FROM " + tablename + " WHERE trunc(period) = TO_DATE('" + currentPeriod.Format("2006-01-02") + "', 'YYYY-MM-DD')"
 
-					if currentItemID == stringData {
-						dontInsert = true
-					}
+		conn := helpers.Database()
+		cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
+		defer cursor.Close()
 
-					currentItemID = stringData
+		res := make([]toolkit.M, 0)
+		err := cursor.Fetchs(&res, 0)
 
-					resultRows := make([]toolkit.M, 0)
-					param := SqlQueryParam{
-						ItemName: strings.ReplaceAll(stringData, "-", ""),
-						Results:  &resultRows,
-					}
+		//only insert if len of datas in currentPeriod is 0 / if no data yet
+		if len(res) == 0 {
+			for index := 0; true; index++ {
+				rowData := toolkit.M{}
+				currentRow := firstDataRow + index
+				row = currentRow
+				isRowEmpty := true
+				dontInsert := false
 
-					err = c.selectItemID(param)
-					if err != nil {
-						log.Fatal(err)
-					}
+				for _, header := range headers {
+					if header.DBFieldName == "PERIOD" {
+						rowData.Set(header.DBFieldName, currentPeriod)
+					} else if header.DBFieldName == "ITEM_ID" {
+						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						if err != nil {
+							log.Fatal(err)
+						}
 
-					if stringData != "" {
-						isRowEmpty = false
-					}
+						if currentItemID == stringData {
+							dontInsert = true
+						}
 
-					if len(resultRows) > 0 {
-						rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
+						currentItemID = stringData
+
+						resultRows := make([]toolkit.M, 0)
+						param := SqlQueryParam{
+							ItemName: strings.ReplaceAll(stringData, "-", ""),
+							Results:  &resultRows,
+						}
+
+						err = c.selectItemID(param)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						if stringData != "" {
+							isRowEmpty = false
+						}
+
+						if len(resultRows) > 0 {
+							rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
+						} else {
+							rowData.Set(header.DBFieldName, nil)
+						}
+					} else if header.DBFieldName == "START_TIME" {
+						cellID := header.Column + toolkit.ToString(currentRow)
+						style, _ := f.NewStyle(`{"number_format":15}`)
+						f.SetCellStyle(sheetName, cellID, cellID, style)
+						startDate, err := f.GetCellValue(sheetName, cellID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
+						startTime, err := f.GetCellValue(sheetName, cellID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						if startDate != "" && startTime != "" {
+							isRowEmpty = false
+						}
+
+						t, _ := time.Parse("2-Jan-06-15:04", startDate+"-"+startTime)
+
+						rowData.Set(header.DBFieldName, t)
+					} else if header.DBFieldName == "END_TIME" {
+						cellID := header.Column + toolkit.ToString(currentRow)
+						style, _ := f.NewStyle(`{"number_format":15}`)
+						f.SetCellStyle(sheetName, cellID, cellID, style)
+						startDate, err := f.GetCellValue(sheetName, cellID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
+						startTime, err := f.GetCellValue(sheetName, cellID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						if startDate != "" && startTime != "" {
+							isRowEmpty = false
+						}
+
+						t, _ := time.Parse("2-Jan-06-15:04", startDate+"-"+startTime)
+
+						rowData.Set(header.DBFieldName, t)
+					} else if header.DBFieldName == "QTY" {
+						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						stringData = strings.ReplaceAll(stringData, "-", "")
+
+						if stringData != "" {
+							isRowEmpty = false
+						}
+
+						intData, err := strconv.Atoi(stringData)
+						if err != nil {
+							intData = 0
+						}
+
+						rowData.Set(header.DBFieldName, intData)
 					} else {
-						rowData.Set(header.DBFieldName, nil)
+						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
+
+						if len(stringData) > 300 {
+							stringData = stringData[0:300]
+						}
+
+						if stringData != "" {
+							isRowEmpty = false
+						}
+
+						rowData.Set(header.DBFieldName, stringData)
 					}
-				} else if header.DBFieldName == "START_TIME" {
-					cellID := header.Column + toolkit.ToString(currentRow)
-					style, _ := f.NewStyle(`{"number_format":15}`)
-					f.SetCellStyle(sheetName, cellID, cellID, style)
-					startDate, err := f.GetCellValue(sheetName, cellID)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
-					startTime, err := f.GetCellValue(sheetName, cellID)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					if startDate != "" && startTime != "" {
-						isRowEmpty = false
-					}
-
-					t, _ := time.Parse("2-Jan-06-15:04", startDate+"-"+startTime)
-
-					rowData.Set(header.DBFieldName, t)
-				} else if header.DBFieldName == "END_TIME" {
-					cellID := header.Column + toolkit.ToString(currentRow)
-					style, _ := f.NewStyle(`{"number_format":15}`)
-					f.SetCellStyle(sheetName, cellID, cellID, style)
-					startDate, err := f.GetCellValue(sheetName, cellID)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
-					startTime, err := f.GetCellValue(sheetName, cellID)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					if startDate != "" && startTime != "" {
-						isRowEmpty = false
-					}
-
-					t, _ := time.Parse("2-Jan-06-15:04", startDate+"-"+startTime)
-
-					rowData.Set(header.DBFieldName, t)
-				} else if header.DBFieldName == "QTY" {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					stringData = strings.ReplaceAll(stringData, "-", "")
-
-					if stringData != "" {
-						isRowEmpty = false
-					}
-
-					intData, err := strconv.Atoi(stringData)
-					if err != nil {
-						intData = 0
-					}
-
-					rowData.Set(header.DBFieldName, intData)
-				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
-
-					if len(stringData) > 300 {
-						stringData = stringData[0:300]
-					}
-
-					if stringData != "" {
-						isRowEmpty = false
-					}
-
-					rowData.Set(header.DBFieldName, stringData)
 				}
+
+				if dontInsert {
+					continue
+				}
+
+				if isRowEmpty {
+					break
+				}
+
+				param := helpers.InsertParam{
+					TableName: tablename,
+					Data:      rowData,
+				}
+
+				toolkit.Println("Inserting...")
+				err = helpers.Insert(param)
+				if err != nil {
+					log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				} else {
+					log.Println("Row", currentRow, "inserted.")
+				}
+				rowCount++
 			}
 
-			if dontInsert {
-				continue
+			if err == nil {
+				log.Println("SUCCESS Processing", rowCount, "rows\n")
 			}
-
-			if isRowEmpty {
-				break
-			}
-
-			param := helpers.InsertParam{
-				TableName: "F_ENG_CTT_DAILY",
-				Data:      rowData,
-			}
-
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-			} else {
-				log.Println("Row", currentRow, "inserted.")
-			}
-			rowCount++
+		} else {
+			log.Println("Skipping", currentPeriod.Format("2006-01-02"), "\n")
 		}
 
 		row++
-
-		if err == nil {
-			log.Println("SUCCESS Processing", rowCount, "rows\n")
-		}
 	}
 
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
