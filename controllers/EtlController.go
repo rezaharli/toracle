@@ -143,6 +143,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
+
 	//iterate over rows
 	for index := 0; true; index++ {
 		rowData := toolkit.M{}
@@ -165,6 +166,8 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 				continue
 			}
 		}
+
+		skipRow := true
 
 		for _, header := range headers {
 			if header.DBFieldName == "PERIOD" {
@@ -213,6 +216,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 
 				if stringData != "" {
 					isRowEmpty = false
+					skipRow = false
 				}
 
 				rowData.Set(header.DBFieldName, stringData)
@@ -223,16 +227,35 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 			break
 		}
 
-		param := helpers.InsertParam{
-			TableName: "F_QHSSE_ENERGYGRK",
-			Data:      rowData,
+		if skipRow {
+			continue
 		}
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		// check if data exists
+		sqlQuery := "SELECT * FROM F_QHSSE_ENERGYGRK WHERE trunc(period) = TO_DATE('" + rowData.Get("PERIOD").(time.Time).Format("2006-01-02") + "', 'YYYY-MM-DD')"
+
+		conn := helpers.Database()
+		cursor := conn.Cursor(dbflex.From("F_QHSSE_ENERGYGRK").SQL(sqlQuery), nil)
+		defer cursor.Close()
+
+		res := make([]toolkit.M, 0)
+		err = cursor.Fetchs(&res, 0)
+
+		//only insert if len of datas in currentPeriod is 0 / if no data yet
+		if len(res) == 0 {
+			param := helpers.InsertParam{
+				TableName: "F_QHSSE_ENERGYGRK",
+				Data:      rowData,
+			}
+
+			err = helpers.Insert(param)
+			if err != nil {
+				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			} else {
+				log.Println("Row", currentRow, "inserted.")
+			}
 		} else {
-			log.Println("Row", currentRow, "inserted.")
+			log.Println("Skipping", rowData.Get("PERIOD").(time.Time).Format("2006-01-02"))
 		}
 		rowCount++
 	}

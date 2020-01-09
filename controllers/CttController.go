@@ -157,7 +157,6 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 		}
 
 		rowCount := 0
-		//iterate over rows
 		currentItemID := ""
 
 		tablename := "F_ENG_CTT_DAILY"
@@ -166,7 +165,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 		sqlQuery := "SELECT * FROM " + tablename + " WHERE trunc(period) = TO_DATE('" + currentPeriod.Format("2006-01-02") + "', 'YYYY-MM-DD')"
 
 		conn := helpers.Database()
-		cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
+		cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
 		defer cursor.Close()
 
 		res := make([]toolkit.M, 0)
@@ -174,6 +173,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 
 		//only insert if len of datas in currentPeriod is 0 / if no data yet
 		if len(res) == 0 {
+			//iterate over rows
 			for index := 0; true; index++ {
 				rowData := toolkit.M{}
 				currentRow := firstDataRow + index
@@ -428,9 +428,7 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 			headers = append(headers, header)
 		}
 
-		// check if data exists
-		// sqlQuery := "DELETE FROM F_ENG_EQUIPMENT_MONTHLY WHERE trunc(period) = TO_DATE('" + currentPeriod.Format("2006-01-02") + "', 'YYYY-MM-DD')"
-
+		// check, delete if data exists
 		if isPeriodDeleted[currentPeriod] == false {
 			log.Println("Deleting period", currentPeriod.Format("2006-01-02"))
 
