@@ -929,16 +929,34 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 			break
 		}
 
-		param := helpers.InsertParam{
-			TableName: "F_QHSSE_ENERGY_CO2",
-			Data:      rowData,
+		// check if data exists
+		sqlQuery := "SELECT PERIOD FROM F_QHSSE_ENERGY_CO2 WHERE trunc(period) = TO_DATE('" + rowData.Get("PERIOD").(time.Time).Format("2006-01-02") + "', 'YYYY-MM-DD')"
+
+		conn := helpers.Database()
+		cursor := conn.Cursor(dbflex.From("F_QHSSE_ENERGY_CO2").SQL(sqlQuery), nil)
+		defer cursor.Close()
+
+		res := make([]toolkit.M, 0)
+		err = cursor.Fetchs(&res, 0)
+		if err != nil {
+			log.Println(err)
 		}
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		//only insert if len of datas in currentPeriod is 0 / if no data yet
+		if len(res) == 0 {
+			param := helpers.InsertParam{
+				TableName: "F_QHSSE_ENERGY_CO2",
+				Data:      rowData,
+			}
+
+			err = helpers.Insert(param)
+			if err != nil {
+				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			} else {
+				log.Println("Row", currentRow, "inserted.")
+			}
 		} else {
-			log.Println("Row", currentRow, "inserted.")
+			log.Println("Skipping row" + toolkit.ToString(currentRow) + ".")
 		}
 		rowCount++
 	}
