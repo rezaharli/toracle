@@ -232,7 +232,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 		}
 
 		// check if data exists
-		sqlQuery := "SELECT * FROM F_QHSSE_ENERGYGRK WHERE trunc(period) = TO_DATE('" + rowData.Get("PERIOD").(time.Time).Format("2006-01-02") + "', 'YYYY-MM-DD')"
+		sqlQuery := "SELECT PERIOD FROM F_QHSSE_ENERGYGRK WHERE trunc(period) = TO_DATE('" + rowData.Get("PERIOD").(time.Time).Format("2006-01-02") + "', 'YYYY-MM-DD')"
 
 		conn := helpers.Database()
 		cursor := conn.Cursor(dbflex.From("F_QHSSE_ENERGYGRK").SQL(sqlQuery), nil)
@@ -636,6 +636,9 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 			headers = append(headers, header)
 		}
 
+		isMonthlyAdaIsinya := map[time.Time]bool{}
+		rowDatas := make([]toolkit.M, 0)
+
 		//iterate over rows
 		for index := 0; true; index++ {
 			rowData := toolkit.M{}
@@ -658,6 +661,8 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 					continue
 				}
 			}
+
+			isRowAdaDataKonsumsiProduksinya := false
 
 			for _, header := range headers {
 				if header.DBFieldName == "PERIOD" {
@@ -708,6 +713,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 					}
 
 					if len(resultRows) > 0 {
+						rowData.Set("Nama Alat", param.ItemName)
 						rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 					} else {
 						rowData.Set(header.DBFieldName, nil)
@@ -734,6 +740,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 
 					if stringData != "" {
 						isRowEmpty = false
+						isRowAdaDataKonsumsiProduksinya = true
 					}
 
 					rowData.Set(header.DBFieldName, stringData)
@@ -744,18 +751,54 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 				break
 			}
 
-			param := helpers.InsertParam{
-				TableName: "F_QHSSE_ENERGY_ITEM",
-				Data:      rowData,
+			if ok := isMonthlyAdaIsinya[rowData.Get("PERIOD").(time.Time)]; !ok {
+				isMonthlyAdaIsinya[rowData.Get("PERIOD").(time.Time)] = false
 			}
 
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting "+monthHeader.HeaderName+" row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-			} else {
-				log.Println(monthHeader.HeaderName+" Row", currentRow, "inserted.")
+			if isRowAdaDataKonsumsiProduksinya == true {
+				isMonthlyAdaIsinya[rowData.Get("PERIOD").(time.Time)] = true
 			}
+
+			rowDatas = append(rowDatas, rowData)
+
 			rowCount++
+		}
+
+		for _, rowData := range rowDatas {
+			if isMonthlyAdaIsinya[rowData.Get("PERIOD").(time.Time)] == true {
+				currentAlat := rowData.GetString("Nama Alat")
+				rowData.Unset("Nama Alat")
+
+				// check if data exists
+				sqlQuery := "SELECT PERIOD, ENERGY_TYPE FROM F_QHSSE_ENERGY_ITEM WHERE ENERGY_TYPE = '" + rowData.GetString("ENERGY_TYPE") + "' AND trunc(period) = TO_DATE('" + rowData.Get("PERIOD").(time.Time).Format("2006-01-02") + "', 'YYYY-MM-DD')"
+
+				conn := helpers.Database()
+				cursor := conn.Cursor(dbflex.From("F_QHSSE_ENERGY_ITEM").SQL(sqlQuery), nil)
+				defer cursor.Close()
+
+				res := make([]toolkit.M, 0)
+				err = cursor.Fetchs(&res, 0)
+				if err != nil {
+					log.Println(err)
+				}
+
+				//only insert if len of datas in currentPeriod is 0 / if no data yet
+				if len(res) == 0 {
+					param := helpers.InsertParam{
+						TableName: "F_QHSSE_ENERGY_ITEM",
+						Data:      rowData,
+					}
+
+					err = helpers.Insert(param)
+					if err != nil {
+						log.Fatal("Error inserting "+monthHeader.HeaderName+",", currentAlat+", ERROR:", err.Error())
+					} else {
+						log.Println(monthHeader.HeaderName+",", currentAlat+", inserted.")
+					}
+				} else {
+					log.Println("Skipping", rowData.Get("PERIOD").(time.Time).Format("2006-01-02"), currentAlat, ".")
+				}
+			}
 		}
 	}
 
