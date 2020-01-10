@@ -131,6 +131,8 @@ func (c *KinerjaController) ReadData(f *excelize.File, sheetName string) error {
 	var currentPeriod time.Time
 	months := clit.Config("kinerja", "months", nil).([]interface{})
 
+	isPeriodSkip := false
+
 	//iterate over rows
 Rowloop:
 	for index := 0; true; index++ {
@@ -233,17 +235,41 @@ Rowloop:
 			continue
 		}
 
-		param := helpers.InsertParam{
-			TableName: "F_QHSSE_MK3L",
-			Data:      rowData,
+		if rowCount == 0 {
+			// check if data exists
+			sqlQuery := "SELECT PERIOD FROM F_QHSSE_MK3L WHERE trunc(period) = TO_DATE('" + currentPeriod.Format("2006-01-02") + "', 'YYYY-MM-DD')"
+
+			conn := helpers.Database()
+			cursor := conn.Cursor(dbflex.From("F_QHSSE_MK3L").SQL(sqlQuery), nil)
+			defer cursor.Close()
+
+			res := make([]toolkit.M, 0)
+			err = cursor.Fetchs(&res, 0)
+			if err != nil {
+				log.Println(err)
+			}
+
+			//only insert if len of datas in currentPeriod is 0 / if no data yet
+			if len(res) != 0 {
+				isPeriodSkip = true
+				log.Println("Skipping", currentPeriod.Format("2006-01-02")+".")
+			}
 		}
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
+		if isPeriodSkip == false {
+			param := helpers.InsertParam{
+				TableName: "F_QHSSE_MK3L",
+				Data:      rowData,
+			}
+
+			err = helpers.Insert(param)
+			if err != nil {
+				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			} else {
+				log.Println("Row", currentRow, "inserted.")
+			}
 		}
+
 		rowCount++
 	}
 
