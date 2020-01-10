@@ -85,6 +85,23 @@ func (c *RekapPetikemasController) readExcel(filename string) error {
 func (c *RekapPetikemasController) ReadData(f *excelize.File, sheetName string) error {
 	timeNow := time.Now()
 
+	log.Println("Deleting datas.")
+
+	sql := "DELETE FROM F_CBD_MARKET_SHARE_CTR"
+
+	conn := helpers.Database()
+	query, err := conn.Prepare(dbflex.From("F_CBD_MARKET_SHARE_CTR").SQL(sql))
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Data deleted.")
+
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
 	// columnsMapping := clit.Config("petikemas", "columnsMapping", nil).(map[string]interface{})
@@ -117,7 +134,6 @@ func (c *RekapPetikemasController) ReadData(f *excelize.File, sheetName string) 
 
 	objs := make([]toolkit.M, 0)
 
-	var err error
 	for i := 0; true; i++ {
 		//iterate col
 		col := "C"
