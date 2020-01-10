@@ -12,6 +12,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type InduksiController struct {
@@ -143,37 +144,55 @@ func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
 
 		emptyCount := 0
 
-		//iterate over rows
-		for j := 0; j < 10; j++ {
-			obj := toolkit.M{}
-			currentRow := firstDataRow + j
+		// check if data exists
+		sqlQuery := "SELECT PERIOD FROM F_QHSSE_INDUKSI WHERE trunc(period) = TO_DATE('" + period.Format("2006-01-02") + "', 'YYYY-MM-DD')"
 
-			obj.Set("PERIOD", period)
+		conn := helpers.Database()
+		cursor := conn.Cursor(dbflex.From("F_QHSSE_INDUKSI").SQL(sqlQuery), nil)
+		defer cursor.Close()
 
-			//mengambil Value di kolom
-			cellValueJenisInduksi, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
+		res := make([]toolkit.M, 0)
+		err = cursor.Fetchs(&res, 0)
+		if err != nil {
+			log.Println(err)
+		}
+
+		//only insert if len of datas in currentPeriod is 0 / if no data yet
+		if len(res) == 0 {
+			//iterate over rows
+			for j := 0; j < 10; j++ {
+				obj := toolkit.M{}
+				currentRow := firstDataRow + j
+
+				obj.Set("PERIOD", period)
+
+				//mengambil Value di kolom
+				cellValueJenisInduksi, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				cellValue, err := f.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if cellValueJenisInduksi == "" {
+					emptyCount++
+					continue
+				}
+
+				obj.Set("JENIS_INDUKSI", cellValueJenisInduksi)
+				obj.Set("JUMLAH_INDUKSI", cellValue)
+
+				objs = append(objs, obj)
+
+				if emptyCount >= 10 {
+					break
+				}
 			}
-
-			cellValue, err := f.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if cellValueJenisInduksi == "" {
-				emptyCount++
-				continue
-			}
-
-			obj.Set("JENIS_INDUKSI", cellValueJenisInduksi)
-			obj.Set("JUMLAH_INDUKSI", cellValue)
-
-			objs = append(objs, obj)
-
-			if emptyCount >= 10 {
-				break
-			}
+		} else {
+			log.Println("Skipping", period.Format("2006-01-02")+".")
 		}
 	}
 
