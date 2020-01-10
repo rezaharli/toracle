@@ -151,8 +151,13 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
-				// READ Pemenuhan SDM FILES
+				// READ RKAP FILES
 				err = c.NewRKAPController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				err = c.NewMarketShareController().ReadExcels()
 				if err != nil {
 					log.Fatal(err.Error())
 				}
@@ -223,11 +228,6 @@ func main() {
 
 				productivityController := c.NewProductivityController()
 				err = productivityController.ReadAPI()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
-
-				err = c.NewMarketShareController().ReadExcels()
 				if err != nil {
 					log.Fatal(err.Error())
 				}

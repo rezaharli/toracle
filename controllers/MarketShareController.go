@@ -14,6 +14,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type MarketShareController struct {
@@ -87,6 +88,23 @@ func (c *MarketShareController) readExcel(filename string) error {
 
 func (c *MarketShareController) ReadData(f *excelize.File, sheetName string) error {
 	//timeNow := time.Now()
+
+	log.Println("Deleting datas.")
+
+	sql := "DELETE FROM F_CBD_MARKET_SHARE_CUKER"
+
+	conn := helpers.Database()
+	query, err := conn.Prepare(dbflex.From("F_CBD_MARKET_SHARE_CUKER").SQL(sql))
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Data deleted.")
 
 	log.Println("ReadData", sheetName)
 	//columnsMapping := clit.Config("marketshare", "columnsMapping", nil).(map[string]interface{})
