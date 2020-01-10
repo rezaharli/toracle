@@ -84,6 +84,23 @@ func (c *PemenuhanSDMController) readExcel(filename string) error {
 func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) error {
 	timeNow := time.Now()
 
+	log.Println("Deleting datas.")
+
+	sql := "DELETE FROM F_HC_POSITION"
+
+	conn := helpers.Database()
+	query, err := conn.Prepare(dbflex.From("F_HC_POSITION").SQL(sql))
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Data deleted.")
+
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
 	columnsMapping := clit.Config("pemenuhansdm", "columnsMapping", nil).(map[string]interface{})
@@ -124,7 +141,6 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 		headers = append(headers, header)
 	}
 
-	var err error
 	rowCount := 0
 	emptyRowCount := 0
 	var currentSubDir string
