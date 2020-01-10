@@ -128,6 +128,9 @@ func (c *FTWController) ReadData(f *excelize.File, sheetName string) error {
 	var currentPeriod time.Time
 	// months := clit.Config("ftw", "months", nil).([]interface{})
 
+	isPeriodSkipped := map[time.Time]bool{}
+	isPeriodChecked := map[time.Time]bool{}
+
 	//iterate over rows
 	for index := 0; true; index++ {
 		rowData := toolkit.M{}
@@ -189,18 +192,56 @@ func (c *FTWController) ReadData(f *excelize.File, sheetName string) error {
 			continue
 		}
 
-		toolkit.Println(rowData)
-		param := helpers.InsertParam{
-			TableName: "F_QHSSE_FTW",
-			Data:      rowData,
+		insertRow := func() {
+			param := helpers.InsertParam{
+				TableName: "F_QHSSE_FTW",
+				Data:      rowData,
+			}
+
+			err = helpers.Insert(param)
+			if err != nil {
+				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			} else {
+				log.Println("Row", currentRow, "inserted.")
+			}
 		}
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
+		if ok := isPeriodChecked[rowData.Get("PERIOD").(time.Time)]; !ok {
+			isPeriodChecked[rowData.Get("PERIOD").(time.Time)] = false
 		}
+
+		if ok := isPeriodSkipped[rowData.Get("PERIOD").(time.Time)]; !ok {
+			isPeriodSkipped[rowData.Get("PERIOD").(time.Time)] = false
+		}
+
+		if isPeriodChecked[rowData.Get("PERIOD").(time.Time)] == true {
+			if isPeriodSkipped[rowData.Get("PERIOD").(time.Time)] == false {
+				insertRow()
+			}
+		} else {
+			// check if data exists
+			sqlQuery := "SELECT PERIOD FROM F_QHSSE_FTW WHERE trunc(period) = TO_DATE('" + rowData.Get("PERIOD").(time.Time).Format("2006-01-02") + "', 'YYYY-MM-DD')"
+
+			conn := helpers.Database()
+			cursor := conn.Cursor(dbflex.From("F_QHSSE_FTW").SQL(sqlQuery), nil)
+			defer cursor.Close()
+
+			res := make([]toolkit.M, 0)
+			err = cursor.Fetchs(&res, 0)
+			if err != nil {
+				log.Println(err)
+			}
+
+			isPeriodChecked[rowData.Get("PERIOD").(time.Time)] = true
+			//only insert if len of datas in currentPeriod is 0 / if no data yet
+			if len(res) == 0 {
+				insertRow()
+			} else {
+				log.Println("Skipping", rowData.Get("PERIOD").(time.Time).Format("2006-01-02")+".")
+				isPeriodSkipped[rowData.Get("PERIOD").(time.Time)] = true
+			}
+		}
+
 		rowCount++
 	}
 
