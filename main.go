@@ -32,6 +32,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "pemenuhansdm", filepath.Join(clit.ExeDir(), "config", "pemenuhansdm.json"))
 	clit.LoadConfigFromFlag("config", "rkap", filepath.Join(clit.ExeDir(), "config", "rkap.json"))
 	clit.LoadConfigFromFlag("config", "lb", filepath.Join(clit.ExeDir(), "config", "lb.json"))
+	clit.LoadConfigFromFlag("config", "rekapKonsol2", filepath.Join(clit.ExeDir(), "config", "rekapKonsol2.json"))
 
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
@@ -157,7 +158,14 @@ func main() {
 					log.Fatal(err.Error())
 				}
 
+				// Read Market Share Files
 				err = c.NewMarketShareController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// Read Pencapaian Files
+				err = c.NewPencapaianController().ReadExcels()
 				if err != nil {
 					log.Fatal(err.Error())
 				}
