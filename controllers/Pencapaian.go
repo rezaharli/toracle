@@ -64,7 +64,12 @@ func (c *PencapaianController) readExcel(filename string) error {
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
 		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP KONSOL")) {
-			err = c.ReadData(f, sheetName)
+			err = c.ReadDataRekapKonsol(f, sheetName)
+			if err != nil {
+				log.Println("Error reading data. ERROR:", err)
+			}
+
+			err = c.ReadDataRekapKonsol2(f, sheetName)
 			if err != nil {
 				log.Println("Error reading data. ERROR:", err)
 			}
@@ -80,7 +85,7 @@ func (c *PencapaianController) readExcel(filename string) error {
 	return err
 }
 
-func (c *PencapaianController) ReadData(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapKonsol2(f *excelize.File, sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -142,6 +147,131 @@ func (c *PencapaianController) ReadData(f *excelize.File, sheetName string) erro
 
 		param := helpers.InsertParam{
 			TableName: "Rekap_Konsol2",
+			Data:      rowData,
+		}
+
+		err = helpers.Insert(param)
+		if err != nil {
+			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		} else {
+			log.Println("Row", currentRow, "inserted.")
+		}
+
+		rowCount++
+		no++
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *PencapaianController) ReadDataRekapKonsol(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	columnsMapping := clit.Config("rekapKonsol", "columnsMapping", nil).(map[string]interface{})
+
+	firstDataRow := 0
+	i := 1
+	for {
+		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cellValue == "KODE" {
+			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if cellValueAfter != "KODE" {
+				firstDataRow = i + 2
+				break
+			}
+		}
+		i++
+	}
+
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
+		}
+
+		headers = append(headers, header)
+	}
+
+	var err error
+	// var rowDatas []toolkit.M
+	rowCount := 0
+	no := 1
+	emptyRowCount := 0
+	//iterate over rows
+	for index := 0; true; index++ {
+		rowData := toolkit.M{}
+		currentRow := firstDataRow + index
+
+		isRowEmpty := true
+		skipRow := true
+		for _, header := range headers {
+			if header.DBFieldName == "NO" {
+				rowData.Set(header.DBFieldName, no)
+			} else {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				if stringData != "" {
+					isRowEmpty = false
+				}
+
+				if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
+					if strings.TrimSpace(stringData) != "" {
+						skipRow = false
+					}
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
+			}
+		}
+
+		if strings.TrimSpace(rowData.GetString("KODE")) == "" {
+			skipRow = true
+		}
+
+		if isRowEmpty {
+			emptyRowCount++
+		} else {
+			emptyRowCount = 0
+		}
+
+		if skipRow {
+			if isRowEmpty && emptyRowCount > 1 {
+				break
+			}
+
+			continue
+		}
+
+		if emptyRowCount > 1 {
+			break
+		}
+
+		param := helpers.InsertParam{
+			TableName: "Rekap_Konsol",
 			Data:      rowData,
 		}
 
