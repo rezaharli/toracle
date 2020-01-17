@@ -34,7 +34,8 @@ func main() {
 	clit.LoadConfigFromFlag("config", "lb", filepath.Join(clit.ExeDir(), "config", "lb.json"))
 	clit.LoadConfigFromFlag("config", "rekapKonsol", filepath.Join(clit.ExeDir(), "config", "rekapKonsol.json"))
 	clit.LoadConfigFromFlag("config", "rekapKonsol2", filepath.Join(clit.ExeDir(), "config", "rekapKonsol2.json"))
-	clit.LoadConfigFromFlag("config", "rekapLegi3", filepath.Join(clit.ExeDir(), "config", "rekapKonsol2.json"))
+	clit.LoadConfigFromFlag("config", "rekapLegi2", filepath.Join(clit.ExeDir(), "config", "rekapLegi2.json"))
+	clit.LoadConfigFromFlag("config", "rekapLegi3", filepath.Join(clit.ExeDir(), "config", "rekapLegi3.json"))
 
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
