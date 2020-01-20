@@ -102,89 +102,6 @@ func (c *PencapaianController) readExcel(filename string) error {
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapKonsol2(f *excelize.File, sheetName string) error {
-	timeNow := time.Now()
-
-	toolkit.Println()
-	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapKonsol2", "columnsMapping", nil).(map[string]interface{})
-
-	firstDataRow := 53
-
-	var headers []Header
-	for key, column := range columnsMapping {
-		header := Header{
-			DBFieldName: key,
-			Column:      column.(string),
-		}
-
-		headers = append(headers, header)
-	}
-
-	var err error
-	// var rowDatas []toolkit.M
-	rowCount := 0
-	//iterate over rows
-	no := 1
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
-
-		if currentRow > 57 {
-			break
-		}
-
-		isRowEmpty := true
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				stringData = strings.ReplaceAll(stringData, "'", "''")
-
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
-
-				if stringData != "" {
-					isRowEmpty = false
-				}
-
-				rowData.Set(header.DBFieldName, stringData)
-			}
-		}
-
-		if isRowEmpty {
-			continue
-		}
-
-		param := helpers.InsertParam{
-			TableName: "Rekap_Konsol2",
-			Data:      rowData,
-		}
-
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
-
-		rowCount++
-		no++
-	}
-
-	if err == nil {
-		log.Println("SUCCESS Processing", rowCount, "rows")
-	}
-	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
-	return err
-}
-
 func (c *PencapaianController) ReadDataRekapKonsol(f *excelize.File, sheetName string) error {
 	timeNow := time.Now()
 
@@ -289,6 +206,89 @@ func (c *PencapaianController) ReadDataRekapKonsol(f *excelize.File, sheetName s
 
 		param := helpers.InsertParam{
 			TableName: "Rekap_Konsol",
+			Data:      rowData,
+		}
+
+		err = helpers.Insert(param)
+		if err != nil {
+			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		} else {
+			log.Println("Row", currentRow, "inserted.")
+		}
+
+		rowCount++
+		no++
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *PencapaianController) ReadDataRekapKonsol2(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	columnsMapping := clit.Config("rekapKonsol2", "columnsMapping", nil).(map[string]interface{})
+
+	firstDataRow := 53
+
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
+		}
+
+		headers = append(headers, header)
+	}
+
+	var err error
+	// var rowDatas []toolkit.M
+	rowCount := 0
+	//iterate over rows
+	no := 1
+	for index := 0; true; index++ {
+		rowData := toolkit.M{}
+		currentRow := firstDataRow + index
+
+		if currentRow > 57 {
+			break
+		}
+
+		isRowEmpty := true
+		for _, header := range headers {
+			if header.DBFieldName == "No" {
+				rowData.Set(header.DBFieldName, no)
+			} else {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				if stringData != "" {
+					isRowEmpty = false
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
+			}
+		}
+
+		if isRowEmpty {
+			continue
+		}
+
+		param := helpers.InsertParam{
+			TableName: "Rekap_Konsol2",
 			Data:      rowData,
 		}
 
