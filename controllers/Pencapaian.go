@@ -93,6 +93,11 @@ func (c *PencapaianController) readExcel(filename string) error {
 		}
 
 		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP TTL")) {
+			err = c.ReadDataRekapTTL(f, sheetName)
+			if err != nil {
+				log.Println("Error reading data. ERROR:", err)
+			}
+
 			err = c.ReadDataRekapTTL2(f, sheetName)
 			if err != nil {
 				log.Println("Error reading data. ERROR:", err)
@@ -594,6 +599,133 @@ func (c *PencapaianController) ReadDataRekapLegi3(f *excelize.File, sheetName st
 
 		param := helpers.InsertParam{
 			TableName: "Rekap_Legi3",
+			Data:      rowData,
+		}
+
+		err = helpers.Insert(param)
+		if err != nil {
+			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		} else {
+			log.Println("Row", currentRow, "inserted.")
+		}
+
+		rowCount++
+		no++
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *PencapaianController) ReadDataRekapTTL(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	columnsMapping := clit.Config("rekapTTL", "columnsMapping", nil).(map[string]interface{})
+
+	firstDataRow := 0
+	i := 1
+	for {
+		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cellValue == "NO" {
+			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if cellValueAfter != "NO" {
+				firstDataRow = i + 3
+				break
+			}
+		}
+		i++
+	}
+
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
+		}
+
+		headers = append(headers, header)
+	}
+
+	var err error
+	// var rowDatas []toolkit.M
+	rowCount := 0
+	no := 1
+	emptyRowCount := 0
+	//iterate over rows
+	for index := 0; true; index++ {
+		rowData := toolkit.M{}
+		currentRow := firstDataRow + index
+
+		isRowEmpty := true
+		skipRow := true
+		for _, header := range headers {
+			if header.DBFieldName == "NO" {
+				rowData.Set(header.DBFieldName, no)
+			} else {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				if stringData != "" {
+					isRowEmpty = false
+				}
+
+				if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
+					if strings.TrimSpace(stringData) != "" {
+						skipRow = false
+					}
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
+			}
+		}
+
+		if strings.TrimSpace(rowData.GetString("KODE")) == "" ||
+			(strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "") {
+			skipRow = true
+		}
+
+		if isRowEmpty {
+			emptyRowCount++
+		} else {
+			emptyRowCount = 0
+		}
+
+		if skipRow {
+			continue
+		}
+
+		cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cellValueAfter == "NO" {
+			break
+		}
+
+		param := helpers.InsertParam{
+			TableName: "Rekap_TTL",
 			Data:      rowData,
 		}
 

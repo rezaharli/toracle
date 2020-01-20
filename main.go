@@ -37,6 +37,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "rekapLegi", filepath.Join(clit.ExeDir(), "config", "rekapLegi.json"))
 	clit.LoadConfigFromFlag("config", "rekapLegi2", filepath.Join(clit.ExeDir(), "config", "rekapLegi2.json"))
 	clit.LoadConfigFromFlag("config", "rekapLegi3", filepath.Join(clit.ExeDir(), "config", "rekapLegi3.json"))
+	clit.LoadConfigFromFlag("config", "rekapTTL", filepath.Join(clit.ExeDir(), "config", "rekapTTL.json"))
 	clit.LoadConfigFromFlag("config", "rekapTTL2", filepath.Join(clit.ExeDir(), "config", "rekapTTL2.json"))
 	clit.LoadConfigFromFlag("config", "rekapTTL3", filepath.Join(clit.ExeDir(), "config", "rekapTTL3.json"))
 
