@@ -91,6 +91,13 @@ func (c *PencapaianController) readExcel(filename string) error {
 				log.Println("Error reading data. ERROR:", err)
 			}
 		}
+
+		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP TTL")) {
+			err = c.ReadDataRekapTTL3(f, sheetName)
+			if err != nil {
+				log.Println("Error reading data. ERROR:", err)
+			}
+		}
 	}
 
 	if err == nil {
@@ -582,6 +589,89 @@ func (c *PencapaianController) ReadDataRekapLegi3(f *excelize.File, sheetName st
 
 		param := helpers.InsertParam{
 			TableName: "Rekap_Legi3",
+			Data:      rowData,
+		}
+
+		err = helpers.Insert(param)
+		if err != nil {
+			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		} else {
+			log.Println("Row", currentRow, "inserted.")
+		}
+
+		rowCount++
+		no++
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *PencapaianController) ReadDataRekapTTL3(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	columnsMapping := clit.Config("rekapTTL3", "columnsMapping", nil).(map[string]interface{})
+
+	firstDataRow := 57
+
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
+		}
+
+		headers = append(headers, header)
+	}
+
+	var err error
+	// var rowDatas []toolkit.M
+	rowCount := 0
+	//iterate over rows
+	no := 1
+	for index := 0; true; index++ {
+		rowData := toolkit.M{}
+		currentRow := firstDataRow + index
+
+		if currentRow > 60 {
+			break
+		}
+
+		isRowEmpty := true
+		for _, header := range headers {
+			if header.DBFieldName == "No" {
+				rowData.Set(header.DBFieldName, no)
+			} else {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				if stringData != "" {
+					isRowEmpty = false
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
+			}
+		}
+
+		if isRowEmpty {
+			continue
+		}
+
+		param := helpers.InsertParam{
+			TableName: "Rekap_TTL3",
 			Data:      rowData,
 		}
 
