@@ -24,5 +24,20 @@
             "GRUP": "",
             "SUMBER": ""
         }
+    },
+    "LabaRugi": {
+        "columnsMapping": {
+            "No": "",
+            "Tipe": "",
+            "GRUP": "A",
+            "DETAIL_TIPE": "B",
+            "LR_ANGGARAN": "C", 
+            "LR_ANGGARAN_YTD": "D", 
+            "LR_YTD": "AE", 
+            "LR_YTD_LAST": "AS", 
+            "TAHUN": "",
+            "BULAN": "",
+            "Sumber": ""
+        }
     }
 }

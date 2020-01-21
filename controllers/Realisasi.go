@@ -64,15 +64,22 @@ func (c *RealisasiController) readExcel(filename string) error {
 
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
-		if strings.EqualFold(sheetName, "NERACA") {
-			err = c.ReadDataNeraca(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
-		}
+		// if strings.EqualFold(sheetName, "NERACA") {
+		// 	err = c.ReadDataNeraca(f, sheetName)
+		// 	if err != nil {
+		// 		log.Println("Error reading data. ERROR:", err)
+		// 	}
+		// }
 
-		if strings.EqualFold(sheetName, "ARUS KAS") {
-			err = c.ReadDataArusKas(f, sheetName)
+		// if strings.EqualFold(sheetName, "ARUS KAS") {
+		// 	err = c.ReadDataArusKas(f, sheetName)
+		// 	if err != nil {
+		// 		log.Println("Error reading data. ERROR:", err)
+		// 	}
+		// }
+
+		if strings.EqualFold(sheetName, "REKAP LR") {
+			err = c.ReadDataLabaRugi(f, sheetName)
 			if err != nil {
 				log.Println("Error reading data. ERROR:", err)
 			}
@@ -399,6 +406,146 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 
 		param := helpers.InsertParam{
 			TableName: "Arus_Kas",
+			Data:      rowData,
+		}
+
+		err = helpers.Insert(param)
+		if err != nil {
+			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		} else {
+			log.Println("Row", currentRow, "inserted.")
+		}
+
+		rowCount++
+		no++
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	config := clit.Config("realisasiAnggaran", "LabaRugi", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
+
+	firstDataRow := 0
+	i := 1
+	for {
+		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cellValue == "KODE" {
+			cellValueAfter, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if cellValueAfter != "KODE" {
+				firstDataRow = i + 2
+				break
+			}
+		}
+		i++
+	}
+
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
+		}
+
+		headers = append(headers, header)
+	}
+
+	var err error
+	// var rowDatas []toolkit.M
+	rowCount := 0
+	no := 1
+
+	currentTipe := ""
+
+	stringTanggalan, err := f.GetCellValue(sheetName, "A3")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	splitted := strings.Split(stringTanggalan, " ")
+	currentBulan := splitted[len(splitted)-2]
+	currentTahun := splitted[len(splitted)-1]
+
+	countEmpty := 0
+
+	//iterate over rows
+	for index := 0; true; index++ {
+		rowData := toolkit.M{}
+		currentRow := firstDataRow + index
+
+		stringKode, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
+			countEmpty++
+
+			if countEmpty >= 100 {
+				break
+			}
+
+			continue
+		}
+
+		_, err = strconv.Atoi(stringKode)
+		if err != nil { //jika error maka tipe
+			stringUraian, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			currentTipe = stringUraian
+
+			continue
+		}
+
+		for _, header := range headers {
+			if header.DBFieldName == "No" {
+				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tipe" {
+				rowData.Set(header.DBFieldName, currentTipe)
+			} else if header.DBFieldName == "TAHUN" {
+				rowData.Set(header.DBFieldName, currentTahun)
+			} else if header.DBFieldName == "BULAN" {
+				rowData.Set(header.DBFieldName, currentBulan)
+			} else if header.DBFieldName == "Sumber" {
+				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+			} else {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
+			}
+		}
+
+		param := helpers.InsertParam{
+			TableName: "Laba_Rugi",
 			Data:      rowData,
 		}
 

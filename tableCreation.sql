@@ -310,6 +310,22 @@ CREATE TABLE Arus_Kas
   SUMBER VARCHAR2(50 BYTE)
 );
 
+DROP TABLE Laba_Rugi CASCADE CONSTRAINTS PURGE;
+CREATE TABLE Laba_Rugi
+(
+  No varchar2(50 byte),
+  Tipe varchar2(50 byte),
+  GRUP varchar2(50 byte),
+  DETAIL_TIPE varchar2(50 byte),
+  LR_ANGGARAN varchar2(50 byte),
+  LR_ANGGARAN_YTD varchar2(50 byte),
+  LR_YTD varchar2(50 byte),
+  LR_YTD_LAST varchar2(50 byte),
+  TAHUN varchar2(50 byte),
+  BULAN varchar2(50 byte),
+  Sumber varchar2(50 byte)
+);
+
 DROP TABLE Rekap_Konsol CASCADE CONSTRAINTS PURGE;
 CREATE TABLE Rekap_Konsol
 (
