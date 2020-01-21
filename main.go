@@ -32,6 +32,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "pemenuhansdm", filepath.Join(clit.ExeDir(), "config", "pemenuhansdm.json"))
 	clit.LoadConfigFromFlag("config", "rkap", filepath.Join(clit.ExeDir(), "config", "rkap.json"))
 	clit.LoadConfigFromFlag("config", "lb", filepath.Join(clit.ExeDir(), "config", "lb.json"))
+	clit.LoadConfigFromFlag("config", "realisasiAnggaran", filepath.Join(clit.ExeDir(), "config", "realisasiAnggaran.json"))
 	clit.LoadConfigFromFlag("config", "rekapKonsol", filepath.Join(clit.ExeDir(), "config", "rekapKonsol.json"))
 	clit.LoadConfigFromFlag("config", "rekapKonsol2", filepath.Join(clit.ExeDir(), "config", "rekapKonsol2.json"))
 	clit.LoadConfigFromFlag("config", "rekapLegi", filepath.Join(clit.ExeDir(), "config", "rekapLegi.json"))
@@ -173,6 +174,12 @@ func main() {
 
 				// Read Pencapaian Files
 				err = c.NewPencapaianController().ReadExcels()
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				// Read Realisasi Files
+				err = c.NewRealisasiController().ReadExcels()
 				if err != nil {
 					log.Fatal(err.Error())
 				}

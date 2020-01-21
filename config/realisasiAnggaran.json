@@ -1,0 +1,28 @@
+{
+    "Neraca": {
+        "columnsMapping": {
+            "No": "",
+            "Tipe": "A",
+            "SubTipe": "A",
+            "Uraian": "B",
+            "Tahun": "",
+            "Bulan": "",
+            "Sumber": "",
+            "Nilai": "AE",
+            "NilaiTahunLalu": "AS"
+        }
+    },
+    "ArusKas": {
+        "columnsMapping": {
+            "TAHUN": "",
+            "BULAN": "",
+            "NO_REK": "A",
+            "GL_TEXT": "B",
+            "KELOMPOK": "",
+            "INCOME_YTD": "AF",
+            "EXP_YTD": "AF",
+            "GROUP": "",
+            "SUMBER": ""
+        }
+    }
+}
