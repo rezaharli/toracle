@@ -64,19 +64,19 @@ func (c *RealisasiController) readExcel(filename string) error {
 
 	log.Println("Processing sheets...")
 	for _, sheetName := range f.GetSheetMap() {
-		// if strings.EqualFold(sheetName, "NERACA") {
-		// 	err = c.ReadDataNeraca(f, sheetName)
-		// 	if err != nil {
-		// 		log.Println("Error reading data. ERROR:", err)
-		// 	}
-		// }
+		if strings.EqualFold(sheetName, "NERACA") {
+			err = c.ReadDataNeraca(f, sheetName)
+			if err != nil {
+				log.Println("Error reading data. ERROR:", err)
+			}
+		}
 
-		// if strings.EqualFold(sheetName, "ARUS KAS") {
-		// 	err = c.ReadDataArusKas(f, sheetName)
-		// 	if err != nil {
-		// 		log.Println("Error reading data. ERROR:", err)
-		// 	}
-		// }
+		if strings.EqualFold(sheetName, "ARUS KAS") {
+			err = c.ReadDataArusKas(f, sheetName)
+			if err != nil {
+				log.Println("Error reading data. ERROR:", err)
+			}
+		}
 
 		if strings.EqualFold(sheetName, "REKAP LR") {
 			err = c.ReadDataLabaRugi(f, sheetName)
