@@ -326,6 +326,17 @@ CREATE TABLE Laba_Rugi
   Sumber varchar2(50 byte)
 );
 
+DROP TABLE Rasio_Summary CASCADE CONSTRAINTS PURGE;
+CREATE TABLE Rasio_Summary
+(
+  No varchar2(50 byte),
+  Uraian varchar2(100 byte),
+  Nilai varchar2(50 byte),
+  Bulan varchar2(50 byte),
+  Tahun varchar2(50 byte),
+  Sumber varchar2(50 byte)
+);
+
 DROP TABLE Rekap_Konsol CASCADE CONSTRAINTS PURGE;
 CREATE TABLE Rekap_Konsol
 (

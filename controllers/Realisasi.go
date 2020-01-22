@@ -84,6 +84,13 @@ func (c *RealisasiController) readExcel(filename string) error {
 				log.Println("Error reading data. ERROR:", err)
 			}
 		}
+
+		if strings.EqualFold(sheetName, "RASIO (PERB.)") {
+			err = c.ReadDataRasioSummary(f, sheetName)
+			if err != nil {
+				log.Println("Error reading data. ERROR:", err)
+			}
+		}
 	}
 
 	if err == nil {
@@ -546,6 +553,135 @@ func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName strin
 
 		param := helpers.InsertParam{
 			TableName: "Laba_Rugi",
+			Data:      rowData,
+		}
+
+		err = helpers.Insert(param)
+		if err != nil {
+			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+		} else {
+			log.Println("Row", currentRow, "inserted.")
+		}
+
+		rowCount++
+		no++
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *RealisasiController) ReadDataRasioSummary(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	config := clit.Config("realisasiAnggaran", "RasioSummary", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
+
+	firstDataRow := 0
+	i := 1
+	for {
+		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cellValue == "KODE" {
+			cellValueAfter, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if cellValueAfter != "KODE" {
+				firstDataRow = i + 2
+				break
+			}
+		}
+		i++
+	}
+
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
+		}
+
+		headers = append(headers, header)
+	}
+
+	var err error
+	// var rowDatas []toolkit.M
+	rowCount := 0
+	no := 1
+
+	stringTanggalan, err := f.GetCellValue(sheetName, "A3")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	splitted := strings.Split(stringTanggalan, " ")
+	currentBulan := splitted[len(splitted)-2]
+	currentTahun := splitted[len(splitted)-1]
+
+	countEmpty := 0
+
+	//iterate over rows
+	for index := 0; true; index++ {
+		rowData := toolkit.M{}
+		currentRow := firstDataRow + index
+
+		stringUraian, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		stringSatuan, err := f.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if strings.TrimSpace(stringSatuan) == "" || !strings.Contains(stringUraian, ".") { //jika cell satuan kosong maka skip saja ehe
+			countEmpty++
+
+			if countEmpty >= 100 {
+				break
+			}
+
+			continue
+		}
+
+		for _, header := range headers {
+			if header.DBFieldName == "No" {
+				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, currentTahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, currentBulan)
+			} else if header.DBFieldName == "Sumber" {
+				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+			} else {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
+			}
+		}
+
+		param := helpers.InsertParam{
+			TableName: "Rasio_Summary",
 			Data:      rowData,
 		}
 

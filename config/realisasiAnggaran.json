@@ -39,5 +39,15 @@
             "BULAN": "",
             "Sumber": ""
         }
+    },
+    "RasioSummary": {
+        "columnsMapping": {
+            "No": "",
+            "Uraian": "B",
+            "Nilai": "AF",
+            "Bulan": "",
+            "Tahun": "",
+            "Sumber": ""
+        }
     }
 }
