@@ -7,6 +7,7 @@ import (
 
 	c "git.eaciitapp.com/rezaharli/toracle/controllers"
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 )
@@ -71,13 +72,10 @@ func main() {
 		for {
 			go func() {
 				// READ ASC FILES
-				err := c.NewAscController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
+				(&c.Base{ExcelController: &c.AscController{}}).Extract()
 
 				// READ QHSSE FILES
-				err = c.NewQhsseController().ReadExcels()
+				err := c.NewQhsseController().ReadExcels()
 				if err != nil {
 					log.Fatal(err.Error())
 				}

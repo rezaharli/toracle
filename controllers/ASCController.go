@@ -12,81 +12,52 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
-	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type AscController struct {
 	*Base
+
+	FileExtension string
 }
 
-func NewAscController() *AscController {
-	return new(AscController)
+func (c *AscController) New() {
+	log.Println("Scanning for ASC files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *AscController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			helpers.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
+func (c *AscController) FetchFiles(resourcePath string) []string {
+	return helpers.FetchFilePathsWithExt(resourcePath, c.FileExtension)
+}
+
+func (c *AscController) FileCriteria(file string) bool {
+	if strings.Contains(filepath.Base(file), "Equipment Performance ASC") {
+		return true
 	}
 
-	return nil
+	return false
 }
 
-func (c *AscController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+func (c *AscController) ReadExcel(f *excelize.File) error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "Equipment Performance ASC") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. ASC files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *AscController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
 	for i, sheetName := range f.GetSheetMap() {
 		if i == 1 {
-			err = c.ReadMonthlyData(f, sheetName)
+			err = c.readMonthlyData(f, sheetName)
 			if err != nil {
 				log.Println("Error reading monthly data. ERROR:", err)
 			}
 		} else {
-			err = c.ReadDailyData(f, sheetName)
+			err = c.readDailyData(f, sheetName)
 			if err != nil {
 				log.Println("Error reading daily data. ERROR:", err)
 			}
 		}
 	}
 
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
-
 	return err
 }
 
-func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) error {
+func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -206,7 +177,7 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 					Results:  &resultRows,
 				}
 
-				err = c.selectItemID(param)
+				err = c.SelectItemID(param)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -243,7 +214,7 @@ func (c *AscController) ReadMonthlyData(f *excelize.File, sheetName string) erro
 	return err
 }
 
-func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error {
+func (c *AscController) readDailyData(f *excelize.File, sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -365,7 +336,7 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 					Results:  &resultRows,
 				}
 
-				err := c.selectItemID(param)
+				err := c.SelectItemID(param)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -399,17 +370,5 @@ func (c *AscController) ReadDailyData(f *excelize.File, sheetName string) error 
 		log.Println("SUCCESS Processing", rowCount, "rows")
 	}
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
-	return err
-}
-
-func (c *AscController) selectItemID(param SqlQueryParam) error {
-	sqlQuery := "SELECT * FROM D_Item WHERE ITEM_NAME = '" + param.ItemName + "'"
-
-	conn := helpers.Database()
-	cursor := conn.Cursor(dbflex.From("D_Item").SQL(sqlQuery), nil)
-	defer cursor.Close()
-
-	err := cursor.Fetchs(param.Results, 0)
-
 	return err
 }
