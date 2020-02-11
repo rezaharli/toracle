@@ -41,12 +41,12 @@ func (c *RUPSController) ReadExcel(f *excelize.File) error {
 	var err error
 
 	for _, sheetName := range f.GetSheetMap() {
-		// if strings.EqualFold(sheetName, "Asumsi") {
-		// 	err = c.readAsumsi(f, sheetName)
-		// 	if err != nil {
-		// 		log.Println("Error reading monthly data. ERROR:", err)
-		// 	}
-		// }
+		if strings.EqualFold(sheetName, "Asumsi") {
+			err = c.readAsumsi(f, sheetName)
+			if err != nil {
+				log.Println("Error reading monthly data. ERROR:", err)
+			}
+		}
 
 		if strings.EqualFold(sheetName, "Highlight") {
 			err = c.readHighlight(f, sheetName)
