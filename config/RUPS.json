@@ -8,5 +8,25 @@
             "Taksasi": "E",
             "Usulan": "F"
         }
+    },
+    "Highlight": {
+        "Taksasi": {
+            "columnsMapping": {
+                "Tahun": "",
+                "Uraian": "B",
+                "Tipe": "",
+                "Nilai": "C",
+                "Trend": "D"
+            }
+        },
+        "RKAP": {
+            "columnsMapping": {
+                "Tahun": "",
+                "Uraian": "G",
+                "Tipe": "",
+                "Nilai": "H",
+                "Trend": "D"
+            }
+        }
     }
 }
