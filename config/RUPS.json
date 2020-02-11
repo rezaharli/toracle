@@ -1,0 +1,12 @@
+{
+    "Asumsi": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Tipe": "C",
+            "AsumsiPokok": "C",
+            "RKAP": "D",
+            "Taksasi": "E",
+            "Usulan": "F"
+        }
+    }
+}

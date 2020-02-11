@@ -42,6 +42,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "rekapTTL", filepath.Join(clit.ExeDir(), "config", "rekapTTL.json"))
 	clit.LoadConfigFromFlag("config", "rekapTTL2", filepath.Join(clit.ExeDir(), "config", "rekapTTL2.json"))
 	clit.LoadConfigFromFlag("config", "rekapTTL3", filepath.Join(clit.ExeDir(), "config", "rekapTTL3.json"))
+	clit.LoadConfigFromFlag("config", "RUPS", filepath.Join(clit.ExeDir(), "config", "RUPS.json"))
 
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
@@ -73,6 +74,7 @@ func main() {
 			go func() {
 				// READ ASC FILES
 				(&c.Base{ExcelController: &c.AscController{}}).Extract()
+				(&c.Base{ExcelController: &c.RUPSController{}}).Extract()
 
 				// READ QHSSE FILES
 				err := c.NewQhsseController().ReadExcels()
