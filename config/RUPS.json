@@ -28,5 +28,14 @@
                 "Trend": "D"
             }
         }
+    },
+    "RKM": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Taksasi_Jumlah": "C",
+            "Taksasi_Selesai": "D",
+            "RKAP": "E",
+            "Program_Strategis": "B"
+        }
     }
 }
