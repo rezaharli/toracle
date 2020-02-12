@@ -82,6 +82,13 @@ func (c *RUPSController) ReadExcel(f *excelize.File) error {
 				log.Println("Error reading monthly data. ERROR:", err)
 			}
 		}
+
+		if strings.EqualFold(sheetName, "FINANCIAL RATIO") {
+			err = c.readFinancialRatio(f, sheetName)
+			if err != nil {
+				log.Println("Error reading monthly data. ERROR:", err)
+			}
+		}
 	}
 
 	return err
@@ -857,6 +864,153 @@ func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
 	if err == nil {
 		log.Println("SUCCESS Processing", rowCount, "rows")
 	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) error {
+	var err error
+
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	gridsConfig := clit.Config("RUPS", "FinancialRatio", nil).(map[string]interface{})
+
+	filename := filepath.Base(f.Path)
+	splitted := strings.Split(filename, " ")
+	tahun := splitted[3]
+
+	tablename := "RUPS_Financial_Ratio"
+
+	// check if data exists
+	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
+
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		for tipe, configEachType := range gridsConfig {
+			gridIdentifiers := map[string]string{}
+			gridIdentifiers["PendapatanBeban"] = "PENDAPATAN VS BEBAN USAHA"
+			gridIdentifiers["EatLaba"] = "EAT VS LABA USAHA"
+			gridIdentifiers["RoaRoeEbitda"] = "ROA, ROE, EBITDA MARGIN"
+			gridIdentifiers["DebtOrCash"] = "DEBT TO EQUITY, OR &CASH RATIO"
+
+			records := map[string]interface{}{}
+
+			for gridName, gridIdentifier := range gridIdentifiers {
+				tableConfig := configEachType.(map[string]interface{})[gridName].(map[string]interface{})
+				columnsMapping := tableConfig["columnsMapping"].(map[string]interface{})
+
+				tableFound := false
+				firstDataRow := 0
+				i := 1
+				for {
+					if tableFound == false {
+						cellValue, err := f.GetCellValue(sheetName, columnsMapping["Uraian"].(string)+toolkit.ToString(i))
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						if strings.Contains(strings.ToUpper(cellValue), strings.ToUpper(gridIdentifier)) {
+							firstDataRow = i + 3
+							break
+						}
+					}
+
+					i++
+				}
+
+				var headers []Header
+				for key, column := range columnsMapping {
+					header := Header{
+						DBFieldName: key,
+						Column:      column.(string),
+					}
+
+					headers = append(headers, header)
+				}
+
+				rowCount := 0
+				no := 1
+				emptyCount := 0
+
+				//iterate over rows
+				for index := 0; true; index++ {
+					rowData := toolkit.M{}
+					currentRow := firstDataRow + index
+					isRowEmpty := true
+
+					for _, header := range headers {
+						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						stringData = strings.ReplaceAll(stringData, "'", "''")
+
+						if len(stringData) > 300 {
+							stringData = stringData[0:300]
+						}
+
+						if strings.TrimSpace(stringData) != "" {
+							isRowEmpty = false
+						}
+
+						rowData.Set(header.DBFieldName, stringData)
+					}
+
+					if emptyCount >= 2 {
+						break
+					}
+
+					if isRowEmpty {
+						emptyCount++
+						continue
+					}
+
+					var data map[string]interface{}
+					if records[rowData.GetString("Uraian")] == nil {
+						data = map[string]interface{}{}
+						data["Tahun"] = tahun
+						data["Tipe"] = tipe
+					} else {
+						data = records[rowData.GetString("Uraian")].(map[string]interface{})
+					}
+
+					for key, val := range rowData {
+						data[key] = val
+					}
+
+					records[rowData.GetString("Uraian")] = data
+
+					rowCount++
+					no++
+				}
+			}
+
+			for _, rowData := range records {
+				param := helpers.InsertParam{
+					TableName: tablename,
+					Data:      rowData,
+				}
+
+				err = helpers.Insert(param)
+				if err != nil {
+					log.Fatal("Error inserting row, ERROR:", err.Error())
+				} else {
+					log.Println("Row inserted.")
+				}
+			}
+		}
+	}
+
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 	return err
 }

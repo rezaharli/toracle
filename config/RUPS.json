@@ -73,5 +73,71 @@
             "SDM_Total": "D",
             "Laba_Usaha": "F"
         }
+    },
+    "FinancialRatio": {
+        "5545": {
+            "PendapatanBeban": {
+                "columnsMapping": {
+                    "Uraian": "B",
+                    "Pendapatan": "C",
+                    "Beban": "D"
+                }
+            },
+            "EatLaba": {
+                "columnsMapping": {
+                    "Uraian": "B",
+                    "Laba": "D",
+                    "EAT": "C"
+                }
+            },
+            "RoaRoeEbitda": {
+                "columnsMapping": {
+                    "Uraian": "B",
+                    "ROA": "C",
+                    "ROE": "D",
+                    "EBITDA": "E"
+                }
+            },
+            "DebtOrCash": {
+                "columnsMapping": {
+                    "Uraian": "B",
+                    "DebtToEquity": "C",
+                    "OR": "D",
+                    "CashRatio": "E"
+                }
+            }
+        },
+        "6535": {
+            "PendapatanBeban": {
+                "columnsMapping": {
+                    "Uraian": "G",
+                    "Pendapatan": "H",
+                    "Beban": "I"
+                }
+            },
+            "EatLaba": {
+                "columnsMapping": {
+                    "Uraian": "G",
+                    "Laba": "I",
+                    "EAT": "H"
+                }
+            },
+            "RoaRoeEbitda": {
+                "columnsMapping": {
+                    "Uraian": "G",
+                    "ROA": "H",
+                    "ROE": "I",
+                    "EBITDA": "J"
+                }
+            },
+            "DebtOrCash": {
+                "columnsMapping": {
+                    "Uraian": "G",
+                    "DebtToEquity": "H",
+                    "OR": "I",
+                    "CashRatio": "J"
+                }
+            }
+        }
     }
 }
