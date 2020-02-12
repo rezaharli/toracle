@@ -50,5 +50,20 @@
             "Trend_Taksasi": "R",
             "Trend_Usulan": "S"
         }
+    },
+    "Investasi": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Uraian": "B",
+            "Program_RKAP": "C",
+            "Program_Taksasi": "D",
+            "Nilai_RKAP": "E",
+            "Nilai_Revisi": "F",
+            "Jumlah_Program": "G",
+            "Taksasi": "H",
+            "Serapan": "I",
+            "Usulan_Program": "J",
+            "Usulan_Nilai": "K"
+        }
     }
 }
