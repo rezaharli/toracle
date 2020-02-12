@@ -37,5 +37,18 @@
             "RKAP": "E",
             "Program_Strategis": "B"
         }
+    },
+    "FinancialReport": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Uraian": "L",
+            "Realisasi_TL": "M",
+            "Taksasi": "N",
+            "RKAP": "O",
+            "Usulan": "P",
+            "Trend_TL": "Q",
+            "Trend_Taksasi": "R",
+            "Trend_Usulan": "S"
+        }
     }
 }
