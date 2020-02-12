@@ -75,6 +75,13 @@ func (c *RUPSController) ReadExcel(f *excelize.File) error {
 				log.Println("Error reading monthly data. ERROR:", err)
 			}
 		}
+
+		if strings.EqualFold(sheetName, "SDM REKAP") {
+			err = c.readSDM(f, sheetName)
+			if err != nil {
+				log.Println("Error reading monthly data. ERROR:", err)
+			}
+		}
 	}
 
 	return err
@@ -696,6 +703,128 @@ func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error
 			}
 
 			if emptyCount >= 2 {
+				break
+			}
+
+			if isRowEmpty {
+				emptyCount++
+				continue
+			}
+
+			if !isDataRow {
+				continue
+			}
+
+			param := helpers.InsertParam{
+				TableName: tablename,
+				Data:      rowData,
+			}
+
+			err = helpers.Insert(param)
+			if err != nil {
+				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			} else {
+				log.Println("Row", currentRow, "inserted.")
+			}
+
+			rowCount++
+			no++
+		}
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	config := clit.Config("RUPS", "SDM", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
+
+	filename := filepath.Base(f.Path)
+	splitted := strings.Split(filename, " ")
+	tahun := splitted[3]
+
+	firstDataRow := 0
+	i := 1
+	for {
+		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if strings.TrimSpace(cellValue) == "SDM Organik" {
+			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if strings.TrimSpace(cellValueAfter) != "SDM Organik" {
+				firstDataRow = i + 1
+				break
+			}
+		}
+		i++
+	}
+
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
+		}
+
+		headers = append(headers, header)
+	}
+
+	var err error
+	rowCount := 0
+	emptyCount := 0
+	no := 1
+
+	tablename := "RUPS_SDM"
+
+	// check if data exists
+	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
+
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
+			isRowEmpty := true
+			isDataRow := true
+
+			for _, header := range headers {
+				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if strings.TrimSpace(stringData) != "" {
+					isRowEmpty = false
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
+			}
+
+			if emptyCount >= 1 {
 				break
 			}
 

@@ -65,5 +65,13 @@
             "Usulan_Program": "J",
             "Usulan_Nilai": "K"
         }
+    },
+    "SDM": {
+        "columnsMapping": {
+            "Tahun": "A",
+            "SDM_Organik": "B",
+            "SDM_Total": "D",
+            "Laba_Usaha": "F"
+        }
     }
 }
