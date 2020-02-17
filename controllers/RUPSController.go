@@ -454,6 +454,10 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
+					if header.DBFieldName == "Taksasi_Jumlah" || header.DBFieldName == "Taksasi_Selesai" || header.DBFieldName == "RKAP" {
+						stringData = strings.ReplaceAll(stringData, "*", "")
+					}
+
 					if strings.TrimSpace(stringData) != "" {
 						isRowEmpty = false
 					}
