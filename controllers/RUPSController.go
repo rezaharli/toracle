@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -325,6 +326,33 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 						}
 
 						stringData = strings.ReplaceAll(stringData, "'", "''")
+
+						if header.DBFieldName == "Nilai" { //ambil integernya doang
+							getNumVal := func(str string) []string {
+								charToNum := func(r rune) (int, error) {
+									intval := int(r) - '0'
+									if 0 <= intval && intval <= 9 {
+										return intval, nil
+									}
+
+									return -1, errors.New("type: rune was not int")
+								}
+
+								var nums []string
+								for _, val := range str {
+									_, err := charToNum(val)
+									if err != nil {
+										continue
+									}
+
+									nums = append(nums, string(val))
+								}
+
+								return nums
+							}
+
+							stringData = strings.Join(getNumVal(stringData), "")
+						}
 
 						if len(stringData) > 300 {
 							stringData = stringData[0:300]
