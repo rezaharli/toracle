@@ -191,8 +191,17 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
 					if header.DBFieldName == "RKAP" || header.DBFieldName == "Taksasi" || header.DBFieldName == "Usulan" {
-						stringData = strings.ReplaceAll(stringData, "%", "")
-						stringData = strings.ReplaceAll(stringData, "*", "")
+						if strings.Contains(stringData, "%") {
+							stringData = strings.ReplaceAll(stringData, "%", "")
+							stringData = strings.ReplaceAll(stringData, "*", "")
+							stringData = strings.TrimSpace(stringData)
+							stringData = strings.Join(strings.Split(stringData, ","), ".") // decimal by comma to decimal by dot
+
+							stringData = strings.Join(c.getNumVal(stringData, []string{"."}), "")
+						} else if strings.Contains(stringData, "Rp.") {
+							stringData = strings.Join(c.getNumVal(stringData, []string{}), "")
+							stringData = strings.TrimSpace(stringData)
+						}
 					}
 
 					if len(stringData) > 300 {
@@ -333,30 +342,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 						stringData = strings.ReplaceAll(stringData, "'", "''")
 
 						if header.DBFieldName == "Nilai" { //ambil integernya doang
-							getNumVal := func(str string) []string {
-								charToNum := func(r rune) (int, error) {
-									intval := int(r) - '0'
-									if 0 <= intval && intval <= 9 {
-										return intval, nil
-									}
-
-									return -1, errors.New("type: rune was not int")
-								}
-
-								var nums []string
-								for _, val := range str {
-									_, err := charToNum(val)
-									if err != nil {
-										continue
-									}
-
-									nums = append(nums, string(val))
-								}
-
-								return nums
-							}
-
-							stringData = strings.Join(getNumVal(stringData), "")
+							stringData = strings.Join(c.getNumVal(stringData, []string{}), "")
 						}
 
 						if len(stringData) > 300 {
@@ -1050,4 +1036,47 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 	return err
+}
+
+func (c *RUPSController) getNumVal(str string, exceptions []string) []string {
+	charToNum := func(r rune) (int, error) {
+		intval := int(r) - '0'
+		if 0 <= intval && intval <= 9 {
+			return intval, nil
+		}
+
+		return -1, errors.New("type: rune was not int")
+	}
+
+	stringInSlice := func(a string, list []string) bool {
+		for _, b := range list {
+			if b == a {
+				return true
+			}
+		}
+		return false
+	}
+
+	numberFound := false
+	var nums []string
+	for _, val := range str {
+		if !numberFound {
+			_, err := charToNum(val)
+			if err != nil {
+				continue
+			}
+		} else {
+			if !stringInSlice(string(val), exceptions) {
+				_, err := charToNum(val)
+				if err != nil {
+					continue
+				}
+			}
+		}
+
+		numberFound = true
+		nums = append(nums, string(val))
+	}
+
+	return nums
 }
