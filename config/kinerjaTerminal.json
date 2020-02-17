@@ -1,0 +1,10 @@
+{
+    "columnsMapping": {
+        "Uraian": "B",
+        "Satuan": "C",
+        "RKAP": "D",
+        "Realisasi": "",
+        "Bulan": "",
+        "Tahun": ""
+    }
+}
