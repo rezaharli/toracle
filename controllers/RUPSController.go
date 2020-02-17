@@ -192,6 +192,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 
 					if header.DBFieldName == "RKAP" || header.DBFieldName == "Taksasi" || header.DBFieldName == "Usulan" {
 						stringData = strings.ReplaceAll(stringData, "%", "")
+						stringData = strings.ReplaceAll(stringData, "*", "")
 					}
 
 					if len(stringData) > 300 {
