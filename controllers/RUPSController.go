@@ -341,16 +341,23 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 
 						stringData = strings.ReplaceAll(stringData, "'", "''")
 
-						if header.DBFieldName == "Nilai" { //ambil integernya doang
-							stringData = strings.Join(c.getNumVal(stringData, []string{}), "")
-						}
-
 						if len(stringData) > 300 {
 							stringData = stringData[0:300]
 						}
 
 						if strings.TrimSpace(stringData) != "" {
 							isRowEmpty = false
+						}
+
+						if header.DBFieldName == "Nilai" { //ambil integernya doang
+							stringData = strings.Join(c.getNumVal(stringData, []string{}), "")
+						}
+
+						if header.DBFieldName == "Trend" {
+							_, err := strconv.ParseFloat(stringData, 64)
+							if err != nil { //jika tidak bisa diconvert ke float
+								stringData = ""
+							}
 						}
 
 						rowData.Set(header.DBFieldName, stringData)
