@@ -379,7 +379,7 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	config := clit.Config("RUPS", "Asumsi", nil).(map[string]interface{})
+	config := clit.Config("RUPS", "RKM", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	filename := filepath.Base(f.Path)
