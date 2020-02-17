@@ -16,25 +16,20 @@ import (
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// RUPSController is a controller for for every kind of RUPS files.
 type RUPSController struct {
-	FileExtension string
+	*Base
 }
 
-func (c *RUPSController) New() {
+func (c *RUPSController) New(base interface{}) {
+	c.Base = base.(*Base)
+
 	log.Println("Scanning for RUPS files.")
 	c.FileExtension = ".xlsx"
 }
 
-func (c *RUPSController) FetchFiles(resourcePath string) []string {
-	return helpers.FetchFilePathsWithExt(resourcePath, c.FileExtension)
-}
-
 func (c *RUPSController) FileCriteria(file string) bool {
-	if strings.Contains(filepath.Base(file), "KK RKAP - 2020 FIN2") {
-		return true
-	}
-
-	return false
+	return strings.Contains(filepath.Base(file), "KK RKAP - 2020 FIN2")
 }
 
 func (c *RUPSController) ReadExcel(f *excelize.File) error {
@@ -42,52 +37,31 @@ func (c *RUPSController) ReadExcel(f *excelize.File) error {
 
 	for _, sheetName := range f.GetSheetMap() {
 		if strings.EqualFold(sheetName, "Asumsi") {
-			err = c.readAsumsi(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readAsumsi)
 		}
 
 		if strings.EqualFold(sheetName, "Highlight") {
-			err = c.readHighlight(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readHighlight)
 		}
 
 		if strings.EqualFold(sheetName, "RKM") {
-			err = c.readRKM(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readRKM)
 		}
 
 		if strings.EqualFold(sheetName, "LR KONSOL") {
-			err = c.readFinancialReport(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readFinancialReport)
 		}
 
 		if strings.EqualFold(sheetName, "INVES") {
-			err = c.readInvestasi(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readInvestasi)
 		}
 
 		if strings.EqualFold(sheetName, "SDM REKAP") {
-			err = c.readSDM(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readSDM)
 		}
 
 		if strings.EqualFold(sheetName, "FINANCIAL RATIO") {
-			err = c.readFinancialRatio(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readFinancialRatio)
 		}
 	}
 
@@ -214,17 +188,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 				continue
 			}
 
-			param := helpers.InsertParam{
-				TableName: tablename,
-				Data:      rowData,
-			}
-
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-			} else {
-				log.Println("Row", currentRow, "inserted.")
-			}
+			c.InsertRowData(currentRow, rowData, tablename)
 
 			rowCount++
 			no++
@@ -347,17 +311,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 					continue
 				}
 
-				param := helpers.InsertParam{
-					TableName: tablename,
-					Data:      rowData,
-				}
-
-				err = helpers.Insert(param)
-				if err != nil {
-					log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-				} else {
-					log.Println("Row", currentRow, "inserted.")
-				}
+				c.InsertRowData(currentRow, rowData, tablename)
 
 				rowCount++
 				no++
@@ -470,17 +424,7 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 				continue
 			}
 
-			param := helpers.InsertParam{
-				TableName: tablename,
-				Data:      rowData,
-			}
-
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-			} else {
-				log.Println("Row", currentRow, "inserted.")
-			}
+			c.InsertRowData(currentRow, rowData, tablename)
 
 			rowCount++
 			no++
@@ -596,17 +540,7 @@ func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string)
 				continue
 			}
 
-			param := helpers.InsertParam{
-				TableName: tablename,
-				Data:      rowData,
-			}
-
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-			} else {
-				log.Println("Row", currentRow, "inserted.")
-			}
+			c.InsertRowData(currentRow, rowData, tablename)
 
 			rowCount++
 			no++
@@ -722,17 +656,7 @@ func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error
 				continue
 			}
 
-			param := helpers.InsertParam{
-				TableName: tablename,
-				Data:      rowData,
-			}
-
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-			} else {
-				log.Println("Row", currentRow, "inserted.")
-			}
+			c.InsertRowData(currentRow, rowData, tablename)
 
 			rowCount++
 			no++
@@ -844,17 +768,7 @@ func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
 				continue
 			}
 
-			param := helpers.InsertParam{
-				TableName: tablename,
-				Data:      rowData,
-			}
-
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-			} else {
-				log.Println("Row", currentRow, "inserted.")
-			}
+			c.InsertRowData(currentRow, rowData, tablename)
 
 			rowCount++
 			no++
@@ -995,18 +909,8 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 				}
 			}
 
-			for _, rowData := range records {
-				param := helpers.InsertParam{
-					TableName: tablename,
-					Data:      rowData,
-				}
-
-				err = helpers.Insert(param)
-				if err != nil {
-					log.Fatal("Error inserting row, ERROR:", err.Error())
-				} else {
-					log.Println("Row inserted.")
-				}
+			for uraian, rowData := range records {
+				c.InsertRowData(uraian, rowData, tablename)
 			}
 		}
 	}

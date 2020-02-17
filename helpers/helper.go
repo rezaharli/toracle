@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/eaciit/clit"
+	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/eaciit/toolkit"
 )
 
 func KillApp(err error) {
@@ -35,19 +36,18 @@ func FetchFilePathsWithExt(resourcePath, ext string) []string {
 	return files
 }
 
-func MoveToArchive(filePath string) {
-	log.Println("Moving file to archive...")
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
+func ReadExcel(filename string) (*excelize.File, error) {
+	toolkit.Println("\n================================================================================")
+	log.Println("Opening file", filepath.Base(filename))
+	toolkit.Println()
 
-	archivePath := filepath.Join(resourcePath, "archive")
-	if _, err := os.Stat(archivePath); os.IsNotExist(err) {
-		os.Mkdir(archivePath, 0755)
-	}
-
-	err := os.Rename(filePath, filepath.Join(resourcePath, "archive", filepath.Base(filePath)))
+	f, err := excelize.OpenFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error open file. ERROR:", err)
+		return f, err
 	}
+
+	return f, err
 }
 
 func CharStrToNum(char string) int {

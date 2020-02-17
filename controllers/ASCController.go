@@ -14,27 +14,20 @@ import (
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// AscController is a controller for every kind of ASC files.
 type AscController struct {
 	*Base
-
-	FileExtension string
 }
 
-func (c *AscController) New() {
+func (c *AscController) New(base interface{}) {
+	c.Base = base.(*Base)
+
 	log.Println("Scanning for ASC files.")
 	c.FileExtension = ".xlsx"
 }
 
-func (c *AscController) FetchFiles(resourcePath string) []string {
-	return helpers.FetchFilePathsWithExt(resourcePath, c.FileExtension)
-}
-
 func (c *AscController) FileCriteria(file string) bool {
-	if strings.Contains(filepath.Base(file), "Equipment Performance ASC") {
-		return true
-	}
-
-	return false
+	return strings.Contains(filepath.Base(file), "Equipment Performance ASC")
 }
 
 func (c *AscController) ReadExcel(f *excelize.File) error {
@@ -42,15 +35,9 @@ func (c *AscController) ReadExcel(f *excelize.File) error {
 
 	for i, sheetName := range f.GetSheetMap() {
 		if i == 1 {
-			err = c.readMonthlyData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readMonthlyData)
 		} else {
-			err = c.readDailyData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading daily data. ERROR:", err)
-			}
+			c.ReadSheet(f, sheetName, c.readDailyData)
 		}
 	}
 

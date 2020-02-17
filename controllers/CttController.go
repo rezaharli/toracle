@@ -29,7 +29,7 @@ func (c *CttController) ReadExcels() error {
 		err := c.readExcel(file)
 		if err == nil {
 			// move file if read succeeded
-			helpers.MoveToArchive(file)
+			c.MoveToArchive(file)
 			log.Println("Done.")
 		} else {
 			return err
