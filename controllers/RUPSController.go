@@ -635,7 +635,7 @@ func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string)
 
 			err = helpers.Insert(param)
 			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				log.Println("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
 			} else {
 				log.Println("Row", currentRow, "inserted.")
 			}
