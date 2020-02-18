@@ -141,7 +141,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 	tablename := "RUPS_Asumsi"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -270,7 +270,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 	tablename := "RUPS_Highlight"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -450,7 +450,7 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 	tablename := "RUPS_RKM"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -575,7 +575,7 @@ func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string)
 	tablename := "RUPS_Financial_Report"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -701,7 +701,7 @@ func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error
 	tablename := "RUPS_Investasi"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -827,7 +827,7 @@ func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
 	tablename := "RUPS_SDM"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -913,7 +913,7 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 	tablename := "RUPS_Financial_Ratio"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
