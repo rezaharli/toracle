@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/eaciit/clit"
 )
 
 func KillApp(err error) {
@@ -37,14 +35,13 @@ func FetchFilePathsWithExt(resourcePath, ext string) []string {
 
 func MoveToArchive(filePath string) {
 	log.Println("Moving file to archive...")
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
 
-	archivePath := filepath.Join(resourcePath, "archive")
+	archivePath := filepath.Join(filepath.Dir(filePath), "archive")
 	if _, err := os.Stat(archivePath); os.IsNotExist(err) {
 		os.Mkdir(archivePath, 0755)
 	}
 
-	err := os.Rename(filePath, filepath.Join(resourcePath, "archive", filepath.Base(filePath)))
+	err := os.Rename(filePath, filepath.Join(archivePath, filepath.Base(filePath)))
 	if err != nil {
 		log.Fatal(err)
 	}
