@@ -262,56 +262,55 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 	log.Println("ReadData", sheetName)
 	configs := clit.Config("RUPS", "Highlight", nil).(map[string]interface{})
 
-	for tipe, config := range configs {
-		columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
+	rowCount := 0
+	filename := filepath.Base(f.Path)
+	splitted := strings.Split(filename, " ")
+	tahun := splitted[3]
 
-		filename := filepath.Base(f.Path)
-		splitted := strings.Split(filename, " ")
-		tahun := splitted[3]
+	tablename := "RUPS_Highlight"
 
-		firstDataRow := 0
-		i := 1
-		for {
-			cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
-			if err != nil {
-				log.Fatal(err)
+	// check if data exists
+	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
+
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		for tipe, config := range configs {
+			columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
+
+			firstDataRow := 0
+			i := 1
+			for {
+				cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if cellValue == "Uraian" {
+					firstDataRow = i + 2
+					break
+				}
+				i++
 			}
 
-			if cellValue == "Uraian" {
-				firstDataRow = i + 2
-				break
-			}
-			i++
-		}
+			var headers []Header
+			for key, column := range columnsMapping {
+				header := Header{
+					DBFieldName: key,
+					Column:      column.(string),
+				}
 
-		var headers []Header
-		for key, column := range columnsMapping {
-			header := Header{
-				DBFieldName: key,
-				Column:      column.(string),
+				headers = append(headers, header)
 			}
 
-			headers = append(headers, header)
-		}
-
-		rowCount := 0
-		no := 1
-		emptyCount := 0
-
-		tablename := "RUPS_Highlight"
-
-		// check if data exists
-		sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
-
-		conn := helpers.Database()
-		cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
-		defer cursor.Close()
-
-		res := make([]toolkit.M, 0)
-		err = cursor.Fetchs(&res, 0)
-
-		//only insert if len of datas is 0 / if no data yet
-		if len(res) == 0 {
+			no := 1
+			emptyCount := 0
 			//iterate over rows
 			for index := 0; true; index++ {
 				rowData := toolkit.M{}
@@ -388,14 +387,14 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 				rowCount++
 				no++
 			}
-
-			if err == nil {
-				log.Println("SUCCESS Processing", rowCount, "rows")
-			}
-
-			log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 		}
 	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
