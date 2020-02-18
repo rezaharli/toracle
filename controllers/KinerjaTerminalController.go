@@ -13,6 +13,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type KinerjaTerminalController struct {
@@ -55,6 +56,8 @@ func (c *KinerjaTerminalController) ReadExcel(f *excelize.File) error {
 }
 
 func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string) error {
+	var err error
+
 	timeNow := time.Now()
 
 	log.Println("\nReadData", sheetName)
@@ -87,6 +90,7 @@ func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string
 	monthRow := firstDataRow - 2
 	var monthHeaders []Header
 	isHeaderDetected := false
+	currentTahun := ""
 
 	i = 5 //mulai kolom 5 (E)
 	prevCell := ""
@@ -106,6 +110,8 @@ func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string
 		_, timeParseErr := time.Parse("Jan-06", strings.TrimSpace(cellText))
 		if isHeaderDetected == false && timeParseErr == nil {
 			isHeaderDetected = true
+
+			currentTahun = strings.Split(strings.TrimSpace(cellText), "-")[1]
 		}
 
 		if isHeaderDetected == true && timeParseErr != nil {
@@ -129,95 +135,113 @@ func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string
 	}
 
 	rowCount := 0
-	var err error
-	for _, monthHeader := range monthHeaders {
-		var headers []Header
-		for key, column := range columnsMapping {
-			header := Header{
-				DBFieldName: key,
-				Column:      column.(string),
-			}
+	months := clit.Config("kinerjaTerminal", "months", nil).([]interface{})
 
-			if key == "Bulan" {
-				header.Value = strings.Split(strings.TrimSpace(monthHeader.HeaderName), "-")[0]
-				header.Column = monthHeader.Column
-			}
+	tablename := "BOD_Kinerja_Terminal"
 
-			if key == "Tahun" {
-				header.Value = strings.Split(strings.TrimSpace(monthHeader.HeaderName), "-")[1]
-				header.Column = monthHeader.Column
-			}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "'"
 
-			if key == "Realisasi" {
-				header.Column = monthHeader.Column
-			}
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-			headers = append(headers, header)
-		}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-		//iterate over rows
-		rowEmptyCount := 0
-		for index := 0; true; index++ {
-			rowData := toolkit.M{}
-			currentRow := firstDataRow + index
-			isRowEmpty := true
-
-			for _, header := range headers {
-				if header.DBFieldName == "Bulan" {
-					rowData.Set(header.DBFieldName, header.Value)
-				} else if header.DBFieldName == "Tahun" {
-					rowData.Set(header.DBFieldName, header.Value)
-				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					stringData = strings.ReplaceAll(stringData, "'", "''")
-					stringData = strings.ReplaceAll(stringData, "-", "")
-
-					stringData = strings.TrimSpace(stringData)
-
-					if len(stringData) > 300 {
-						stringData = stringData[0:300]
-					}
-
-					if header.DBFieldName != "Uraian" && stringData != "" {
-						isRowEmpty = false
-					}
-
-					rowData.Set(header.DBFieldName, stringData)
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		for _, monthHeader := range monthHeaders {
+			var headers []Header
+			for key, column := range columnsMapping {
+				header := Header{
+					DBFieldName: key,
+					Column:      column.(string),
 				}
+
+				if key == "Bulan" {
+					header.Value = strings.Split(strings.TrimSpace(monthHeader.HeaderName), "-")[0]
+					header.Column = monthHeader.Column
+				}
+
+				if key == "Tahun" {
+					header.Value = strings.Split(strings.TrimSpace(monthHeader.HeaderName), "-")[1]
+					header.Column = monthHeader.Column
+				}
+
+				if key == "Realisasi" {
+					header.Column = monthHeader.Column
+				}
+
+				headers = append(headers, header)
 			}
 
-			if rowEmptyCount >= 10 {
-				break
-			}
+			//iterate over rows
+			rowEmptyCount := 0
+			for index := 0; true; index++ {
+				rowData := toolkit.M{}
+				currentRow := firstDataRow + index
+				isRowEmpty := true
 
-			if isRowEmpty {
-				rowEmptyCount++
-				continue
-			}
+				for _, header := range headers {
+					if header.DBFieldName == "Bulan" {
+						rowData.Set(header.DBFieldName, toolkit.ToString(helpers.IndexOf(header.Value, months)+1))
+					} else if header.DBFieldName == "Tahun" {
+						rowData.Set(header.DBFieldName, header.Value)
+					} else {
+						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						if err != nil {
+							log.Fatal(err)
+						}
 
-			param := helpers.InsertParam{
-				TableName: "BOD_Kinerja_Terminal",
-				Data:      rowData,
-			}
+						stringData = strings.ReplaceAll(stringData, "'", "''")
+						stringData = strings.ReplaceAll(stringData, "-", "")
 
-			err = helpers.Insert(param)
-			if err != nil {
-				log.Fatal("Error inserting "+monthHeader.HeaderName+", ERROR:", err.Error())
-			} else {
-				log.Println(monthHeader.HeaderName + ", inserted.")
-			}
+						stringData = strings.TrimSpace(stringData)
 
-			rowCount++
+						if len(stringData) > 300 {
+							stringData = stringData[0:300]
+						}
+
+						if header.DBFieldName != "Uraian" && stringData != "" {
+							isRowEmpty = false
+						}
+
+						rowData.Set(header.DBFieldName, stringData)
+					}
+				}
+
+				if rowEmptyCount >= 10 {
+					break
+				}
+
+				if isRowEmpty {
+					rowEmptyCount++
+					continue
+				}
+
+				param := helpers.InsertParam{
+					TableName: tablename,
+					Data:      rowData,
+				}
+
+				err = helpers.Insert(param)
+				if err != nil {
+					log.Fatal("Error inserting "+monthHeader.HeaderName+", ERROR:", err.Error())
+				} else {
+					log.Println(monthHeader.HeaderName + ", inserted.")
+				}
+
+				rowCount++
+			}
 		}
+
 	}
 
 	if err == nil {
 		log.Println("SUCCESS Processing", rowCount, "rows")
 	}
+
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 	return err
 }
