@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -18,30 +16,32 @@ import (
 
 // Base is a base controller for every other controller.
 type Base struct {
-	interfaces.ExcelController
+	Engine     interfaces.ExcelEngine
+	Controller interfaces.ExcelController
 
 	FileExtension string
 }
 
-func (c *Base) Decide() interfaces.XlsxController {
-	switch c.FileExtension {
-	case ".xlsx":
-		return helpers.XlsxHelper{}
-	default:
-		return nil
-	}
+func (c *Base) Put(engine interfaces.ExcelEngine) {
+	c.Engine = engine
 }
 
 func (c *Base) Extract() {
-	c.New(c)
-	engine := c.Decide()
+	c.Controller.New(c)
+
+	switch c.FileExtension {
+	case ".xlsx":
+		c.Put(&helpers.XlsxHelper{})
+	default:
+		c.Put(&helpers.XlsHelper{})
+	}
 
 	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
 	filePaths := helpers.FetchFilePathsWithExt(resourcePath, c.FileExtension)
 
 	filenames := []string{}
 	for _, file := range filePaths {
-		if c.FileCriteria(file) {
+		if c.Controller.FileCriteria(file) {
 			filenames = append(filenames, file)
 		}
 	}
@@ -52,12 +52,12 @@ func (c *Base) Extract() {
 		log.Println("Processing sheets...")
 		timeNow := time.Now()
 
-		f, err := engine.ReadExcel(filePath)
+		err := c.Engine.OpenExcel(filePath)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 
-		err = c.ReadExcel(f)
+		err = c.Controller.ReadExcel()
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -74,8 +74,8 @@ func (c *Base) Extract() {
 	}
 }
 
-func (c *Base) ReadSheet(f *excelize.File, sheetToRead string, readSheet readSheet) {
-	err := readSheet(f, sheetToRead)
+func (c *Base) ReadSheet(readSheet readSheet, sheetToRead string) {
+	err := readSheet(sheetToRead)
 	if err != nil {
 		log.Println("Error reading monthly data. ERROR:", err)
 	}
@@ -139,4 +139,4 @@ type Header struct {
 	Value string
 }
 
-type readSheet func(f *excelize.File, sheetName string) error
+type readSheet func(sheetName string) error

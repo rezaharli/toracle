@@ -8,13 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
-	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/sebar/dbflex"
+
+	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
 // RUPSController is a controller for for every kind of RUPS files.
@@ -33,43 +32,43 @@ func (c *RUPSController) FileCriteria(file string) bool {
 	return strings.Contains(filepath.Base(file), "KK RKAP - 2020 FIN2")
 }
 
-func (c *RUPSController) ReadExcel(f *excelize.File) error {
+func (c *RUPSController) ReadExcel() error {
 	var err error
 
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "Asumsi") {
-			c.ReadSheet(f, sheetName, c.readAsumsi)
+			c.ReadSheet(c.readAsumsi, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "Highlight") {
-			c.ReadSheet(f, sheetName, c.readHighlight)
+			c.ReadSheet(c.readHighlight, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "RKM") {
-			c.ReadSheet(f, sheetName, c.readRKM)
+			c.ReadSheet(c.readRKM, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "LR KONSOL") {
-			c.ReadSheet(f, sheetName, c.readFinancialReport)
+			c.ReadSheet(c.readFinancialReport, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "INVES") {
-			c.ReadSheet(f, sheetName, c.readInvestasi)
+			c.ReadSheet(c.readInvestasi, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "SDM REKAP") {
-			c.ReadSheet(f, sheetName, c.readSDM)
+			c.ReadSheet(c.readSDM, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "FINANCIAL RATIO") {
-			c.ReadSheet(f, sheetName, c.readFinancialRatio)
+			c.ReadSheet(c.readFinancialRatio, sheetName)
 		}
 	}
 
 	return err
 }
 
-func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
+func (c *RUPSController) readAsumsi(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -77,14 +76,14 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 	config := clit.Config("RUPS", "Asumsi", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
-	filename := filepath.Base(f.Path)
+	filename := filepath.Base(c.Engine.GetExcelPath())
 	splitted := strings.Split(filename, " ")
 	tahun := splitted[3]
 
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -133,7 +132,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 			isRowEmpty := true
 			isDataRow := true
 
-			cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -141,7 +140,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 			_, errConvert := strconv.Atoi(cellValue)
 
 			if cellValue == "NO." {
-				currentTipe, err = f.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+				currentTipe, err = c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -157,7 +156,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 				} else if header.DBFieldName == "Tipe" {
 					rowData.Set(header.DBFieldName, currentTipe)
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -217,7 +216,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 	return err
 }
 
-func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error {
+func (c *RUPSController) readHighlight(sheetName string) error {
 	var err error
 
 	timeNow := time.Now()
@@ -227,7 +226,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 	configs := clit.Config("RUPS", "Highlight", nil).(map[string]interface{})
 
 	rowCount := 0
-	filename := filepath.Base(f.Path)
+	filename := filepath.Base(c.Engine.GetExcelPath())
 	splitted := strings.Split(filename, " ")
 	tahun := splitted[3]
 
@@ -251,7 +250,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 			firstDataRow := 0
 			i := 1
 			for {
-				cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+				cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -282,7 +281,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 				isRowEmpty := true
 
 				// kalau col A ada isinya, berenti
-				cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+				cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -297,7 +296,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 					} else if header.DBFieldName == "Tipe" {
 						rowData.Set(header.DBFieldName, tipe)
 					} else {
-						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -353,7 +352,7 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 	return err
 }
 
-func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
+func (c *RUPSController) readRKM(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -361,20 +360,20 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 	config := clit.Config("RUPS", "RKM", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
-	filename := filepath.Base(f.Path)
+	filename := filepath.Base(c.Engine.GetExcelPath())
 	splitted := strings.Split(filename, " ")
 	tahun := splitted[3]
 
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "PROGRAM STRATEGIS" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -426,7 +425,7 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 				if header.DBFieldName == "Tahun" {
 					rowData.Set(header.DBFieldName, tahun)
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -467,7 +466,7 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 	return err
 }
 
-func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string) error {
+func (c *RUPSController) readFinancialReport(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -475,20 +474,20 @@ func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string)
 	config := clit.Config("RUPS", "FinancialReport", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
-	filename := filepath.Base(f.Path)
+	filename := filepath.Base(c.Engine.GetExcelPath())
 	splitted := strings.Split(filename, " ")
 	tahun := splitted[3]
 
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "L"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "L"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "Uraian" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "L"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "L"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -541,7 +540,7 @@ func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string)
 				if header.DBFieldName == "Tahun" {
 					rowData.Set(header.DBFieldName, tahun)
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -583,7 +582,7 @@ func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string)
 	return err
 }
 
-func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error {
+func (c *RUPSController) readInvestasi(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -591,20 +590,20 @@ func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error
 	config := clit.Config("RUPS", "Investasi", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
-	filename := filepath.Base(f.Path)
+	filename := filepath.Base(c.Engine.GetExcelPath())
 	splitted := strings.Split(filename, " ")
 	tahun := splitted[3]
 
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "URAIAN INVESTASI" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -657,7 +656,7 @@ func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error
 				if header.DBFieldName == "Tahun" {
 					rowData.Set(header.DBFieldName, tahun)
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -699,7 +698,7 @@ func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error
 	return err
 }
 
-func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
+func (c *RUPSController) readSDM(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -707,20 +706,20 @@ func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
 	config := clit.Config("RUPS", "SDM", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
-	filename := filepath.Base(f.Path)
+	filename := filepath.Base(c.Engine.GetExcelPath())
 	splitted := strings.Split(filename, " ")
 	tahun := splitted[3]
 
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "SDM Organik" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -770,7 +769,7 @@ func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
 			isDataRow := true
 
 			for _, header := range headers {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -811,7 +810,7 @@ func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
 	return err
 }
 
-func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) error {
+func (c *RUPSController) readFinancialRatio(sheetName string) error {
 	var err error
 
 	timeNow := time.Now()
@@ -820,7 +819,7 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 	log.Println("ReadData", sheetName)
 	gridsConfig := clit.Config("RUPS", "FinancialRatio", nil).(map[string]interface{})
 
-	filename := filepath.Base(f.Path)
+	filename := filepath.Base(c.Engine.GetExcelPath())
 	splitted := strings.Split(filename, " ")
 	tahun := splitted[3]
 
@@ -856,7 +855,7 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 				i := 1
 				for {
 					if tableFound == false {
-						cellValue, err := f.GetCellValue(sheetName, columnsMapping["Uraian"].(string)+toolkit.ToString(i))
+						cellValue, err := c.Engine.GetCellValue(sheetName, columnsMapping["Uraian"].(string)+toolkit.ToString(i))
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -891,7 +890,7 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 					isRowEmpty := true
 
 					for _, header := range headers {
-						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
 							log.Fatal(err)
 						}

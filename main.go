@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"time"
 
-	c "git.eaciitapp.com/rezaharli/toracle/controllers"
-	"git.eaciitapp.com/rezaharli/toracle/helpers"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
+
+	c "git.eaciitapp.com/rezaharli/toracle/controllers"
+	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
 func main() {
@@ -74,9 +74,10 @@ func main() {
 		for {
 			go func() {
 				// READ ASC FILES
-				(&c.Base{ExcelController: &c.AscController{}}).Extract()
-				(&c.Base{ExcelController: &c.RUPSController{}}).Extract()
-				(&c.Base{ExcelController: &c.KinerjaTerminalController{}}).Extract()
+				(&c.Base{Controller: &c.AscController{}}).Extract()
+
+				(&c.Base{Controller: &c.RUPSController{}}).Extract()
+				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
 
 				// READ QHSSE FILES
 				err := c.NewQhsseController().ReadExcels()

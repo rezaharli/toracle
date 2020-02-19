@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -30,21 +28,21 @@ func (c *AscController) FileCriteria(file string) bool {
 	return strings.Contains(filepath.Base(file), "Equipment Performance ASC")
 }
 
-func (c *AscController) ReadExcel(f *excelize.File) error {
+func (c *AscController) ReadExcel() error {
 	var err error
 
-	for i, sheetName := range f.GetSheetMap() {
+	for i, sheetName := range c.Engine.GetSheetMap() {
 		if i == 1 {
-			c.ReadSheet(f, sheetName, c.readMonthlyData)
+			c.ReadSheet(c.readMonthlyData, sheetName)
 		} else {
-			c.ReadSheet(f, sheetName, c.readDailyData)
+			c.ReadSheet(c.readDailyData, sheetName)
 		}
 	}
 
 	return err
 }
 
-func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) error {
+func (c *AscController) readMonthlyData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -54,7 +52,7 @@ func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) erro
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -85,7 +83,7 @@ func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) erro
 		// search for particular header in excel
 		for {
 			currentCol := helpers.ToCharStr(i)
-			cellText, err := f.GetCellValue(sheetName, currentCol+headerRow)
+			cellText, err := c.Engine.GetCellValue(sheetName, currentCol+headerRow)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -119,7 +117,7 @@ func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) erro
 	//iterate over rows
 	for index := 0; true; index++ {
 		// end jika udah nemu total
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow+index))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow+index))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -133,7 +131,7 @@ func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) erro
 			currentRow := firstDataRow + index
 
 			if header.DBFieldName == "PERIOD" {
-				stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow-4))
+				stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow-4))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -149,7 +147,7 @@ func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) erro
 
 				rowData.Set(header.DBFieldName, t)
 			} else if header.DBFieldName == "ITEM_ID" {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -171,7 +169,7 @@ func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) erro
 
 				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -201,7 +199,7 @@ func (c *AscController) readMonthlyData(f *excelize.File, sheetName string) erro
 	return err
 }
 
-func (c *AscController) readDailyData(f *excelize.File, sheetName string) error {
+func (c *AscController) readDailyData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -211,10 +209,10 @@ func (c *AscController) readDailyData(f *excelize.File, sheetName string) error 
 	firstDataRow := 0
 	i := 1
 	for {
-		style, _ := f.NewStyle(`{"number_format":15}`)
-		f.SetCellStyle(sheetName, "A"+toolkit.ToString(i), "A"+toolkit.ToString(i), style)
+		style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+		c.Engine.SetCellStyle(sheetName, "A"+toolkit.ToString(i), "A"+toolkit.ToString(i), style)
 
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -244,7 +242,7 @@ func (c *AscController) readDailyData(f *excelize.File, sheetName string) error 
 		// search for particular header in excel
 		for {
 			currentCol := helpers.ToCharStr(i)
-			cellText, err := f.GetCellValue(sheetName, currentCol+headerRow)
+			cellText, err := c.Engine.GetCellValue(sheetName, currentCol+headerRow)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -255,7 +253,7 @@ func (c *AscController) readDailyData(f *excelize.File, sheetName string) error 
 
 			if isHeaderDetected == true && strings.TrimSpace(cellText) == "" {
 				//kalo header ga nemu coba sekali lagi mbok bilih di atasnya
-				cellText, err = f.GetCellValue(sheetName, currentCol+toolkit.ToString(toolkit.ToInt(headerRow, "")-1))
+				cellText, err = c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(toolkit.ToInt(headerRow, "")-1))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -285,7 +283,7 @@ func (c *AscController) readDailyData(f *excelize.File, sheetName string) error 
 	rowCount := 0
 	for index := 0; true; index++ {
 		// end jika udah nemu total
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow+index))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow+index))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -299,9 +297,9 @@ func (c *AscController) readDailyData(f *excelize.File, sheetName string) error 
 			currentRow := firstDataRow + index
 
 			if header.DBFieldName == "PERIOD" {
-				style, _ := f.NewStyle(`{"number_format":15}`)
-				f.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+				c.Engine.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -330,7 +328,7 @@ func (c *AscController) readDailyData(f *excelize.File, sheetName string) error 
 
 				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}

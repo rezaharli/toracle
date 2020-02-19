@@ -7,13 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
-	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/sebar/dbflex"
+
+	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
 type KinerjaTerminalController struct {
@@ -27,35 +26,24 @@ func (c *KinerjaTerminalController) New(base interface{}) {
 	c.FileExtension = ".xlsx"
 }
 
-func (c *KinerjaTerminalController) FetchFiles(resourcePath string) []string {
-	return helpers.FetchFilePathsWithExt(resourcePath, c.FileExtension)
-}
-
 func (c *KinerjaTerminalController) FileCriteria(file string) bool {
-	if strings.Contains(filepath.Base(file), "Data Trafik, Arus, & Kinerja Operasi") {
-		return true
-	}
-
-	return false
+	return strings.Contains(filepath.Base(file), "Data Trafik, Arus, & Kinerja Operasi")
 }
 
-func (c *KinerjaTerminalController) ReadExcel(f *excelize.File) error {
+func (c *KinerjaTerminalController) ReadExcel() error {
 	var err error
 
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		_, err := strconv.Atoi(sheetName)
 		if err == nil {
-			err = c.readSheet(f, sheetName)
-			if err != nil {
-				log.Println("Error reading monthly data. ERROR:", err)
-			}
+			c.ReadSheet(c.readSheet, sheetName)
 		}
 	}
 
 	return err
 }
 
-func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string) error {
+func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 	var err error
 
 	timeNow := time.Now()
@@ -67,13 +55,13 @@ func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if strings.EqualFold(strings.TrimSpace(cellValue), "Uraian") {
-			cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -102,7 +90,7 @@ func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string
 		}
 
 		currentCol := helpers.ToCharStr(i)
-		cellText, err := f.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
+		cellText, err := c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -189,7 +177,7 @@ func (c *KinerjaTerminalController) readSheet(f *excelize.File, sheetName string
 					} else if header.DBFieldName == "Tahun" {
 						rowData.Set(header.DBFieldName, header.Value)
 					} else {
-						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
 							log.Fatal(err)
 						}
