@@ -6,79 +6,43 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// QhsseController is a controller for for every kind of QHSSE files.
 type QhsseController struct {
 	*Base
 }
 
-func NewQhsseController() *QhsseController {
-	return new(QhsseController)
+// New is used to initiate the controller
+func (c *QhsseController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for QHSSE files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *QhsseController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *QhsseController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "QHSSE")
 }
 
-func (c *QhsseController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *QhsseController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "QHSSE") {
-			resourceFiles = append(resourceFiles, file)
-		}
+	for _, sheetName := range c.Engine.GetSheetMap() {
+		c.ReadSheet(c.ReadData, sheetName)
 	}
-
-	log.Println("Scanning finished. QHSSE files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *QhsseController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
-		err = c.ReadData(f, sheetName)
-		if err != nil {
-			log.Println("Error reading data. ERROR:", err)
-		}
-	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
+func (c *QhsseController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -88,7 +52,7 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -121,9 +85,9 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 		isRowEmpty := true
 		for _, header := range headers {
 			if header.DBFieldName == "PERIOD" || header.DBFieldName == "DUE_DATE" {
-				style, _ := f.NewStyle(`{"number_format":15}`)
-				f.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+				c.Engine.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -148,7 +112,7 @@ func (c *QhsseController) ReadData(f *excelize.File, sheetName string) error {
 
 				rowData.Set(header.DBFieldName, t)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}

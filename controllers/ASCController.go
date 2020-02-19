@@ -17,6 +17,7 @@ type AscController struct {
 	*Base
 }
 
+// New is used to initiate the controller
 func (c *AscController) New(base interface{}) {
 	c.Base = base.(*Base)
 
@@ -24,10 +25,13 @@ func (c *AscController) New(base interface{}) {
 	c.FileExtension = ".xlsx"
 }
 
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
 func (c *AscController) FileCriteria(file string) bool {
 	return strings.Contains(filepath.Base(file), "Equipment Performance ASC")
 }
 
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
 func (c *AscController) ReadExcel() error {
 	var err error
 

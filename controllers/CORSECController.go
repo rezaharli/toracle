@@ -14,73 +14,39 @@ import (
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// CorsecController is a controller for every kind of ASC files.
 type CorsecController struct {
 	*Base
 }
 
-func NewCorsecController() *CorsecController {
-	return new(CorsecController)
+// New is used to initiate the controller
+func (c *CorsecController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for CORSEC files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *CorsecController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *CorsecController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "RKM")
 }
 
-func (c *CorsecController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *CorsecController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "RKM") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. CORSEC files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *CorsecController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.Contains(sheetName, "Usulan RKM") {
-			err = c.ReadData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
+func (c *CorsecController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -91,7 +57,7 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -128,30 +94,30 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 		rowData := toolkit.M{}
 		currentRow := firstDataRow + index
 
-		styleID, err := f.GetCellStyle(sheetName, "D"+toolkit.ToString(currentRow))
+		styleID, err := c.Engine.GetCellStyle(sheetName, "D"+toolkit.ToString(currentRow))
 		if err != nil {
-			toolkit.Println("1")
-			log.Fatal(err)
-		}
-		fillID := f.Styles.CellXfs.Xf[styleID].FillID
-		fgColor := f.Styles.Fills.Fill[fillID].PatternFill.FgColor
-
-		color := fgColor.RGB
-		number, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
-		if err != nil {
-			toolkit.Println("2")
 			log.Fatal(err)
 		}
 
-		if fgColor.Theme != nil && number == "" {
-			srgbClr := f.Theme.ThemeElements.ClrScheme.Children[*fgColor.Theme].SrgbClr.Val
-			color = excelize.ThemeColor(srgbClr, fgColor.Tint)
+		fillID := c.Engine.GetFillID(styleID)
+
+		number, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		if color == "FFEAF1DD" || color == "FF00B0F0" {
-			newCategory, err := f.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
+		fgColorTheme := c.Engine.GetFgColorTheme(fillID)
+		fgColorRGB := c.Engine.GetFgColorRGB(fillID)
+		fgColorTint := c.Engine.GetFgColorTint(fillID)
+
+		if fgColorTheme != nil && number == "" {
+			srgbClr := c.Engine.GetSrgbClrVal(fgColorTheme)
+			fgColorRGB = excelize.ThemeColor(srgbClr, fgColorTint)
+		}
+
+		if fgColorRGB == "FFEAF1DD" || fgColorRGB == "FF00B0F0" {
+			newCategory, err := c.Engine.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
 			if err != nil {
-				toolkit.Println("3")
 				log.Fatal(err)
 			}
 
@@ -162,10 +128,9 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 			currentCategory = newCategory
 
 			continue
-		} else if color == "FFFFF2CC" {
-			currentArea, err = f.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
+		} else if fgColorRGB == "FFFFF2CC" {
+			currentArea, err = c.Engine.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
 			if err != nil {
-				toolkit.Println("4")
 				log.Fatal(err)
 			}
 
@@ -182,7 +147,7 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 					return s
 				}
 
-				filename := trimSuffix(filepath.Base(f.Path), filepath.Ext(f.Path))
+				filename := trimSuffix(filepath.Base(c.Engine.GetExcelPath()), filepath.Ext(c.Engine.GetExcelPath()))
 				splittedFilename := strings.Split(filename, " ")
 
 				year := splittedFilename[len(splittedFilename)-3]
@@ -198,12 +163,12 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 				var getStringData func(row int) string
 
 				getStringData = func(row int) string {
-					isProses, err := f.GetCellValue(sheetName, "AA"+toolkit.ToString(row))
+					isProses, err := c.Engine.GetCellValue(sheetName, "AA"+toolkit.ToString(row))
 					if err != nil {
 						log.Fatal(err)
 					}
 
-					isSelesai, err := f.GetCellValue(sheetName, "AB"+toolkit.ToString(row))
+					isSelesai, err := c.Engine.GetCellValue(sheetName, "AB"+toolkit.ToString(row))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -235,7 +200,7 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 			} else if header.DBFieldName == "AREA" {
 				rowData.Set(header.DBFieldName, currentArea)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -257,7 +222,6 @@ func (c *CorsecController) ReadData(f *excelize.File, sheetName string) error {
 			break
 		}
 
-		toolkit.Println(rowData)
 		param := helpers.InsertParam{
 			TableName: "F_CORSEC_RKM",
 			Data:      rowData,

@@ -27,6 +27,8 @@ func (c *Base) Put(engine interfaces.ExcelEngine) {
 }
 
 func (c *Base) Extract() {
+	toolkit.Println()
+
 	c.Controller.New(c)
 
 	switch c.FileExtension {
@@ -46,7 +48,7 @@ func (c *Base) Extract() {
 		}
 	}
 
-	log.Println("Scanning finished. files found:", len(filenames))
+	log.Println("Scanning finished. files found:", len(filenames), "\n")
 
 	for _, filePath := range filenames {
 		log.Println("Processing sheets...")

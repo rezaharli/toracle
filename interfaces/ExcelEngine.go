@@ -9,7 +9,13 @@ type ExcelEngine interface {
 
 	GetCellValue(sheet, axis string) (string, error)
 
+	//excelize
 	NewStyle(style string) (int, error)
-
+	GetCellStyle(sheet, axis string) (int, error)
 	SetCellStyle(sheet, hcell, vcell string, styleID int) error
+	GetFillID(styleID int) int
+	GetFgColorTheme(fillID int) *int
+	GetFgColorRGB(fillID int) string
+	GetFgColorTint(fillID int) float64
+	GetSrgbClrVal(fgColorTheme *int) string
 }

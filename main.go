@@ -48,7 +48,7 @@ func main() {
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
 	if err := clit.Commit(); err != nil {
-		toolkit.Println("Error reading config file, ERROR:", err.Error())
+		log.Fatal("Error reading config file, ERROR:", err.Error())
 	}
 
 	defer clit.Close()
@@ -73,23 +73,14 @@ func main() {
 		i := 0
 		for {
 			go func() {
-				// READ ASC FILES
+				var err error
+
 				(&c.Base{Controller: &c.AscController{}}).Extract()
+				(&c.Base{Controller: &c.QhsseController{}}).Extract()
+				(&c.Base{Controller: &c.CorsecController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ QHSSE FILES
-				err := c.NewQhsseController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
-
-				// READ CORSEC FILES
-				err = c.NewCorsecController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ Keluhan FILES
 				err = c.NewKeluhanController().ReadExcels()
