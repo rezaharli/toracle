@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -114,7 +115,7 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 	tablename := "RUPS_Asumsi"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -162,6 +163,20 @@ func (c *RUPSController) readAsumsi(f *excelize.File, sheetName string) error {
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
+
+					if header.DBFieldName == "RKAP" || header.DBFieldName == "Taksasi" || header.DBFieldName == "Usulan" {
+						if strings.Contains(stringData, "%") {
+							stringData = strings.ReplaceAll(stringData, "%", "")
+							stringData = strings.ReplaceAll(stringData, "*", "")
+							stringData = strings.TrimSpace(stringData)
+							stringData = strings.Join(strings.Split(stringData, ","), ".") // decimal by comma to decimal by dot
+
+							stringData = strings.Join(c.getNumVal(stringData, []string{"."}), "")
+						} else if strings.Contains(stringData, "Rp.") {
+							stringData = strings.Join(c.getNumVal(stringData, []string{}), "")
+							stringData = strings.TrimSpace(stringData)
+						}
+					}
 
 					if len(stringData) > 300 {
 						stringData = stringData[0:300]
@@ -211,56 +226,55 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 	log.Println("ReadData", sheetName)
 	configs := clit.Config("RUPS", "Highlight", nil).(map[string]interface{})
 
-	for tipe, config := range configs {
-		columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
+	rowCount := 0
+	filename := filepath.Base(f.Path)
+	splitted := strings.Split(filename, " ")
+	tahun := splitted[3]
 
-		filename := filepath.Base(f.Path)
-		splitted := strings.Split(filename, " ")
-		tahun := splitted[3]
+	tablename := "RUPS_Highlight"
 
-		firstDataRow := 0
-		i := 1
-		for {
-			cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
-			if err != nil {
-				log.Fatal(err)
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
+
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		for tipe, config := range configs {
+			columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
+
+			firstDataRow := 0
+			i := 1
+			for {
+				cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if cellValue == "Uraian" {
+					firstDataRow = i + 2
+					break
+				}
+				i++
 			}
 
-			if cellValue == "Uraian" {
-				firstDataRow = i + 2
-				break
-			}
-			i++
-		}
+			var headers []Header
+			for key, column := range columnsMapping {
+				header := Header{
+					DBFieldName: key,
+					Column:      column.(string),
+				}
 
-		var headers []Header
-		for key, column := range columnsMapping {
-			header := Header{
-				DBFieldName: key,
-				Column:      column.(string),
+				headers = append(headers, header)
 			}
 
-			headers = append(headers, header)
-		}
-
-		rowCount := 0
-		no := 1
-		emptyCount := 0
-
-		tablename := "RUPS_Highlight"
-
-		// check if data exists
-		sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
-
-		conn := helpers.Database()
-		cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
-		defer cursor.Close()
-
-		res := make([]toolkit.M, 0)
-		err = cursor.Fetchs(&res, 0)
-
-		//only insert if len of datas is 0 / if no data yet
-		if len(res) == 0 {
+			no := 1
+			emptyCount := 0
 			//iterate over rows
 			for index := 0; true; index++ {
 				rowData := toolkit.M{}
@@ -298,6 +312,17 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 							isRowEmpty = false
 						}
 
+						if header.DBFieldName == "Nilai" { //ambil integernya doang
+							stringData = strings.Join(c.getNumVal(stringData, []string{}), "")
+						}
+
+						if header.DBFieldName == "Trend" {
+							_, err := strconv.ParseFloat(stringData, 64)
+							if err != nil { //jika tidak bisa diconvert ke float
+								stringData = ""
+							}
+						}
+
 						rowData.Set(header.DBFieldName, stringData)
 					}
 				}
@@ -316,14 +341,14 @@ func (c *RUPSController) readHighlight(f *excelize.File, sheetName string) error
 				rowCount++
 				no++
 			}
-
-			if err == nil {
-				log.Println("SUCCESS Processing", rowCount, "rows")
-			}
-
-			log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 		}
 	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
@@ -379,7 +404,7 @@ func (c *RUPSController) readRKM(f *excelize.File, sheetName string) error {
 	tablename := "RUPS_RKM"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -494,7 +519,7 @@ func (c *RUPSController) readFinancialReport(f *excelize.File, sheetName string)
 	tablename := "RUPS_Financial_Report"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -610,7 +635,7 @@ func (c *RUPSController) readInvestasi(f *excelize.File, sheetName string) error
 	tablename := "RUPS_Investasi"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -726,7 +751,7 @@ func (c *RUPSController) readSDM(f *excelize.File, sheetName string) error {
 	tablename := "RUPS_SDM"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -802,7 +827,7 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 	tablename := "RUPS_Financial_Ratio"
 
 	// check if data exists
-	sqlQuery := "SELECT * FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+	sqlQuery := "select tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -921,4 +946,47 @@ func (c *RUPSController) readFinancialRatio(f *excelize.File, sheetName string) 
 
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 	return err
+}
+
+func (c *RUPSController) getNumVal(str string, exceptions []string) []string {
+	charToNum := func(r rune) (int, error) {
+		intval := int(r) - '0'
+		if 0 <= intval && intval <= 9 {
+			return intval, nil
+		}
+
+		return -1, errors.New("type: rune was not int")
+	}
+
+	stringInSlice := func(a string, list []string) bool {
+		for _, b := range list {
+			if b == a {
+				return true
+			}
+		}
+		return false
+	}
+
+	numberFound := false
+	var nums []string
+	for _, val := range str {
+		if !numberFound {
+			_, err := charToNum(val)
+			if err != nil {
+				continue
+			}
+		} else {
+			if !stringInSlice(string(val), exceptions) {
+				_, err := charToNum(val)
+				if err != nil {
+					continue
+				}
+			}
+		}
+
+		numberFound = true
+		nums = append(nums, string(val))
+	}
+
+	return nums
 }

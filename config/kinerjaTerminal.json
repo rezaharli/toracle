@@ -1,0 +1,11 @@
+{
+    "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "columnsMapping": {
+        "Uraian": "B",
+        "Satuan": "C",
+        "RKAP": "D",
+        "Realisasi": "",
+        "Bulan": "",
+        "Tahun": ""
+    }
+}

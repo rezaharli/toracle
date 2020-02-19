@@ -102,7 +102,7 @@
                 "columnsMapping": {
                     "Uraian": "B",
                     "DebtToEquity": "C",
-                    "OR": "D",
+                    "O_R": "D",
                     "CashRatio": "E"
                 }
             }
@@ -134,7 +134,7 @@
                 "columnsMapping": {
                     "Uraian": "G",
                     "DebtToEquity": "H",
-                    "OR": "I",
+                    "O_R": "I",
                     "CashRatio": "J"
                 }
             }
