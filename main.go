@@ -78,15 +78,11 @@ func main() {
 				(&c.Base{Controller: &c.AscController{}}).Extract()
 				(&c.Base{Controller: &c.QhsseController{}}).Extract()
 				(&c.Base{Controller: &c.CorsecController{}}).Extract()
+				(&c.Base{Controller: &c.KeluhanController{}}).Extract()
+				(&c.Base{Controller: &c.EtlController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ ETL FILES
-				err = c.NewEtlController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ CTT FILES
 				err = c.NewCttController().ReadExcels()

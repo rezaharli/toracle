@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -16,94 +14,51 @@ import (
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// EtlController is a controller for every kind of ETL files.
 type EtlController struct {
 	*Base
 }
 
-func NewEtlController() *EtlController {
-	return new(EtlController)
+// New is used to initiate the controller
+func (c *EtlController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for ASC files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *EtlController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *EtlController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "EnMS")
 }
 
-func (c *EtlController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *EtlController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "EnMS") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. Etl files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *EtlController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.Contains(sheetName, "GRK") {
-			err = c.ReadDataGRK(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataGRK, sheetName)
 		}
 
 		if strings.Contains(sheetName, "Konsumsi BBM per Alat") {
-			err = c.ReadDataEnergyItemBBM(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataEnergyItemBBM, sheetName)
 		}
 
 		if strings.Contains(sheetName, "Konsumsi Listrik per Alat") {
-			err = c.ReadDataEnergyItemListrik(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataEnergyItemListrik, sheetName)
 		}
 
 		if strings.Contains(sheetName, "Energy Performance") {
-			err = c.ReadDataPerformance(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataPerformance, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
+func (c *EtlController) ReadDataGRK(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -114,7 +69,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -150,7 +105,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 		currentRow := firstDataRow + index
 		isRowEmpty := true
 
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -171,12 +126,12 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 
 		for _, header := range headers {
 			if header.DBFieldName == "PERIOD" {
-				stringDataYear, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringDataYear, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				stringDataMonth, err := f.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+				stringDataMonth, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -203,7 +158,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 
 				rowData.Set(header.DBFieldName, t)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -267,7 +222,7 @@ func (c *EtlController) ReadDataGRK(f *excelize.File, sheetName string) error {
 	return err
 }
 
-func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string) error {
+func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -279,7 +234,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -309,7 +264,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 		}
 
 		currentCol := helpers.ToCharStr(i)
-		cellText, err := f.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
+		cellText, err := c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -374,7 +329,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 			currentRow := firstDataRow + index
 			isRowEmpty := true
 
-			cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -421,7 +376,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 
 					rowData.Set(header.DBFieldName, t)
 				} else if header.DBFieldName == "ITEM_ID" {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -453,7 +408,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 
 					rowData.Set(header.DBFieldName, stringData)
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -538,7 +493,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(f *excelize.File, sheetName string
 	return err
 }
 
-func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName string) error {
+func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -550,7 +505,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -580,7 +535,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 		}
 
 		currentCol := helpers.ToCharStr(i)
-		cellText, err := f.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
+		cellText, err := c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -645,7 +600,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 			currentRow := firstDataRow + index
 			isRowEmpty := true
 
-			cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -692,7 +647,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 
 					rowData.Set(header.DBFieldName, t)
 				} else if header.DBFieldName == "ITEM_ID" {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -724,7 +679,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 
 					rowData.Set(header.DBFieldName, stringData)
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -809,7 +764,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(f *excelize.File, sheetName st
 	return err
 }
 
-func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) error {
+func (c *EtlController) ReadDataPerformance(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -820,7 +775,7 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -855,7 +810,7 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 		currentRow := firstDataRow + index
 		isRowEmpty := true
 
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -874,12 +829,12 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 
 		for _, header := range headers {
 			if strings.EqualFold(header.DBFieldName, "PERIOD") {
-				stringDataYear, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+				stringDataYear, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				stringDataMonth, err := f.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+				stringDataMonth, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -906,7 +861,7 @@ func (c *EtlController) ReadDataPerformance(f *excelize.File, sheetName string) 
 
 				rowData.Set(header.DBFieldName, t)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
