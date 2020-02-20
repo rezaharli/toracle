@@ -82,12 +82,6 @@ func main() {
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
 
-				// READ Keluhan FILES
-				err = c.NewKeluhanController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
-
 				// READ ETL FILES
 				err = c.NewEtlController().ReadExcels()
 				if err != nil {

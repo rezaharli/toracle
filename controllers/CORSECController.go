@@ -14,7 +14,7 @@ import (
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
-// CorsecController is a controller for every kind of ASC files.
+// CorsecController is a controller for every kind of CORSEC files.
 type CorsecController struct {
 	*Base
 }
