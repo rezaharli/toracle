@@ -23,7 +23,7 @@ type EtlController struct {
 func (c *EtlController) New(base interface{}) {
 	c.Base = base.(*Base)
 
-	log.Println("Scanning for ASC files.")
+	log.Println("Scanning for ETL files.")
 	c.FileExtension = ".xlsx"
 }
 

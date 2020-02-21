@@ -21,7 +21,7 @@ type KeluhanController struct {
 func (c *KeluhanController) New(base interface{}) {
 	c.Base = base.(*Base)
 
-	log.Println("Scanning for ASC files.")
+	log.Println("Scanning for Keluhan files.")
 	c.FileExtension = ".xlsx"
 }
 

@@ -80,15 +80,10 @@ func main() {
 				(&c.Base{Controller: &c.CorsecController{}}).Extract()
 				(&c.Base{Controller: &c.KeluhanController{}}).Extract()
 				(&c.Base{Controller: &c.EtlController{}}).Extract()
+				(&c.Base{Controller: &c.CttController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ CTT FILES
-				err = c.NewCttController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ Readiness FILES
 				err = c.NewReadinessController().ReadExcels()

@@ -7,87 +7,49 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
-	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/sebar/dbflex"
+
+	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// CttController is a controller for every kind of CTT files.
 type CttController struct {
 	*Base
 }
 
-func NewCttController() *CttController {
-	return new(CttController)
+// New is used to initiate the controller
+func (c *CttController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for CTT files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *CttController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *CttController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "CTT")
 }
 
-func (c *CttController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *CttController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "CTT") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. Ctt files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *CttController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "Daily") {
-			err = c.ReadDataDaily(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataDaily, sheetName)
 		} else if strings.EqualFold(sheetName, "EQP") {
-			err = c.ReadDataMonthly(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataMonthly, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error {
+func (c *CttController) ReadDataDaily(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -107,9 +69,9 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 		firstDataRow := 0
 		notPeriodCount = 0
 		for {
-			style, _ := f.NewStyle(`{"number_format":15}`)
-			f.SetCellStyle(sheetName, "A"+toolkit.ToString(row), "A"+toolkit.ToString(row), style)
-			stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row))
+			style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+			c.Engine.SetCellStyle(sheetName, "A"+toolkit.ToString(row), "A"+toolkit.ToString(row), style)
+			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -120,7 +82,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 				currentPeriod = t
 				firstDataRow = row + 7
 
-				stringData, err = f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
+				stringData, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -185,7 +147,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 					if header.DBFieldName == "PERIOD" {
 						rowData.Set(header.DBFieldName, currentPeriod)
 					} else if header.DBFieldName == "ITEM_ID" {
-						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -218,15 +180,15 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 						}
 					} else if header.DBFieldName == "START_TIME" {
 						cellID := header.Column + toolkit.ToString(currentRow)
-						style, _ := f.NewStyle(`{"number_format":15}`)
-						f.SetCellStyle(sheetName, cellID, cellID, style)
-						startDate, err := f.GetCellValue(sheetName, cellID)
+						style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+						c.Engine.SetCellStyle(sheetName, cellID, cellID, style)
+						startDate, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
 							log.Fatal(err)
 						}
 
 						cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
-						startTime, err := f.GetCellValue(sheetName, cellID)
+						startTime, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -240,15 +202,15 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 						rowData.Set(header.DBFieldName, t)
 					} else if header.DBFieldName == "END_TIME" {
 						cellID := header.Column + toolkit.ToString(currentRow)
-						style, _ := f.NewStyle(`{"number_format":15}`)
-						f.SetCellStyle(sheetName, cellID, cellID, style)
-						startDate, err := f.GetCellValue(sheetName, cellID)
+						style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+						c.Engine.SetCellStyle(sheetName, cellID, cellID, style)
+						startDate, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
 							log.Fatal(err)
 						}
 
 						cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
-						startTime, err := f.GetCellValue(sheetName, cellID)
+						startTime, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -261,7 +223,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 
 						rowData.Set(header.DBFieldName, t)
 					} else if header.DBFieldName == "QTY" {
-						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -279,7 +241,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 
 						rowData.Set(header.DBFieldName, intData)
 					} else {
-						stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -335,7 +297,7 @@ func (c *CttController) ReadDataDaily(f *excelize.File, sheetName string) error 
 	return err
 }
 
-func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) error {
+func (c *CttController) ReadDataMonthly(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -360,9 +322,9 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 		//search for period
 		for {
 			if row >= 1 {
-				style, _ := f.NewStyle(`{"number_format":15}`)
-				f.SetCellStyle(sheetName, "A"+toolkit.ToString(row), "A"+toolkit.ToString(row), style)
-				stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row))
+				style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+				c.Engine.SetCellStyle(sheetName, "A"+toolkit.ToString(row), "A"+toolkit.ToString(row), style)
+				stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -378,7 +340,7 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 				if err == nil {
 					notPeriodCount = 0
 
-					stringDataAcuan, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row-1))
+					stringDataAcuan, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row-1))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -391,7 +353,7 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 					currentPeriod = t
 					firstDataRow = row + 5
 
-					stringData, err = f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
+					stringData, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -458,7 +420,7 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 			row = currentRow
 			dontInsert := false
 
-			stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -471,7 +433,7 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 				if header.DBFieldName == "PERIOD" {
 					rowData.Set(header.DBFieldName, currentPeriod)
 				} else if header.DBFieldName == "ITEM_ID" {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -501,7 +463,7 @@ func (c *CttController) ReadDataMonthly(f *excelize.File, sheetName string) erro
 				} else if header.Column == "" {
 					rowData.Set(header.DBFieldName, "")
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
