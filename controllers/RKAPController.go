@@ -6,88 +6,52 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// RKAPController is a controller for every kind of RKAP files.
 type RKAPController struct {
 	*Base
 }
 
-func NewRKAPController() *RKAPController {
-	return new(RKAPController)
+// New is used to initiate the controller
+func (c *RKAPController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for RKAP files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *RKAPController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *RKAPController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "MASTER RKAP PRODUKSI TTL 2019 - Arahan BOC 1 - Rapat Teknis Bahas SM ubah kurs")
 }
 
-func (c *RKAPController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *RKAPController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "MASTER RKAP PRODUKSI TTL 2019 - Arahan BOC 1 - Rapat Teknis Bahas SM ubah kurs") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. RKAP files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *RKAPController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if sheetName == "Arus Rinci (N)" {
-			err = c.ReadData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
+func (c *RKAPController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
 	months := clit.Config("rkap", "months", nil).([]interface{})
 
-	tahunCell, err := f.GetCellValue(sheetName, "S5")
+	tahunCell, err := c.Engine.GetCellValue(sheetName, "S5")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,7 +70,7 @@ func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
 		rowBulan := "6"
 
 		//mengambil bulan
-		cellValueBulan, err := f.GetCellValue(sheetName, col+rowBulan)
+		cellValueBulan, err := c.Engine.GetCellValue(sheetName, col+rowBulan)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -132,7 +96,7 @@ func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
 			obj.Set("D_I_C", dic)
 
 			for kind, row := range kinds.(toolkit.M) {
-				cellValue, err := f.GetCellValue(sheetName, col+row.(string))
+				cellValue, err := c.Engine.GetCellValue(sheetName, col+row.(string))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -140,7 +104,6 @@ func (c *RKAPController) ReadData(f *excelize.File, sheetName string) error {
 				obj.Set(kind, cellValue)
 			}
 
-			toolkit.Println(obj)
 			objs = append(objs, obj)
 		}
 	}

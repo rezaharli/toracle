@@ -90,15 +90,10 @@ func main() {
 				(&c.Base{Controller: &c.KinerjaController{}}).Extract()
 				(&c.Base{Controller: &c.FTWController{}}).Extract()
 				(&c.Base{Controller: &c.PemenuhanSDMController{}}).Extract()
+				(&c.Base{Controller: &c.RKAPController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ RKAP FILES
-				err = c.NewRKAPController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// Read Market Share Files
 				err = c.NewMarketShareController().ReadExcels()
