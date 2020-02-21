@@ -6,81 +6,45 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// InvestmentController is a controller for every kind of Investment files.
 type InvestmentController struct {
 	*Base
 }
 
-func NewInvestmentController() *InvestmentController {
-	return new(InvestmentController)
+// New is used to initiate the controller
+func (c *InvestmentController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for Investment files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *InvestmentController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *InvestmentController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "laporan investasi")
 }
 
-func (c *InvestmentController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *InvestmentController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "laporan investasi") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. Investment files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *InvestmentController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if !strings.Contains(sheetName, "LAP INVESTASI ENG") {
-			err = c.ReadData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) error {
+func (c *InvestmentController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -91,7 +55,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -130,17 +94,17 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 		currentRow := firstDataRow + index
 		isAktiva, isCategory, isProjectName := false, false, false
 
-		number, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+		number, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		codingMask, err := f.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+		codingMask, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		namaAktiva, err := f.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
+		namaAktiva, err := c.Engine.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -163,7 +127,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 					continue
 				}
 
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -186,7 +150,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 		skipRow := false
 		for _, header := range headers {
 			if header.DBFieldName == "PERIOD" {
-				splittedFilename := strings.Split(f.Path, " ")
+				splittedFilename := strings.Split(c.Engine.GetExcelPath(), " ")
 				year := splittedFilename[len(splittedFilename)-7]
 
 				splitted := strings.Split(sheetName, " ")
@@ -211,7 +175,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 				rowData.Set(header.DBFieldName, t)
 			} else if header.DBFieldName == "AKTIVA" {
 				if isAktiva {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -225,7 +189,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 					skipRow = true
 					break
 				} else if !isCategory && !isProjectName {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -239,7 +203,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 				}
 			} else if header.DBFieldName == "CATEGORY" {
 				if isCategory {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -253,7 +217,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 					skipRow = true
 					break
 				} else if !isAktiva && !isProjectName {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -267,7 +231,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 				}
 			} else if header.DBFieldName == "PROJECT_NAME" {
 				if isProjectName {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -281,7 +245,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 					rowData.Set("CATEGORY", currentCategory)
 					rowData.Set(header.DBFieldName, stringData)
 				} else if !isAktiva && !isCategory {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -294,7 +258,7 @@ func (c *InvestmentController) ReadData(f *excelize.File, sheetName string) erro
 					skipRow = true
 				}
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
