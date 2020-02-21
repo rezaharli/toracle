@@ -85,21 +85,11 @@ func main() {
 				(&c.Base{Controller: &c.InvestmentController{}}).Extract()
 				(&c.Base{Controller: &c.EquipmentPerformance10STSController{}}).Extract()
 				(&c.Base{Controller: &c.EquipmentPerformance5SCController{}}).Extract()
+				(&c.Base{Controller: &c.RekapPetikemasController{}}).Extract()
+				(&c.Base{Controller: &c.InduksiController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ Petikemas FILES
-				err = c.NewRekapPetikemasController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
-
-				// READ Induksi FILES
-				err = c.NewInduksiController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ Kinerja FILES
 				err = c.NewKinerjaController().ReadExcels()

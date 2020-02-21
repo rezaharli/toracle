@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -15,71 +13,37 @@ import (
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// InduksiController is a controller for every kind of Induksi files.
 type InduksiController struct {
 	*Base
 }
 
-func NewInduksiController() *InduksiController {
-	return new(InduksiController)
+// New is used to initiate the controller
+func (c *InduksiController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for Induksi files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *InduksiController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *InduksiController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "induksi K3L")
 }
 
-func (c *InduksiController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *InduksiController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "induksi K3L") {
-			resourceFiles = append(resourceFiles, file)
-		}
+	for _, sheetName := range c.Engine.GetSheetMap() {
+		c.ReadSheet(c.ReadData, sheetName)
 	}
-
-	log.Println("Scanning finished. Induksi files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *InduksiController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
-		err = c.ReadData(f, sheetName)
-		if err != nil {
-			log.Println("Error reading data. ERROR:", err)
-		}
-	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
+func (c *InduksiController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -89,13 +53,13 @@ func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "No" {
-			cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -125,7 +89,7 @@ func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
 		rowBulan := toolkit.ToString(firstDataRow - 1)
 
 		//mengambil BULAN
-		cellValueBulan, err := f.GetCellValue(sheetName, col+rowBulan)
+		cellValueBulan, err := c.Engine.GetCellValue(sheetName, col+rowBulan)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -167,12 +131,12 @@ func (c *InduksiController) ReadData(f *excelize.File, sheetName string) error {
 				obj.Set("PERIOD", period)
 
 				//mengambil Value di kolom
-				cellValueJenisInduksi, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+				cellValueJenisInduksi, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				cellValue, err := f.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
+				cellValue, err := c.Engine.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}

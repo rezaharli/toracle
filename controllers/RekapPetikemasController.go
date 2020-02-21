@@ -7,82 +7,45 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
-	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// RekapPetikemasController is a controller for every kind of RekapPetikemas files.
 type RekapPetikemasController struct {
 	*Base
 }
 
-func NewRekapPetikemasController() *RekapPetikemasController {
-	return new(RekapPetikemasController)
+// New is used to initiate the controller
+func (c *RekapPetikemasController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for RekapPetikemas files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *RekapPetikemasController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *RekapPetikemasController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "Rekap Petikemas Perak sd September 2019")
 }
 
-func (c *RekapPetikemasController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *RekapPetikemasController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "Rekap Petikemas Perak sd September 2019") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. RekapPetikemas files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *RekapPetikemasController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "Sheet1") {
-			err = c.ReadData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *RekapPetikemasController) ReadData(f *excelize.File, sheetName string) error {
+func (c *RekapPetikemasController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	log.Println("Deleting datas.")
@@ -109,13 +72,13 @@ func (c *RekapPetikemasController) ReadData(f *excelize.File, sheetName string) 
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "No" {
-			cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -145,13 +108,13 @@ func (c *RekapPetikemasController) ReadData(f *excelize.File, sheetName string) 
 		rowTerminal := "3"
 
 		//mengambil tahun
-		cellValueTahun, err := f.GetCellValue(sheetName, col+rowTahun)
+		cellValueTahun, err := c.Engine.GetCellValue(sheetName, col+rowTahun)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		//mengambil terminal
-		cellValueTerminal, err := f.GetCellValue(sheetName, col+rowTerminal)
+		cellValueTerminal, err := c.Engine.GetCellValue(sheetName, col+rowTerminal)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -177,17 +140,17 @@ func (c *RekapPetikemasController) ReadData(f *excelize.File, sheetName string) 
 			obj.Set("TERMINAL", cellValueTerminal)
 
 			//mengambil Value di kolom
-			cellValueIntDom, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+			cellValueIntDom, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			cellValue, err := f.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
+			cellValue, err := c.Engine.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			cellValueSat, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			cellValueSat, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
