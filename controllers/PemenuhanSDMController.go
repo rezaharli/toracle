@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -15,73 +13,39 @@ import (
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// PemenuhanSDMController is a controller for every kind of PemenuhanSDM files.
 type PemenuhanSDMController struct {
 	*Base
 }
 
-func NewPemenuhanSDMController() *PemenuhanSDMController {
-	return new(PemenuhanSDMController)
+// New is used to initiate the controller
+func (c *PemenuhanSDMController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for PemenuhanSDM files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *PemenuhanSDMController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *PemenuhanSDMController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "PEMENUHAN SDM NOVEMBER 2019 (INTERNAL) - Contoh buat BI")
 }
 
-func (c *PemenuhanSDMController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *PemenuhanSDMController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "PEMENUHAN SDM NOVEMBER 2019 (INTERNAL) - Contoh buat BI") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. PemenuhanSDM files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *PemenuhanSDMController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if sheetName == "DETAIL" {
-			err = c.ReadData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) error {
+func (c *PemenuhanSDMController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	log.Println("Deleting datas.")
@@ -108,13 +72,13 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "NO" {
-			cellValue, err = f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValue, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -154,14 +118,14 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 		isRowEmpty := true
 		skipRow := false
 
-		stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		//check if value is a SUB_DIR
 		if strings.TrimSpace(stringData) != "" {
-			stringSubDir, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			stringSubDir, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -173,7 +137,7 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 			continue
 		}
 
-		stringB, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+		stringB, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -189,7 +153,7 @@ func (c *PemenuhanSDMController) ReadData(f *excelize.File, sheetName string) er
 				if header.Column == "" {
 					rowData.Set(header.DBFieldName, "")
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}

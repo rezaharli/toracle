@@ -89,15 +89,10 @@ func main() {
 				(&c.Base{Controller: &c.InduksiController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaController{}}).Extract()
 				(&c.Base{Controller: &c.FTWController{}}).Extract()
+				(&c.Base{Controller: &c.PemenuhanSDMController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ Pemenuhan SDM FILES
-				err = c.NewPemenuhanSDMController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ RKAP FILES
 				err = c.NewRKAPController().ReadExcels()
