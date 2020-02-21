@@ -18,7 +18,7 @@ func FetchFilePathsWithExt(resourcePath, ext string) []string {
 	var files []string
 	filepath.Walk(resourcePath, func(path string, f os.FileInfo, _ error) error {
 		// exclude files under archive
-		if strings.Contains(path, filepath.Join(resourcePath, "archive")) {
+		if filepath.Base(filepath.Dir(path)) == "archive" {
 			return nil
 		}
 
@@ -27,6 +27,7 @@ func FetchFilePathsWithExt(resourcePath, ext string) []string {
 				files = append(files, path)
 			}
 		}
+
 		return nil
 	})
 
