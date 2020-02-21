@@ -58,3 +58,7 @@ func (c *XlsHelper) GetFgColorTint(fillID int) float64 {
 func (c *XlsHelper) GetSrgbClrVal(fgColorTheme *int) string {
 	return ""
 }
+
+func (c *XlsHelper) IsSheetVisible(name string) bool {
+	return false
+}

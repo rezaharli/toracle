@@ -9,6 +9,8 @@ type ExcelEngine interface {
 
 	GetCellValue(sheet, axis string) (string, error)
 
+	IsSheetVisible(name string) bool
+
 	//excelize
 	NewStyle(style string) (int, error)
 	GetCellStyle(sheet, axis string) (int, error)

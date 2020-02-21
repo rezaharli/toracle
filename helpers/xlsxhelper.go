@@ -75,3 +75,7 @@ func (c *XlsxHelper) GetFgColorTint(fillID int) float64 {
 func (c *XlsxHelper) GetSrgbClrVal(fgColorTheme *int) string {
 	return c.F.Theme.ThemeElements.ClrScheme.Children[*fgColorTheme].SrgbClr.Val
 }
+
+func (c *XlsxHelper) IsSheetVisible(name string) bool {
+	return c.F.GetSheetVisible(name)
+}

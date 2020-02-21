@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -15,73 +13,39 @@ import (
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// KinerjaController is a controller for every kind of Kinerja files.
 type KinerjaController struct {
 	*Base
 }
 
-func NewKinerjaController() *KinerjaController {
-	return new(KinerjaController)
+// New is used to initiate the controller
+func (c *KinerjaController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for Kinerja files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *KinerjaController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *KinerjaController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "formulirperhitungan kinerja MK3L 2019 with TKBM")
 }
 
-func (c *KinerjaController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *KinerjaController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "formulirperhitungan kinerja MK3L 2019 with TKBM") {
-			resourceFiles = append(resourceFiles, file)
+	for _, sheetName := range c.Engine.GetSheetMap() {
+		if c.Engine.IsSheetVisible(sheetName) && sheetName != "ytd" && sheetName != "to disnaker" {
+			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	log.Println("Scanning finished. Kinerja files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *KinerjaController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
-		if f.GetSheetVisible(sheetName) && sheetName != "ytd" && sheetName != "to disnaker" {
-			err = c.ReadData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
-		}
-	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *KinerjaController) ReadData(f *excelize.File, sheetName string) error {
+func (c *KinerjaController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -92,13 +56,13 @@ func (c *KinerjaController) ReadData(f *excelize.File, sheetName string) error {
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "No" {
-			cellValue, err = f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValue, err = c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -146,7 +110,7 @@ Rowloop:
 				cellID := "B5"
 				// style, _ := f.NewStyle(`{"number_format":15}`)
 				// f.SetCellStyle(sheetName, cellID, cellID, style)
-				stringData, err := f.GetCellValue(sheetName, cellID)
+				stringData, err := c.Engine.GetCellValue(sheetName, cellID)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -191,7 +155,7 @@ Rowloop:
 			} else {
 				col := header.Column
 
-				stringData, err := f.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -199,7 +163,7 @@ Rowloop:
 				if strings.TrimSpace(stringData) != "" {
 					colNum := helpers.CharStrToNum(col)
 					newCol := helpers.ToCharStr(colNum)
-					stringData, err = f.GetCellValue(sheetName, newCol+toolkit.ToString(currentRow))
+					stringData, err = c.Engine.GetCellValue(sheetName, newCol+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
