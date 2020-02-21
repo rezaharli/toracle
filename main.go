@@ -91,15 +91,10 @@ func main() {
 				(&c.Base{Controller: &c.FTWController{}}).Extract()
 				(&c.Base{Controller: &c.PemenuhanSDMController{}}).Extract()
 				(&c.Base{Controller: &c.RKAPController{}}).Extract()
+				(&c.Base{Controller: &c.MarketShareController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// Read Market Share Files
-				err = c.NewMarketShareController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// Read Pencapaian Files
 				err = c.NewPencapaianController().ReadExcels()
