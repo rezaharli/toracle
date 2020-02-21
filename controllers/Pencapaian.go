@@ -6,120 +6,58 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// PencapaianController is a controller for every kind of Pencapaian files.
 type PencapaianController struct {
 	*Base
 }
 
-func NewPencapaianController() *PencapaianController {
-	return new(PencapaianController)
+// New is used to initiate the controller
+func (c *PencapaianController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for Pencapaian files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *PencapaianController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *PencapaianController) FileCriteria(file string) bool {
+	return strings.Contains(strings.ToUpper(filepath.Base(file)), strings.ToUpper("PENCAPAIAN"))
 }
 
-func (c *PencapaianController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *PencapaianController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(strings.ToUpper(filepath.Base(file)), strings.ToUpper("PENCAPAIAN")) {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. Pencapaian files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *PencapaianController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP KONSOL")) {
-			err = c.ReadDataRekapKonsol(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
-
-			err = c.ReadDataRekapKonsol2(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataRekapKonsol, sheetName)
+			c.ReadSheet(c.ReadDataRekapKonsol2, sheetName)
 		}
 
 		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP LEGI")) {
-			err = c.ReadDataRekapLegi(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
-
-			err = c.ReadDataRekapLegi2(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
-
-			err = c.ReadDataRekapLegi3(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataRekapLegi, sheetName)
+			c.ReadSheet(c.ReadDataRekapLegi2, sheetName)
+			c.ReadSheet(c.ReadDataRekapLegi3, sheetName)
 		}
 
 		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP TTL")) {
-			err = c.ReadDataRekapTTL(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
-
-			err = c.ReadDataRekapTTL2(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
-
-			err = c.ReadDataRekapTTL3(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataRekapTTL, sheetName)
+			c.ReadSheet(c.ReadDataRekapTTL2, sheetName)
+			c.ReadSheet(c.ReadDataRekapTTL3, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapKonsol(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -129,13 +67,13 @@ func (c *PencapaianController) ReadDataRekapKonsol(f *excelize.File, sheetName s
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "KODE" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -174,7 +112,7 @@ func (c *PencapaianController) ReadDataRekapKonsol(f *excelize.File, sheetName s
 			if header.DBFieldName == "NO" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -244,7 +182,7 @@ func (c *PencapaianController) ReadDataRekapKonsol(f *excelize.File, sheetName s
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapKonsol2(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapKonsol2(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -281,7 +219,7 @@ func (c *PencapaianController) ReadDataRekapKonsol2(f *excelize.File, sheetName 
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -327,7 +265,7 @@ func (c *PencapaianController) ReadDataRekapKonsol2(f *excelize.File, sheetName 
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapLegi(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -337,13 +275,13 @@ func (c *PencapaianController) ReadDataRekapLegi(f *excelize.File, sheetName str
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "NO" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -382,7 +320,7 @@ func (c *PencapaianController) ReadDataRekapLegi(f *excelize.File, sheetName str
 			if header.DBFieldName == "NO" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -422,7 +360,7 @@ func (c *PencapaianController) ReadDataRekapLegi(f *excelize.File, sheetName str
 			continue
 		}
 
-		cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
+		cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -454,7 +392,7 @@ func (c *PencapaianController) ReadDataRekapLegi(f *excelize.File, sheetName str
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapLegi2(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapLegi2(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -491,7 +429,7 @@ func (c *PencapaianController) ReadDataRekapLegi2(f *excelize.File, sheetName st
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -537,7 +475,7 @@ func (c *PencapaianController) ReadDataRekapLegi2(f *excelize.File, sheetName st
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapLegi3(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapLegi3(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -574,7 +512,7 @@ func (c *PencapaianController) ReadDataRekapLegi3(f *excelize.File, sheetName st
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -620,7 +558,7 @@ func (c *PencapaianController) ReadDataRekapLegi3(f *excelize.File, sheetName st
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapTTL(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -630,13 +568,13 @@ func (c *PencapaianController) ReadDataRekapTTL(f *excelize.File, sheetName stri
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "NO" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -675,7 +613,7 @@ func (c *PencapaianController) ReadDataRekapTTL(f *excelize.File, sheetName stri
 			if header.DBFieldName == "NO" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -715,7 +653,7 @@ func (c *PencapaianController) ReadDataRekapTTL(f *excelize.File, sheetName stri
 			continue
 		}
 
-		cellValueAfter, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
+		cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -747,7 +685,7 @@ func (c *PencapaianController) ReadDataRekapTTL(f *excelize.File, sheetName stri
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapTTL2(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapTTL2(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -784,7 +722,7 @@ func (c *PencapaianController) ReadDataRekapTTL2(f *excelize.File, sheetName str
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -830,7 +768,7 @@ func (c *PencapaianController) ReadDataRekapTTL2(f *excelize.File, sheetName str
 	return err
 }
 
-func (c *PencapaianController) ReadDataRekapTTL3(f *excelize.File, sheetName string) error {
+func (c *PencapaianController) ReadDataRekapTTL3(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -867,7 +805,7 @@ func (c *PencapaianController) ReadDataRekapTTL3(f *excelize.File, sheetName str
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
