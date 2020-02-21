@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/eaciit/clit"
@@ -24,6 +25,7 @@ type Base struct {
 
 func (c *Base) New() {
 	toolkit.Println("")
+
 	c.Controller.New(c)
 }
 
@@ -45,6 +47,10 @@ func (c *Base) Extract() {
 
 	filenames := []string{}
 	for _, file := range filePaths {
+		if strings.HasPrefix(filepath.Base(file), "~") {
+			continue
+		}
+
 		if c.Controller.FileCriteria(file) {
 			filenames = append(filenames, file)
 		}

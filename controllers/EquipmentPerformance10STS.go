@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -15,73 +13,39 @@ import (
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// EquipmentPerformance10STSController is a controller for every kind of EquipmentPerformance10STS files.
 type EquipmentPerformance10STSController struct {
 	*Base
 }
 
-func NewEquipmentPerformance10STSController() *EquipmentPerformance10STSController {
-	return new(EquipmentPerformance10STSController)
+// New is used to initiate the controller
+func (c *EquipmentPerformance10STSController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for EquipmentPerformance10STS files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *EquipmentPerformance10STSController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *EquipmentPerformance10STSController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "1. Equipment Performence 10 UNIT STS")
 }
 
-func (c *EquipmentPerformance10STSController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *EquipmentPerformance10STSController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "1. Equipment Performence 10 UNIT STS") {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. EquipmentPerformance10STS files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *EquipmentPerformance10STSController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "EQUIPMENT PERFORMANCE") {
-			err = c.ReadData(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *EquipmentPerformance10STSController) ReadData(f *excelize.File, sheetName string) error {
+func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -98,7 +62,7 @@ func (c *EquipmentPerformance10STSController) ReadData(f *excelize.File, sheetNa
 	row := 1
 	firstDataRow := 0
 	for {
-		stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row))
+		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -120,7 +84,7 @@ func (c *EquipmentPerformance10STSController) ReadData(f *excelize.File, sheetNa
 		}
 
 		if strings.EqualFold(strings.TrimSpace(stringData), strings.TrimSpace("NO")) {
-			stringDataAfter, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row+1))
+			stringDataAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -155,7 +119,7 @@ func (c *EquipmentPerformance10STSController) ReadData(f *excelize.File, sheetNa
 		row = currentRow
 		isRowEmpty := true
 
-		stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -168,7 +132,7 @@ func (c *EquipmentPerformance10STSController) ReadData(f *excelize.File, sheetNa
 			if header.DBFieldName == "PERIOD" {
 				rowData.Set(header.DBFieldName, currentPeriod)
 			} else if header.DBFieldName == "ITEM_ID" {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -195,7 +159,7 @@ func (c *EquipmentPerformance10STSController) ReadData(f *excelize.File, sheetNa
 				}
 			} else {
 				if header.Column != "" {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
