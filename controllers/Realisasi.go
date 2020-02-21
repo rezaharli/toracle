@@ -7,102 +7,57 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// RealisasiController is a controller for every kind of Realisasi files.
 type RealisasiController struct {
 	*Base
 }
 
-func NewRealisasiController() *RealisasiController {
-	return new(RealisasiController)
+// New is used to initiate the controller
+func (c *RealisasiController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for Realisasi files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *RealisasiController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *RealisasiController) FileCriteria(file string) bool {
+	return strings.Contains(strings.ToUpper(filepath.Base(file)), strings.ToUpper("REALISASI ANGGARAN"))
 }
 
-func (c *RealisasiController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *RealisasiController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(strings.ToUpper(filepath.Base(file)), strings.ToUpper("REALISASI ANGGARAN")) {
-			resourceFiles = append(resourceFiles, file)
-		}
-	}
-
-	log.Println("Scanning finished. Realisasi files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *RealisasiController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
+	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "NERACA") {
-			err = c.ReadDataNeraca(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataNeraca, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "ARUS KAS") {
-			err = c.ReadDataArusKas(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataArusKas, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "REKAP LR") {
-			err = c.ReadDataLabaRugi(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataLabaRugi, sheetName)
 		}
 
 		if strings.EqualFold(sheetName, "RASIO (PERB.)") {
-			err = c.ReadDataRasioSummary(f, sheetName)
-			if err != nil {
-				log.Println("Error reading data. ERROR:", err)
-			}
+			c.ReadSheet(c.ReadDataRasioSummary, sheetName)
 		}
 	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *RealisasiController) ReadDataNeraca(f *excelize.File, sheetName string) error {
+func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -113,13 +68,13 @@ func (c *RealisasiController) ReadDataNeraca(f *excelize.File, sheetName string)
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "KODE" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -150,7 +105,7 @@ func (c *RealisasiController) ReadDataNeraca(f *excelize.File, sheetName string)
 	currentTipe := ""
 	currentSubTipe := ""
 
-	stringData, err := f.GetCellValue(sheetName, "A3")
+	stringData, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -166,7 +121,7 @@ func (c *RealisasiController) ReadDataNeraca(f *excelize.File, sheetName string)
 		rowData := toolkit.M{}
 		currentRow := firstDataRow + index
 
-		stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -183,7 +138,7 @@ func (c *RealisasiController) ReadDataNeraca(f *excelize.File, sheetName string)
 
 		_, err = strconv.Atoi(stringData)
 		if err != nil { //jika error maka tipe atau subtipe
-			stringUraian, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -212,7 +167,7 @@ func (c *RealisasiController) ReadDataNeraca(f *excelize.File, sheetName string)
 			} else if header.DBFieldName == "Sumber" {
 				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -250,7 +205,7 @@ func (c *RealisasiController) ReadDataNeraca(f *excelize.File, sheetName string)
 	return err
 }
 
-func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string) error {
+func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -261,13 +216,13 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "KODE" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -298,7 +253,7 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 	currentKelompok := ""
 	currentSubTipe := ""
 
-	stringTanggalan, err := f.GetCellValue(sheetName, "A3")
+	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -314,7 +269,7 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 		rowData := toolkit.M{}
 		currentRow := firstDataRow + index
 
-		stringKode, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -332,7 +287,7 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 		_, err = strconv.Atoi(stringKode)
 		if err != nil { //jika string maka kelompok (atau NO_REK)
 			if !strings.Contains(stringKode, ".") {
-				stringUraian, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -344,13 +299,13 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 			}
 		}
 
-		stringData, err := f.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
+		stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if strings.TrimSpace(stringData) == "" {
-			stringUraian, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -368,7 +323,7 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 			} else if header.DBFieldName == "KELOMPOK" {
 				rowData.Set(header.DBFieldName, currentKelompok)
 			} else if header.DBFieldName == "INCOME_YTD" {
-				stringData, err := f.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -379,7 +334,7 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 					rowData.Set(header.DBFieldName, "")
 				}
 			} else if header.DBFieldName == "EXP_YTD" {
-				stringData, err := f.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -396,7 +351,7 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 			} else if header.DBFieldName == "SUMBER" {
 				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -434,7 +389,7 @@ func (c *RealisasiController) ReadDataArusKas(f *excelize.File, sheetName string
 	return err
 }
 
-func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName string) error {
+func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -445,13 +400,13 @@ func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName strin
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "KODE" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -481,7 +436,7 @@ func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName strin
 
 	currentTipe := ""
 
-	stringTanggalan, err := f.GetCellValue(sheetName, "A3")
+	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -497,7 +452,7 @@ func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName strin
 		rowData := toolkit.M{}
 		currentRow := firstDataRow + index
 
-		stringKode, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+		stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -514,7 +469,7 @@ func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName strin
 
 		_, err = strconv.Atoi(stringKode)
 		if err != nil { //jika error maka tipe
-			stringUraian, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -536,7 +491,7 @@ func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName strin
 			} else if header.DBFieldName == "Sumber" {
 				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -574,7 +529,7 @@ func (c *RealisasiController) ReadDataLabaRugi(f *excelize.File, sheetName strin
 	return err
 }
 
-func (c *RealisasiController) ReadDataRasioSummary(f *excelize.File, sheetName string) error {
+func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -585,13 +540,13 @@ func (c *RealisasiController) ReadDataRasioSummary(f *excelize.File, sheetName s
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "KODE" {
-			cellValueAfter, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -619,7 +574,7 @@ func (c *RealisasiController) ReadDataRasioSummary(f *excelize.File, sheetName s
 	rowCount := 0
 	no := 1
 
-	stringTanggalan, err := f.GetCellValue(sheetName, "A3")
+	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -635,12 +590,12 @@ func (c *RealisasiController) ReadDataRasioSummary(f *excelize.File, sheetName s
 		rowData := toolkit.M{}
 		currentRow := firstDataRow + index
 
-		stringUraian, err := f.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+		stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		stringSatuan, err := f.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+		stringSatuan, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -665,7 +620,7 @@ func (c *RealisasiController) ReadDataRasioSummary(f *excelize.File, sheetName s
 			} else if header.DBFieldName == "Sumber" {
 				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}

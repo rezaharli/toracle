@@ -93,15 +93,9 @@ func main() {
 				(&c.Base{Controller: &c.RKAPController{}}).Extract()
 				(&c.Base{Controller: &c.MarketShareController{}}).Extract()
 				(&c.Base{Controller: &c.PencapaianController{}}).Extract()
-
+				(&c.Base{Controller: &c.RealisasiController{}}).Extract()
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// Read Realisasi Files
-				err = c.NewRealisasiController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ Proc API DAILY
 				if i%totalRunInADay == 0 {
