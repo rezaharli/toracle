@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
@@ -15,71 +13,37 @@ import (
 	"git.eaciitapp.com/sebar/dbflex"
 )
 
+// FTWController is a controller for every kind of FTW files.
 type FTWController struct {
 	*Base
 }
 
-func NewFTWController() *FTWController {
-	return new(FTWController)
+// New is used to initiate the controller
+func (c *FTWController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for FTW files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *FTWController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *FTWController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "FTW rekap 2019")
 }
 
-func (c *FTWController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *FTWController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "FTW rekap 2019") {
-			resourceFiles = append(resourceFiles, file)
-		}
+	for _, sheetName := range c.Engine.GetSheetMap() {
+		c.ReadSheet(c.ReadData, sheetName)
 	}
-
-	log.Println("Scanning finished. FTW files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *FTWController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
-		err = c.ReadData(f, sheetName)
-		if err != nil {
-			log.Println("Error reading data. ERROR:", err)
-		}
-	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *FTWController) ReadData(f *excelize.File, sheetName string) error {
+func (c *FTWController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -89,13 +53,13 @@ func (c *FTWController) ReadData(f *excelize.File, sheetName string) error {
 	firstDataRow := 0
 	i := 1
 	for {
-		cellValue, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(i))
+		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if cellValue == "TANGGAL" {
-			cellValue, err = f.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+			cellValue, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -140,9 +104,9 @@ func (c *FTWController) ReadData(f *excelize.File, sheetName string) error {
 		skipRow := false
 		for _, header := range headers {
 			if header.DBFieldName == "PERIOD" {
-				style, _ := f.NewStyle(`{"number_format":15}`)
-				f.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				style, _ := c.Engine.NewStyle(`{"number_format":15}`)
+				c.Engine.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -165,7 +129,7 @@ func (c *FTWController) ReadData(f *excelize.File, sheetName string) error {
 
 				rowData.Set(header.DBFieldName, currentPeriod)
 			} else {
-				stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}

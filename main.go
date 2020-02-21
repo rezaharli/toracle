@@ -88,15 +88,10 @@ func main() {
 				(&c.Base{Controller: &c.RekapPetikemasController{}}).Extract()
 				(&c.Base{Controller: &c.InduksiController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaController{}}).Extract()
+				(&c.Base{Controller: &c.FTWController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ FTW FILES
-				err = c.NewFTWController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ Pemenuhan SDM FILES
 				err = c.NewPemenuhanSDMController().ReadExcels()
