@@ -6,79 +6,43 @@ import (
 	"strings"
 	"time"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
-
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 )
 
+// ReadinessController is a controller for every kind of Readiness files.
 type ReadinessController struct {
 	*Base
 }
 
-func NewReadinessController() *ReadinessController {
-	return new(ReadinessController)
+// New is used to initiate the controller
+func (c *ReadinessController) New(base interface{}) {
+	c.Base = base.(*Base)
+
+	log.Println("Scanning for Readiness files.")
+	c.FileExtension = ".xlsx"
 }
 
-func (c *ReadinessController) ReadExcels() error {
-	for _, file := range c.FetchFiles() {
-		err := c.readExcel(file)
-		if err == nil {
-			// move file if read succeeded
-			c.MoveToArchive(file)
-			log.Println("Done.")
-		} else {
-			return err
-		}
-	}
-
-	return nil
+// FileCriteria is a callback function
+// Used to filter file that is going to extract
+func (c *ReadinessController) FileCriteria(file string) bool {
+	return strings.Contains(filepath.Base(file), "Readiness")
 }
 
-func (c *ReadinessController) FetchFiles() []string {
-	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
-	files := helpers.FetchFilePathsWithExt(resourcePath, ".xlsx")
+// ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
+func (c *ReadinessController) ReadExcel() error {
+	var err error
 
-	resourceFiles := []string{}
-	for _, file := range files {
-		if strings.HasPrefix(filepath.Base(file), "~") {
-			continue
-		}
-
-		if strings.Contains(filepath.Base(file), "Readiness") {
-			resourceFiles = append(resourceFiles, file)
-		}
+	for _, sheetName := range c.Engine.GetSheetMap() {
+		c.ReadSheet(c.ReadData, sheetName)
 	}
-
-	log.Println("Scanning finished. Readiness files found:", len(resourceFiles))
-	return resourceFiles
-}
-
-func (c *ReadinessController) readExcel(filename string) error {
-	timeNow := time.Now()
-
-	f, err := helpers.ReadExcel(filename)
-
-	log.Println("Processing sheets...")
-	for _, sheetName := range f.GetSheetMap() {
-		err = c.ReadData(f, sheetName)
-		if err != nil {
-			log.Println("Error reading data. ERROR:", err)
-		}
-	}
-
-	if err == nil {
-		toolkit.Println()
-		log.Println("SUCCESS")
-	}
-	log.Println("Total Process Time:", time.Since(timeNow).Seconds(), "seconds")
 
 	return err
 }
 
-func (c *ReadinessController) ReadData(f *excelize.File, sheetName string) error {
+func (c *ReadinessController) ReadData(sheetName string) error {
 	timeNow := time.Now()
 
 	toolkit.Println()
@@ -100,7 +64,7 @@ func (c *ReadinessController) ReadData(f *excelize.File, sheetName string) error
 		//search for period
 		for {
 			if row >= 1 {
-				stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(row))
+				stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -113,7 +77,7 @@ func (c *ReadinessController) ReadData(f *excelize.File, sheetName string) error
 					currentPeriod = t
 					firstDataRow = row + 3
 
-					stringData, err = f.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
+					stringData, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -158,7 +122,7 @@ func (c *ReadinessController) ReadData(f *excelize.File, sheetName string) error
 			row = currentRow
 			isRowEmpty := true
 
-			stringData, err := f.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -171,7 +135,7 @@ func (c *ReadinessController) ReadData(f *excelize.File, sheetName string) error
 				if header.DBFieldName == "PERIOD" || header.DBFieldName == "LAST_UDPATE" {
 					rowData.Set(header.DBFieldName, currentPeriod)
 				} else if header.DBFieldName == "STATUS" {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -184,7 +148,7 @@ func (c *ReadinessController) ReadData(f *excelize.File, sheetName string) error
 
 					//try next column if empty
 					if stringData == "" {
-						stringData, err := f.GetCellValue(sheetName, helpers.ToCharStr(helpers.CharStrToNum(header.Column)+1)+toolkit.ToString(currentRow))
+						stringData, err := c.Engine.GetCellValue(sheetName, helpers.ToCharStr(helpers.CharStrToNum(header.Column)+1)+toolkit.ToString(currentRow))
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -204,7 +168,7 @@ func (c *ReadinessController) ReadData(f *excelize.File, sheetName string) error
 				} else if header.Column == "" {
 					rowData.Set(header.DBFieldName, "")
 				} else {
-					stringData, err := f.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
 						log.Fatal(err)
 					}

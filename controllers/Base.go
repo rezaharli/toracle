@@ -22,21 +22,23 @@ type Base struct {
 	FileExtension string
 }
 
-func (c *Base) Put(engine interfaces.ExcelEngine) {
-	c.Engine = engine
+func (c *Base) New() {
+	toolkit.Println("")
+	c.Controller.New(c)
+}
+
+func (c *Base) DecideEngine() {
+	switch c.FileExtension {
+	case ".xlsx":
+		c.Engine = &helpers.XlsxHelper{}
+	default:
+		c.Engine = &helpers.XlsHelper{}
+	}
 }
 
 func (c *Base) Extract() {
-	toolkit.Println()
-
-	c.Controller.New(c)
-
-	switch c.FileExtension {
-	case ".xlsx":
-		c.Put(&helpers.XlsxHelper{})
-	default:
-		c.Put(&helpers.XlsHelper{})
-	}
+	c.New()
+	c.DecideEngine()
 
 	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
 	filePaths := helpers.FetchFilePathsWithExt(resourcePath, c.FileExtension)
@@ -48,7 +50,8 @@ func (c *Base) Extract() {
 		}
 	}
 
-	log.Println("Scanning finished. files found:", len(filenames), "\n")
+	log.Println("Scanning finished. files found:", len(filenames))
+	toolkit.Println()
 
 	for _, filePath := range filenames {
 		log.Println("Processing sheets...")

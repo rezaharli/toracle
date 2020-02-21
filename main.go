@@ -81,15 +81,10 @@ func main() {
 				(&c.Base{Controller: &c.KeluhanController{}}).Extract()
 				(&c.Base{Controller: &c.EtlController{}}).Extract()
 				(&c.Base{Controller: &c.CttController{}}).Extract()
+				(&c.Base{Controller: &c.ReadinessController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ Readiness FILES
-				err = c.NewReadinessController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ Investment FILES
 				err = c.NewInvestmentController().ReadExcels()
