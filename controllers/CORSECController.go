@@ -34,16 +34,12 @@ func (c *CorsecController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *CorsecController) ReadExcel() error {
-	var err error
-
+func (c *CorsecController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.Contains(sheetName, "Usulan RKM") {
 			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *CorsecController) ReadData(sheetName string) error {

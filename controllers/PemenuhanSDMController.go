@@ -33,16 +33,12 @@ func (c *PemenuhanSDMController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *PemenuhanSDMController) ReadExcel() error {
-	var err error
-
+func (c *PemenuhanSDMController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if sheetName == "DETAIL" {
 			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *PemenuhanSDMController) ReadData(sheetName string) error {

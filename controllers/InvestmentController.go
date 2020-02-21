@@ -32,16 +32,12 @@ func (c *InvestmentController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *InvestmentController) ReadExcel() error {
-	var err error
-
+func (c *InvestmentController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if !strings.Contains(sheetName, "LAP INVESTASI ENG") {
 			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *InvestmentController) ReadData(sheetName string) error {

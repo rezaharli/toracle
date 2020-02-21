@@ -33,14 +33,10 @@ func (c *FTWController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *FTWController) ReadExcel() error {
-	var err error
-
+func (c *FTWController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		c.ReadSheet(c.ReadData, sheetName)
 	}
-
-	return err
 }
 
 func (c *FTWController) ReadData(sheetName string) error {

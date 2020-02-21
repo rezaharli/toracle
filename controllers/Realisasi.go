@@ -33,9 +33,7 @@ func (c *RealisasiController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *RealisasiController) ReadExcel() error {
-	var err error
-
+func (c *RealisasiController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "NERACA") {
 			c.ReadSheet(c.ReadDataNeraca, sheetName)
@@ -53,8 +51,6 @@ func (c *RealisasiController) ReadExcel() error {
 			c.ReadSheet(c.ReadDataRasioSummary, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *RealisasiController) ReadDataNeraca(sheetName string) error {

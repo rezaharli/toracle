@@ -5,5 +5,5 @@ type ExcelController interface {
 
 	FileCriteria(file string) bool
 
-	ReadExcel() error
+	ReadExcel()
 }

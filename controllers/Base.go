@@ -68,10 +68,7 @@ func (c *Base) Extract() {
 			log.Fatal(err.Error())
 		}
 
-		err = c.Controller.ReadExcel()
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		c.Controller.ReadExcel()
 
 		if err == nil {
 			log.Println("\nSUCCESS")

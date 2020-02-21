@@ -35,9 +35,7 @@ func (c *CttController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *CttController) ReadExcel() error {
-	var err error
-
+func (c *CttController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "Daily") {
 			c.ReadSheet(c.ReadDataDaily, sheetName)
@@ -45,8 +43,6 @@ func (c *CttController) ReadExcel() error {
 			c.ReadSheet(c.ReadDataMonthly, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *CttController) ReadDataDaily(sheetName string) error {

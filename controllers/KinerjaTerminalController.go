@@ -30,17 +30,13 @@ func (c *KinerjaTerminalController) FileCriteria(file string) bool {
 	return strings.Contains(filepath.Base(file), "Data Trafik, Arus, & Kinerja Operasi")
 }
 
-func (c *KinerjaTerminalController) ReadExcel() error {
-	var err error
-
+func (c *KinerjaTerminalController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		_, err := strconv.Atoi(sheetName)
 		if err == nil {
 			c.ReadSheet(c.readSheet, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *KinerjaTerminalController) readSheet(sheetName string) error {

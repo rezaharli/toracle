@@ -32,9 +32,7 @@ func (c *AscController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *AscController) ReadExcel() error {
-	var err error
-
+func (c *AscController) ReadExcel() {
 	for i, sheetName := range c.Engine.GetSheetMap() {
 		if i == 1 {
 			c.ReadSheet(c.readMonthlyData, sheetName)
@@ -42,8 +40,6 @@ func (c *AscController) ReadExcel() error {
 			c.ReadSheet(c.readDailyData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *AscController) readMonthlyData(sheetName string) error {

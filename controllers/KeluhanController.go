@@ -32,16 +32,12 @@ func (c *KeluhanController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *KeluhanController) ReadExcel() error {
-	var err error
-
+func (c *KeluhanController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.Contains(sheetName, "Rekap") {
 			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *KeluhanController) ReadData(sheetName string) error {

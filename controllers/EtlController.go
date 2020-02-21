@@ -34,9 +34,7 @@ func (c *EtlController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *EtlController) ReadExcel() error {
-	var err error
-
+func (c *EtlController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.Contains(sheetName, "GRK") {
 			c.ReadSheet(c.ReadDataGRK, sheetName)
@@ -54,8 +52,6 @@ func (c *EtlController) ReadExcel() error {
 			c.ReadSheet(c.ReadDataPerformance, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *EtlController) ReadDataGRK(sheetName string) error {

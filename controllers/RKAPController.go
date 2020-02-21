@@ -32,16 +32,12 @@ func (c *RKAPController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *RKAPController) ReadExcel() error {
-	var err error
-
+func (c *RKAPController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if sheetName == "Arus Rinci (N)" {
 			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *RKAPController) ReadData(sheetName string) error {

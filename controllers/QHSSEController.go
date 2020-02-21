@@ -32,14 +32,10 @@ func (c *QhsseController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *QhsseController) ReadExcel() error {
-	var err error
-
+func (c *QhsseController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		c.ReadSheet(c.ReadData, sheetName)
 	}
-
-	return err
 }
 
 func (c *QhsseController) ReadData(sheetName string) error {

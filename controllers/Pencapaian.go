@@ -32,9 +32,7 @@ func (c *PencapaianController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *PencapaianController) ReadExcel() error {
-	var err error
-
+func (c *PencapaianController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP KONSOL")) {
 			c.ReadSheet(c.ReadDataRekapKonsol, sheetName)
@@ -53,8 +51,6 @@ func (c *PencapaianController) ReadExcel() error {
 			c.ReadSheet(c.ReadDataRekapTTL3, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {

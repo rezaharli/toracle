@@ -33,16 +33,12 @@ func (c *KinerjaController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *KinerjaController) ReadExcel() error {
-	var err error
-
+func (c *KinerjaController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if c.Engine.IsSheetVisible(sheetName) && sheetName != "ytd" && sheetName != "to disnaker" {
 			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *KinerjaController) ReadData(sheetName string) error {

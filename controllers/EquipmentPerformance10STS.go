@@ -33,16 +33,12 @@ func (c *EquipmentPerformance10STSController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *EquipmentPerformance10STSController) ReadExcel() error {
-	var err error
-
+func (c *EquipmentPerformance10STSController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "EQUIPMENT PERFORMANCE") {
 			c.ReadSheet(c.ReadData, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {

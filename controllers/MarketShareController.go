@@ -34,10 +34,8 @@ func (c *MarketShareController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *MarketShareController) ReadExcel() error {
+func (c *MarketShareController) ReadExcel() {
 	c.ReadSheet(c.ReadData, "Market Share")
-
-	return nil
 }
 
 func (c *MarketShareController) ReadData(sheetName string) error {

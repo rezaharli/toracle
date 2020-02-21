@@ -36,9 +36,7 @@ func (c *RUPSController) FileCriteria(file string) bool {
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
-func (c *RUPSController) ReadExcel() error {
-	var err error
-
+func (c *RUPSController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if strings.EqualFold(sheetName, "Asumsi") {
 			c.ReadSheet(c.readAsumsi, sheetName)
@@ -68,8 +66,6 @@ func (c *RUPSController) ReadExcel() error {
 			c.ReadSheet(c.readFinancialRatio, sheetName)
 		}
 	}
-
-	return err
 }
 
 func (c *RUPSController) readAsumsi(sheetName string) error {
