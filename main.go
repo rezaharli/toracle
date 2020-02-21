@@ -84,15 +84,10 @@ func main() {
 				(&c.Base{Controller: &c.ReadinessController{}}).Extract()
 				(&c.Base{Controller: &c.InvestmentController{}}).Extract()
 				(&c.Base{Controller: &c.EquipmentPerformance10STSController{}}).Extract()
+				(&c.Base{Controller: &c.EquipmentPerformance5SCController{}}).Extract()
 
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
-
-				// READ Equipment FILES
-				err = c.NewEquipmentPerformance5SCController().ReadExcels()
-				if err != nil {
-					log.Fatal(err.Error())
-				}
 
 				// READ Petikemas FILES
 				err = c.NewRekapPetikemasController().ReadExcels()
