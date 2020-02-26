@@ -5,21 +5,21 @@
             "Tahun": "",
             "Bulan": "",
             "NO": "",
-            "KODE": "B",
-            "URAIAN": "C",
-            "TAHUN_2018_A": "D",
-            "RKAP_TAHUN_2019": "E",
-            "RKAP_SD_NOV_2019": "F",
-            "REALISASI_SD_OKT_2019": "G",
-            "REALISASI_SD_NOV_2019": "H",
-            "REALISASI_SD_NOV_2018": "I",
-            "TREND1": "J",
-            "TREND2": "K", 
-            "TREND3": "L",
-            "TREND4": "M",
-            "TREND5": "N",
-            "REALISASI_NOV_2019": "P",
-            "RATA_JAN_NOV": "Q"
+			"KODE": "B",
+			"URAIAN": "C",
+			"REALISASI_TL_AUDITED": "D",
+			"RKAP_TAHUNAN": "E",
+			"RKAP_YTD": "F",
+			"REALISASI_YTD_BL": "G",
+			"REALISASI_YTD": "H",
+			"REALISASI_YTD_TL": "I",
+			"TREND1": "J",
+			"TREND2": "K",
+			"TREND3": "L",
+			"TREND4": "M",
+			"TREND5": "N",
+			"REALISASI_MTD": "P",
+			"RATA_RATA_YTD": "Q"
         }
     },
     "rekapTTL2": {
@@ -28,17 +28,17 @@
             "Bulan": "",
             "KODE": "B",
             "URAIAN": "C",
-            "TAHUN_2018_A": "D",
-            "RKAP_TAHUN_2019": "E",
-            "RKAP_SD_NOV_2019": "F",
-            "REALISASI_SD_OKT_2019": "G",
-            "REALISASI_SD_NOV_2019": "H",
-            "REALISASI_SD_NOV_2018": "I",
-            "TREND1": "J",
-            "TREND2": "K",
-            "TREND3": "L",
-            "TREND4": "M",
-            "TREND5": "N"
+            "REALISASI_TL_AUDITED": "D",
+			"RKAP_TAHUNAN": "E",
+			"RKAP_YTD": "F",
+			"REALISASI_YTD_BL": "G",
+			"REALISASI_YTD": "H",
+			"REALISASI_YTD_TL": "I",
+			"TREND1": "J",
+			"TREND2": "K",
+			"TREND3": "L",
+			"TREND4": "M",
+			"TREND5": "N"
         }
     },
     "rekapTTL3": {
@@ -48,9 +48,9 @@
             "No": "",
             "Uraian": "C",
             "RKAP_1_TAHUN": "D",
-            "RKAP_SD_OKT": "E",
-            "REAL_OKT_2018": "D",
-            "RKAP_2019_DIBANDINGKAN_TAKSASI_2018": "H"
+			"RKAP_YTD": "E",
+			"REAL_YTD_TL": "F",
+			"RKAP_YTD_THD_TAKSASI_TL": "H"
         }
     },
     "rekapLegi": {
@@ -58,21 +58,21 @@
             "Tahun": "",
             "Bulan": "",
             "NO": "",
-            "KODE": "B",
-            "URAIAN": "C",
-            "TAHUN_2018_A": "D",
-            "RKAP_TAHUN_2019": "E",
-            "RKAP_SD_NOV_2019": "F",
-            "REALISASI_SD_OKT_2019": "G",
-            "REALISASI_SD_NOV_2019": "H",
-            "REALISASI_SD_NOV_2018": "I",
-            "TREND1": "J",
-            "TREND2": "K",
-            "TREND3": "L",
-            "TREND4": "M",
-            "TREND5": "N",
-            "REALISASI_NOV_2019": "P",
-            "RATA_JAN_NOV": "Q"
+			"KODE": "B",
+			"URAIAN": "C",
+			"REALISASI_TL_AUDITED": "D",
+			"RKAP_TAHUNAN": "E",
+			"RKAP_YTD": "F",
+			"REALISASI_YTD_BL": "G",
+			"REALISASI_YTD": "H",
+			"REALISASI_YTD_TL": "I",
+			"TREND1": "J",
+			"TREND2": "K",
+			"TREND3": "L",
+			"TREND4": "M",
+			"TREND5": "N",
+			"REALISASI_MTD": "P",
+			"RATA_RATA_YTD": "Q"
         }
     },
     "rekapLegi2": {
@@ -81,17 +81,17 @@
             "Bulan": "",
             "KODE": "B",
             "URAIAN": "C",
-            "TAHUN_2018_A": "D",
-            "RKAP_TAHUN_2019": "E",
-            "RKAP_SD_NOV_2019": "F",
-            "REALISASI_SD_OKT_2019": "G",
-            "REALISASI_SD_NOV_2019": "H",
-            "REALISASI_SD_NOV_2018": "I",
-            "TREND1": "J",
-            "TREND2": "K",
-            "TREND3": "L",
-            "TREND4": "M",
-            "TREND5": "N"
+            "REALISASI_TL_AUDITED": "D",
+			"RKAP_TAHUNAN": "E",
+			"RKAP_YTD": "F",
+			"REALISASI_YTD_BL": "G",
+			"REALISASI_YTD": "H",
+			"REALISASI_YTD_TL": "I",
+			"TREND1": "J",
+			"TREND2": "K",
+			"TREND3": "L",
+			"TREND4": "M",
+			"TREND5": "N"
         }
     }, 
     "rekapLegi3": {
@@ -101,9 +101,9 @@
             "No": "",
             "Uraian": "C",
             "RKAP_1_TAHUN": "D",
-            "RKAP_SD_OKT": "E",
-            "REAL_OKT_2018": "D",
-            "RKAP_2019_DIBANDINGKAN_TAKSASI_2018": "H"
+			"RKAP_YTD": "E",
+			"REAL_YTD_TL": "F",
+			"RKAP_YTD_THD_TAKSASI_TL": "H"
         }
     },
     "rekapKonsol": {
@@ -135,9 +135,9 @@
             "No": "",
             "Uraian": "C",
             "RKAP_1_TAHUN": "D",
-            "RKAP_SD_OKT": "E",
-            "REAL_OKT_2018": "D",
-            "RKAP_2019_DIBANDINGKAN_TAKSASI_2018": "H"
+			"RKAP_YTD": "E",
+			"REAL_YTD_TL": "F",
+			"RKAP_YTD_THD_TAKSASI_TL": "H"
         }
     }
 }
