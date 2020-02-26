@@ -65,6 +65,10 @@ func (c *RUPSController) ReadExcel() {
 		if strings.EqualFold(sheetName, "FINANCIAL RATIO") {
 			c.ReadSheet(c.readFinancialRatio, sheetName)
 		}
+
+		if strings.EqualFold(sheetName, "TRAFIK") {
+			c.ReadSheet(c.readTrafik, sheetName)
+		}
 	}
 }
 
@@ -944,6 +948,153 @@ func (c *RUPSController) readFinancialRatio(sheetName string) error {
 	}
 
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *RUPSController) readTrafik(sheetName string) error {
+	var err error
+
+	timeNow := time.Now()
+
+	toolkit.Println()
+	log.Println("ReadData", sheetName)
+	configs := clit.Config("RUPS", "Trafik", nil).(map[string]interface{})
+
+	rowCount := 0
+	filename := filepath.Base(c.Engine.GetExcelPath())
+	splitted := strings.Split(filename, " ")
+	tahun := splitted[3]
+
+	tablename := "RUPS_Trafik"
+
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "'"
+
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
+
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		for _, config := range configs {
+			columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
+
+			firstDataRow := 0
+			i := 1
+			for {
+				cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if cellValue == "No." {
+					cellValue, err = c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if cellValue != "No." {
+						firstDataRow = i + 2
+						break
+					}
+				}
+
+				i++
+			}
+
+			var headers []Header
+			for key, column := range columnsMapping {
+				header := Header{
+					DBFieldName: key,
+					Column:      column.(string),
+				}
+
+				headers = append(headers, header)
+			}
+
+			currentAsumsi := ""
+
+			no := 1
+			emptyCount := 0
+			//iterate over rows
+			for index := 0; true; index++ {
+				rowData := toolkit.M{}
+				currentRow := firstDataRow + index
+				isRowEmpty := true
+				skipRow := false
+
+				for _, header := range headers {
+					if header.DBFieldName == "Tahun" {
+						rowData.Set(header.DBFieldName, tahun)
+					} else {
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						stringData = strings.ReplaceAll(stringData, "'", "''")
+
+						if len(stringData) > 300 {
+							stringData = stringData[0:300]
+						}
+
+						if header.DBFieldName == "No" {
+							if strings.TrimSpace(stringData) != "" {
+								_, err = strconv.Atoi(stringData)
+								if err != nil { //jika string
+									skipRow = true
+								}
+							}
+						}
+
+						if header.DBFieldName == "Asumsi" {
+							if strings.TrimSpace(stringData) != "" {
+								currentAsumsi = stringData
+							} else {
+								stringData = currentAsumsi
+							}
+						}
+
+						if header.DBFieldName != "Asumsi" {
+							if strings.TrimSpace(stringData) != "" {
+								isRowEmpty = false
+							}
+						}
+
+						rowData.Set(header.DBFieldName, stringData)
+					}
+				}
+
+				if emptyCount >= 10 {
+					break
+				}
+
+				if isRowEmpty {
+					emptyCount++
+					continue
+				}
+
+				if skipRow {
+					continue
+				}
+
+				c.InsertRowData(currentRow, rowData, tablename)
+
+				rowCount++
+				no++
+			}
+		}
+	}
+
+	if err == nil {
+		log.Println("SUCCESS Processing", rowCount, "rows")
+	}
+
+	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+
 	return err
 }
 

@@ -139,5 +139,31 @@
                 }
             }
         }
+    },
+    "Trafik": {
+        "Taksasi": {
+            "columnsMapping": {
+                "Tahun": "",
+                "No": "B",
+                "Asumsi": "C",
+                "Satuan": "D",
+                "Realisasi_TL": "E",
+                "RKAP": "F",
+                "Taksasi": "G",
+                "Usulan_RKAP": "P"
+            }
+        },
+        "RKAP": {
+            "columnsMapping": {
+                "Tahun": "",
+                "No": "B",
+                "Asumsi": "C",
+                "Satuan": "D",
+                "Realisasi_TL": "N",
+                "RKAP": "F",
+                "Taksasi": "O",
+                "Usulan_RKAP": "P"
+            }
+        }
     }
 }

@@ -85,7 +85,7 @@ func (c *Base) Extract() {
 func (c *Base) ReadSheet(readSheet readSheet, sheetToRead string) {
 	err := readSheet(sheetToRead)
 	if err != nil {
-		log.Println("Error reading monthly data. ERROR:", err)
+		log.Println("Error reading", sheetToRead, "sheet data. ERROR:", err)
 	}
 }
 
