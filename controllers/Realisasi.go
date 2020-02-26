@@ -11,6 +11,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 // RealisasiController is a controller for every kind of Realisasi files.
@@ -80,6 +81,7 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 				break
 			}
 		}
+
 		i++
 	}
 
@@ -112,86 +114,91 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 
 	countEmpty := 0
 
-	//iterate over rows
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
+	tablename := "Neraca"
 
-		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
-		if err != nil {
-			log.Fatal(err)
-		}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
 
-		if strings.TrimSpace(stringData) == "" { //jika cell kode kosong maka skip saja ehe
-			countEmpty++
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-			if countEmpty >= 100 {
-				break
-			}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-			continue
-		}
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
 
-		_, err = strconv.Atoi(stringData)
-		if err != nil { //jika error maka tipe atau subtipe
-			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			if !strings.Contains(stringData, ".") { //jika tidak mengandung titik maka tipe
-				currentTipe = stringUraian
-				currentSubTipe = ""
-			} else {
-				currentSubTipe = stringUraian
+			if strings.TrimSpace(stringData) == "" { //jika cell kode kosong maka skip saja ehe
+				countEmpty++
+
+				if countEmpty >= 100 {
+					break
+				}
+
+				continue
 			}
 
-			continue
-		}
-
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tipe" {
-				rowData.Set(header.DBFieldName, currentTipe)
-			} else if header.DBFieldName == "SubTipe" {
-				rowData.Set(header.DBFieldName, currentSubTipe)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, currentTahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, currentBulan)
-			} else if header.DBFieldName == "Sumber" {
-				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+			_, err = strconv.Atoi(stringData)
+			if err != nil { //jika error maka tipe atau subtipe
+				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
-
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
+				if !strings.Contains(stringData, ".") { //jika tidak mengandung titik maka tipe
+					currentTipe = stringUraian
+					currentSubTipe = ""
+				} else {
+					currentSubTipe = stringUraian
 				}
 
-				rowData.Set(header.DBFieldName, stringData)
+				continue
 			}
-		}
 
-		param := helpers.InsertParam{
-			TableName: "Neraca",
-			Data:      rowData,
-		}
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tipe" {
+					rowData.Set(header.DBFieldName, currentTipe)
+				} else if header.DBFieldName == "SubTipe" {
+					rowData.Set(header.DBFieldName, currentSubTipe)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, currentTahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, currentBulan)
+				} else if header.DBFieldName == "Sumber" {
+					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+					stringData = strings.ReplaceAll(stringData, "'", "''")
 
-		rowCount++
-		no++
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
@@ -260,122 +267,127 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 
 	countEmpty := 0
 
-	//iterate over rows
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
+	tablename := "Arus_Kas"
 
-		stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
-		if err != nil {
-			log.Fatal(err)
-		}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
 
-		if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
-			countEmpty++
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-			if countEmpty >= 100 {
-				break
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
+
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
+
+			stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+			if err != nil {
+				log.Fatal(err)
 			}
 
-			continue
-		}
+			if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
+				countEmpty++
 
-		_, err = strconv.Atoi(stringKode)
-		if err != nil { //jika string maka kelompok (atau NO_REK)
-			if !strings.Contains(stringKode, ".") {
+				if countEmpty >= 100 {
+					break
+				}
+
+				continue
+			}
+
+			_, err = strconv.Atoi(stringKode)
+			if err != nil { //jika string maka kelompok (atau NO_REK)
+				if !strings.Contains(stringKode, ".") {
+					stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					currentKelompok = stringUraian
+					currentSubTipe = ""
+
+					continue
+				}
+			}
+
+			stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if strings.TrimSpace(stringData) == "" {
 				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				currentKelompok = stringUraian
-				currentSubTipe = ""
+				currentSubTipe = stringUraian
 
 				continue
 			}
-		}
 
-		stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
-		if err != nil {
-			log.Fatal(err)
-		}
+			for _, header := range headers {
+				if header.DBFieldName == "TAHUN" {
+					rowData.Set(header.DBFieldName, currentTahun)
+				} else if header.DBFieldName == "BULAN" {
+					rowData.Set(header.DBFieldName, currentBulan)
+				} else if header.DBFieldName == "KELOMPOK" {
+					rowData.Set(header.DBFieldName, currentKelompok)
+				} else if header.DBFieldName == "INCOME_YTD" {
+					stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		if strings.TrimSpace(stringData) == "" {
-			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
+					if strings.TrimSpace(currentSubTipe) == "PENERIMAAN" {
+						rowData.Set(header.DBFieldName, stringData)
+					} else {
+						rowData.Set(header.DBFieldName, "")
+					}
+				} else if header.DBFieldName == "EXP_YTD" {
+					stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if strings.TrimSpace(currentSubTipe) == "PENGELUARAN" {
+						rowData.Set(header.DBFieldName, stringData)
+					} else {
+						rowData.Set(header.DBFieldName, "")
+					}
+				} else if header.DBFieldName == "GRUP" {
+					norek := strings.TrimSpace(stringKode)
+
+					rowData.Set(header.DBFieldName, norek[len(norek)-3:])
+				} else if header.DBFieldName == "SUMBER" {
+					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					stringData = strings.ReplaceAll(stringData, "'", "''")
+
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
 			}
 
-			currentSubTipe = stringUraian
+			c.InsertRowData(currentRow, rowData, tablename)
 
-			continue
+			rowCount++
+			no++
 		}
-
-		for _, header := range headers {
-			if header.DBFieldName == "TAHUN" {
-				rowData.Set(header.DBFieldName, currentTahun)
-			} else if header.DBFieldName == "BULAN" {
-				rowData.Set(header.DBFieldName, currentBulan)
-			} else if header.DBFieldName == "KELOMPOK" {
-				rowData.Set(header.DBFieldName, currentKelompok)
-			} else if header.DBFieldName == "INCOME_YTD" {
-				stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				if strings.TrimSpace(currentSubTipe) == "PENERIMAAN" {
-					rowData.Set(header.DBFieldName, stringData)
-				} else {
-					rowData.Set(header.DBFieldName, "")
-				}
-			} else if header.DBFieldName == "EXP_YTD" {
-				stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				if strings.TrimSpace(currentSubTipe) == "PENGELUARAN" {
-					rowData.Set(header.DBFieldName, stringData)
-				} else {
-					rowData.Set(header.DBFieldName, "")
-				}
-			} else if header.DBFieldName == "GRUP" {
-				norek := strings.TrimSpace(stringKode)
-
-				rowData.Set(header.DBFieldName, norek[len(norek)-3:])
-			} else if header.DBFieldName == "SUMBER" {
-				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				stringData = strings.ReplaceAll(stringData, "'", "''")
-
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
-
-				rowData.Set(header.DBFieldName, stringData)
-			}
-		}
-
-		param := helpers.InsertParam{
-			TableName: "Arus_Kas",
-			Data:      rowData,
-		}
-
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
-
-		rowCount++
-		no++
 	}
 
 	if err == nil {
@@ -443,79 +455,84 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 
 	countEmpty := 0
 
-	//iterate over rows
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
+	tablename := "Laba_Rugi"
 
-		stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
-		if err != nil {
-			log.Fatal(err)
-		}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
 
-		if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
-			countEmpty++
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-			if countEmpty >= 100 {
-				break
-			}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-			continue
-		}
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
 
-		_, err = strconv.Atoi(stringKode)
-		if err != nil { //jika error maka tipe
-			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			currentTipe = stringUraian
+			if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
+				countEmpty++
 
-			continue
-		}
+				if countEmpty >= 100 {
+					break
+				}
 
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tipe" {
-				rowData.Set(header.DBFieldName, currentTipe)
-			} else if header.DBFieldName == "TAHUN" {
-				rowData.Set(header.DBFieldName, currentTahun)
-			} else if header.DBFieldName == "BULAN" {
-				rowData.Set(header.DBFieldName, currentBulan)
-			} else if header.DBFieldName == "Sumber" {
-				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				continue
+			}
+
+			_, err = strconv.Atoi(stringKode)
+			if err != nil { //jika error maka tipe
+				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+				currentTipe = stringUraian
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
-
-				rowData.Set(header.DBFieldName, stringData)
+				continue
 			}
-		}
 
-		param := helpers.InsertParam{
-			TableName: "Laba_Rugi",
-			Data:      rowData,
-		}
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tipe" {
+					rowData.Set(header.DBFieldName, currentTipe)
+				} else if header.DBFieldName == "TAHUN" {
+					rowData.Set(header.DBFieldName, currentTahun)
+				} else if header.DBFieldName == "BULAN" {
+					rowData.Set(header.DBFieldName, currentBulan)
+				} else if header.DBFieldName == "Sumber" {
+					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+					stringData = strings.ReplaceAll(stringData, "'", "''")
 
-		rowCount++
-		no++
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
@@ -581,70 +598,75 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 
 	countEmpty := 0
 
-	//iterate over rows
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
+	tablename := "Rasio_Summary"
 
-		stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
-		if err != nil {
-			log.Fatal(err)
-		}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
 
-		stringSatuan, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
-		if err != nil {
-			log.Fatal(err)
-		}
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-		if strings.TrimSpace(stringSatuan) == "" || !strings.Contains(stringUraian, ".") { //jika cell satuan kosong maka skip saja ehe
-			countEmpty++
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-			if countEmpty >= 100 {
-				break
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
+
+			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			if err != nil {
+				log.Fatal(err)
 			}
 
-			continue
-		}
-
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, currentTahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, currentBulan)
-			} else if header.DBFieldName == "Sumber" {
-				rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				stringData = strings.ReplaceAll(stringData, "'", "''")
-
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
-
-				rowData.Set(header.DBFieldName, stringData)
+			stringSatuan, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+			if err != nil {
+				log.Fatal(err)
 			}
-		}
 
-		param := helpers.InsertParam{
-			TableName: "Rasio_Summary",
-			Data:      rowData,
-		}
+			if strings.TrimSpace(stringSatuan) == "" || !strings.Contains(stringUraian, ".") { //jika cell satuan kosong maka skip saja ehe
+				countEmpty++
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+				if countEmpty >= 100 {
+					break
+				}
 
-		rowCount++
-		no++
+				continue
+			}
+
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, currentTahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, currentBulan)
+				} else if header.DBFieldName == "Sumber" {
+					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					stringData = strings.ReplaceAll(stringData, "'", "''")
+
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
