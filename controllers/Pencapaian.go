@@ -706,8 +706,7 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 			}
 		}
 
-		if strings.TrimSpace(rowData.GetString("KODE")) == "" ||
-			(strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "") {
+		if strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "" {
 			skipRow = true
 		}
 
