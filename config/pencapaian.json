@@ -1,0 +1,143 @@
+{
+    "months": ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "OKT", "NOV", "DES"],
+    "rekapTTL": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "NO": "",
+            "KODE": "B",
+            "URAIAN": "C",
+            "TAHUN_2018_A": "D",
+            "RKAP_TAHUN_2019": "E",
+            "RKAP_SD_NOV_2019": "F",
+            "REALISASI_SD_OKT_2019": "G",
+            "REALISASI_SD_NOV_2019": "H",
+            "REALISASI_SD_NOV_2018": "I",
+            "TREND1": "J",
+            "TREND2": "K", 
+            "TREND3": "L",
+            "TREND4": "M",
+            "TREND5": "N",
+            "REALISASI_NOV_2019": "P",
+            "RATA_JAN_NOV": "Q"
+        }
+    },
+    "rekapTTL2": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "KODE": "B",
+            "URAIAN": "C",
+            "TAHUN_2018_A": "D",
+            "RKAP_TAHUN_2019": "E",
+            "RKAP_SD_NOV_2019": "F",
+            "REALISASI_SD_OKT_2019": "G",
+            "REALISASI_SD_NOV_2019": "H",
+            "REALISASI_SD_NOV_2018": "I",
+            "TREND1": "J",
+            "TREND2": "K",
+            "TREND3": "L",
+            "TREND4": "M",
+            "TREND5": "N"
+        }
+    },
+    "rekapTTL3": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "No": "",
+            "Uraian": "C",
+            "RKAP_1_TAHUN": "D",
+            "RKAP_SD_OKT": "E",
+            "REAL_OKT_2018": "D",
+            "RKAP_2019_DIBANDINGKAN_TAKSASI_2018": "H"
+        }
+    },
+    "rekapLegi": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "NO": "",
+            "KODE": "B",
+            "URAIAN": "C",
+            "TAHUN_2018_A": "D",
+            "RKAP_TAHUN_2019": "E",
+            "RKAP_SD_NOV_2019": "F",
+            "REALISASI_SD_OKT_2019": "G",
+            "REALISASI_SD_NOV_2019": "H",
+            "REALISASI_SD_NOV_2018": "I",
+            "TREND1": "J",
+            "TREND2": "K",
+            "TREND3": "L",
+            "TREND4": "M",
+            "TREND5": "N",
+            "REALISASI_NOV_2019": "P",
+            "RATA_JAN_NOV": "Q"
+        }
+    },
+    "rekapLegi2": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "KODE": "B",
+            "URAIAN": "C",
+            "TAHUN_2018_A": "D",
+            "RKAP_TAHUN_2019": "E",
+            "RKAP_SD_NOV_2019": "F",
+            "REALISASI_SD_OKT_2019": "G",
+            "REALISASI_SD_NOV_2019": "H",
+            "REALISASI_SD_NOV_2018": "I",
+            "TREND1": "J",
+            "TREND2": "K",
+            "TREND3": "L",
+            "TREND4": "M",
+            "TREND5": "N"
+        }
+    }, 
+    "rekapLegi3": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "No": "",
+            "Uraian": "C",
+            "RKAP_1_TAHUN": "D",
+            "RKAP_SD_OKT": "E",
+            "REAL_OKT_2018": "D",
+            "RKAP_2019_DIBANDINGKAN_TAKSASI_2018": "H"
+        }
+    },
+    "rekapKonsol": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "NO": "",
+            "KODE": "B",
+            "URAIAN": "C",
+            "KONSOLODASI_RKAP_TAHUN_2019": "D",
+            "KONSOLIDASI_RKAP_SD_NOV_2019": "E",
+            "REALISASI_TAHUN_2018_AUDITED": "F",
+            "REALISASI_TAHUN_2018_SD_NOV": "G",
+            "PT_TTL_REALISASI_TAHUN_2019": "H",
+            "PT_LEGI_REALISASI_TAHUN_2019": "I",
+            "SEBELUM_ELIMISASI": "J",
+            "JURNAL_ELIMINASI": "K",
+            "KONSOLIDASI_SD_NOV": "L",
+            "TREND1": "M",
+            "TREND2": "N",
+            "TREND3": "O",
+            "TREND4": "P"
+        }
+    }, 
+    "rekapKonsol2": {
+        "columnsMapping": {
+            "Tahun": "",
+            "Bulan": "",
+            "No": "",
+            "Uraian": "C",
+            "RKAP_1_TAHUN": "D",
+            "RKAP_SD_OKT": "E",
+            "REAL_OKT_2018": "D",
+            "RKAP_2019_DIBANDINGKAN_TAKSASI_2018": "H"
+        }
+    }
+}

@@ -58,7 +58,8 @@ func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapKonsol", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapKonsol", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 0
 	i := 1
@@ -92,6 +93,13 @@ func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 		headers = append(headers, header)
 	}
 
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
+
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
@@ -107,6 +115,10 @@ func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "NO" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
@@ -183,7 +195,8 @@ func (c *PencapaianController) ReadDataRekapKonsol2(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapKonsol2", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapKonsol2", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 53
 
@@ -196,6 +209,13 @@ func (c *PencapaianController) ReadDataRekapKonsol2(sheetName string) error {
 
 		headers = append(headers, header)
 	}
+
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
 
 	var err error
 	// var rowDatas []toolkit.M
@@ -214,6 +234,10 @@ func (c *PencapaianController) ReadDataRekapKonsol2(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
@@ -266,7 +290,8 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapLegi", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapLegi", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 0
 	i := 1
@@ -300,6 +325,13 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 		headers = append(headers, header)
 	}
 
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
+
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
@@ -315,6 +347,10 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "NO" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
@@ -393,7 +429,8 @@ func (c *PencapaianController) ReadDataRekapLegi2(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapLegi2", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapLegi2", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 51
 
@@ -406,6 +443,13 @@ func (c *PencapaianController) ReadDataRekapLegi2(sheetName string) error {
 
 		headers = append(headers, header)
 	}
+
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
 
 	var err error
 	// var rowDatas []toolkit.M
@@ -424,6 +468,10 @@ func (c *PencapaianController) ReadDataRekapLegi2(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
@@ -476,7 +524,8 @@ func (c *PencapaianController) ReadDataRekapLegi3(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapLegi3", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapLegi3", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 57
 
@@ -489,6 +538,13 @@ func (c *PencapaianController) ReadDataRekapLegi3(sheetName string) error {
 
 		headers = append(headers, header)
 	}
+
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
 
 	var err error
 	// var rowDatas []toolkit.M
@@ -507,6 +563,10 @@ func (c *PencapaianController) ReadDataRekapLegi3(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
@@ -559,7 +619,8 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapTTL", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapTTL", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 0
 	i := 1
@@ -593,6 +654,13 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 		headers = append(headers, header)
 	}
 
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
+
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
@@ -608,6 +676,10 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "NO" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
@@ -686,7 +758,8 @@ func (c *PencapaianController) ReadDataRekapTTL2(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapTTL2", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapTTL2", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 51
 
@@ -699,6 +772,13 @@ func (c *PencapaianController) ReadDataRekapTTL2(sheetName string) error {
 
 		headers = append(headers, header)
 	}
+
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
 
 	var err error
 	// var rowDatas []toolkit.M
@@ -717,6 +797,10 @@ func (c *PencapaianController) ReadDataRekapTTL2(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
@@ -769,7 +853,8 @@ func (c *PencapaianController) ReadDataRekapTTL3(sheetName string) error {
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	columnsMapping := clit.Config("rekapTTL3", "columnsMapping", nil).(map[string]interface{})
+	config := clit.Config("pencapaian", "rekapTTL3", nil).(map[string]interface{})
+	columnsMapping := config["columnsMapping"].(map[string]interface{})
 
 	firstDataRow := 57
 
@@ -782,6 +867,13 @@ func (c *PencapaianController) ReadDataRekapTTL3(sheetName string) error {
 
 		headers = append(headers, header)
 	}
+
+	months := clit.Config("pencapaian", "months", nil).([]interface{})
+
+	filename := strings.ReplaceAll(filepath.Base(c.Engine.GetExcelPath()), ".xlsx", "")
+	splitted := strings.Split(filename, " ")
+	bulan := toolkit.ToString(helpers.IndexOf(splitted[1], months) + 1)
+	tahun := splitted[2]
 
 	var err error
 	// var rowDatas []toolkit.M
@@ -800,6 +892,10 @@ func (c *PencapaianController) ReadDataRekapTTL3(sheetName string) error {
 		for _, header := range headers {
 			if header.DBFieldName == "No" {
 				rowData.Set(header.DBFieldName, no)
+			} else if header.DBFieldName == "Tahun" {
+				rowData.Set(header.DBFieldName, tahun)
+			} else if header.DBFieldName == "Bulan" {
+				rowData.Set(header.DBFieldName, bulan)
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
