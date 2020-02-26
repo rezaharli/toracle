@@ -10,6 +10,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 // PencapaianController is a controller for every kind of Pencapaian files.
@@ -105,82 +106,88 @@ func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 	rowCount := 0
 	no := 1
 	emptyRowCount := 0
-	//iterate over rows
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
 
-		isRowEmpty := true
-		skipRow := true
-		for _, header := range headers {
-			if header.DBFieldName == "NO" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	tablename := "Rekap_Konsol"
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
-					if strings.TrimSpace(stringData) != "" {
-						skipRow = false
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
+
+			isRowEmpty := true
+			skipRow := true
+			for _, header := range headers {
+				if header.DBFieldName == "NO" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
 					}
+
+					stringData = strings.ReplaceAll(stringData, "'", "''")
+
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
+						if strings.TrimSpace(stringData) != "" {
+							skipRow = false
+						}
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			if strings.TrimSpace(rowData.GetString("KODE")) == "" {
+				skipRow = true
+			}
+
+			if isRowEmpty {
+				emptyRowCount++
+			} else {
+				emptyRowCount = 0
+			}
+
+			if skipRow {
+				if isRowEmpty && emptyRowCount > 1 {
+					break
 				}
 
-				rowData.Set(header.DBFieldName, stringData)
+				continue
 			}
-		}
 
-		if strings.TrimSpace(rowData.GetString("KODE")) == "" {
-			skipRow = true
-		}
-
-		if isRowEmpty {
-			emptyRowCount++
-		} else {
-			emptyRowCount = 0
-		}
-
-		if skipRow {
-			if isRowEmpty && emptyRowCount > 1 {
+			if emptyRowCount > 1 {
 				break
 			}
 
-			continue
-		}
+			c.InsertRowData(currentRow, rowData, tablename)
 
-		if emptyRowCount > 1 {
-			break
+			rowCount++
+			no++
 		}
-
-		param := helpers.InsertParam{
-			TableName: "Rekap_Konsol",
-			Data:      rowData,
-		}
-
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
-
-		rowCount++
-		no++
 	}
 
 	if err == nil {
@@ -220,62 +227,68 @@ func (c *PencapaianController) ReadDataRekapKonsol2(sheetName string) error {
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
-	//iterate over rows
-	no := 1
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
 
-		if currentRow > 57 {
-			break
-		}
+	tablename := "Rekap_Konsol2"
 
-		isRowEmpty := true
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		no := 1
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
 
-				rowData.Set(header.DBFieldName, stringData)
+			if currentRow > 57 {
+				break
 			}
-		}
 
-		if isRowEmpty {
-			continue
-		}
+			isRowEmpty := true
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		param := helpers.InsertParam{
-			TableName: "Rekap_Konsol2",
-			Data:      rowData,
-		}
+					stringData = strings.ReplaceAll(stringData, "'", "''")
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
 
-		rowCount++
-		no++
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			if isRowEmpty {
+				continue
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
@@ -337,84 +350,90 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 	rowCount := 0
 	no := 1
 	emptyRowCount := 0
-	//iterate over rows
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
 
-		isRowEmpty := true
-		skipRow := true
-		for _, header := range headers {
-			if header.DBFieldName == "NO" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	tablename := "Rekap_Legi"
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
-					if strings.TrimSpace(stringData) != "" {
-						skipRow = false
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
+
+			isRowEmpty := true
+			skipRow := true
+			for _, header := range headers {
+				if header.DBFieldName == "NO" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
 					}
+
+					stringData = strings.ReplaceAll(stringData, "'", "''")
+
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
+						if strings.TrimSpace(stringData) != "" {
+							skipRow = false
+						}
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
 				}
-
-				rowData.Set(header.DBFieldName, stringData)
 			}
-		}
 
-		if strings.TrimSpace(rowData.GetString("KODE")) == "" ||
-			(strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "") {
-			skipRow = true
-		}
+			if strings.TrimSpace(rowData.GetString("KODE")) == "" ||
+				(strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "") {
+				skipRow = true
+			}
 
-		if isRowEmpty {
-			emptyRowCount++
-		} else {
-			emptyRowCount = 0
-		}
+			if isRowEmpty {
+				emptyRowCount++
+			} else {
+				emptyRowCount = 0
+			}
 
-		if skipRow {
-			continue
-		}
+			if skipRow {
+				continue
+			}
 
-		cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
-		if err != nil {
-			log.Fatal(err)
-		}
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		if cellValueAfter == "NO" {
-			break
-		}
+			if cellValueAfter == "NO" {
+				break
+			}
 
-		param := helpers.InsertParam{
-			TableName: "Rekap_Legi",
-			Data:      rowData,
-		}
+			c.InsertRowData(currentRow, rowData, tablename)
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
+			rowCount++
+			no++
 		}
-
-		rowCount++
-		no++
 	}
 
 	if err == nil {
@@ -454,62 +473,68 @@ func (c *PencapaianController) ReadDataRekapLegi2(sheetName string) error {
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
-	//iterate over rows
-	no := 1
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
 
-		if currentRow > 52 {
-			break
-		}
+	tablename := "Rekap_Legi2"
 
-		isRowEmpty := true
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		no := 1
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
 
-				rowData.Set(header.DBFieldName, stringData)
+			if currentRow > 52 {
+				break
 			}
-		}
 
-		if isRowEmpty {
-			continue
-		}
+			isRowEmpty := true
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		param := helpers.InsertParam{
-			TableName: "Rekap_Legi2",
-			Data:      rowData,
-		}
+					stringData = strings.ReplaceAll(stringData, "'", "''")
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
 
-		rowCount++
-		no++
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			if isRowEmpty {
+				continue
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
@@ -549,62 +574,67 @@ func (c *PencapaianController) ReadDataRekapLegi3(sheetName string) error {
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
-	//iterate over rows
-	no := 1
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
+	tablename := "Rekap_Legi3"
 
-		if currentRow > 60 {
-			break
-		}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-		isRowEmpty := true
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		no := 1
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
-
-				rowData.Set(header.DBFieldName, stringData)
+			if currentRow > 60 {
+				break
 			}
-		}
 
-		if isRowEmpty {
-			continue
-		}
+			isRowEmpty := true
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		param := helpers.InsertParam{
-			TableName: "Rekap_Legi3",
-			Data:      rowData,
-		}
+					stringData = strings.ReplaceAll(stringData, "'", "''")
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
 
-		rowCount++
-		no++
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			if isRowEmpty {
+				continue
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
@@ -666,83 +696,89 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 	rowCount := 0
 	no := 1
 	emptyRowCount := 0
-	//iterate over rows
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
 
-		isRowEmpty := true
-		skipRow := true
-		for _, header := range headers {
-			if header.DBFieldName == "NO" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	tablename := "Rekap_TTL"
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
-					if strings.TrimSpace(stringData) != "" {
-						skipRow = false
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
+
+			isRowEmpty := true
+			skipRow := true
+			for _, header := range headers {
+				if header.DBFieldName == "NO" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
 					}
+
+					stringData = strings.ReplaceAll(stringData, "'", "''")
+
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
+
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					if header.DBFieldName != "KODE" && header.DBFieldName != "URAIAN" {
+						if strings.TrimSpace(stringData) != "" {
+							skipRow = false
+						}
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
 				}
-
-				rowData.Set(header.DBFieldName, stringData)
 			}
-		}
 
-		if strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "" {
-			skipRow = true
-		}
+			if strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "" {
+				skipRow = true
+			}
 
-		if isRowEmpty {
-			emptyRowCount++
-		} else {
-			emptyRowCount = 0
-		}
+			if isRowEmpty {
+				emptyRowCount++
+			} else {
+				emptyRowCount = 0
+			}
 
-		if skipRow {
-			continue
-		}
+			if skipRow {
+				continue
+			}
 
-		cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
-		if err != nil {
-			log.Fatal(err)
-		}
+			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		if cellValueAfter == "NO" {
-			break
-		}
+			if cellValueAfter == "NO" {
+				break
+			}
 
-		param := helpers.InsertParam{
-			TableName: "Rekap_TTL",
-			Data:      rowData,
-		}
+			c.InsertRowData(currentRow, rowData, tablename)
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
+			rowCount++
+			no++
 		}
-
-		rowCount++
-		no++
 	}
 
 	if err == nil {
@@ -782,62 +818,68 @@ func (c *PencapaianController) ReadDataRekapTTL2(sheetName string) error {
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
-	//iterate over rows
-	no := 1
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
 
-		if currentRow > 52 {
-			break
-		}
+	tablename := "Rekap_TTL2"
 
-		isRowEmpty := true
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		no := 1
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
 
-				rowData.Set(header.DBFieldName, stringData)
+			if currentRow > 52 {
+				break
 			}
-		}
 
-		if isRowEmpty {
-			continue
-		}
+			isRowEmpty := true
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		param := helpers.InsertParam{
-			TableName: "Rekap_TTL2",
-			Data:      rowData,
-		}
+					stringData = strings.ReplaceAll(stringData, "'", "''")
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
 
-		rowCount++
-		no++
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			if isRowEmpty {
+				continue
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
@@ -877,62 +919,68 @@ func (c *PencapaianController) ReadDataRekapTTL3(sheetName string) error {
 	var err error
 	// var rowDatas []toolkit.M
 	rowCount := 0
-	//iterate over rows
-	no := 1
-	for index := 0; true; index++ {
-		rowData := toolkit.M{}
-		currentRow := firstDataRow + index
 
-		if currentRow > 60 {
-			break
-		}
+	tablename := "Rekap_TTL3"
 
-		isRowEmpty := true
-		for _, header := range headers {
-			if header.DBFieldName == "No" {
-				rowData.Set(header.DBFieldName, no)
-			} else if header.DBFieldName == "Tahun" {
-				rowData.Set(header.DBFieldName, tahun)
-			} else if header.DBFieldName == "Bulan" {
-				rowData.Set(header.DBFieldName, bulan)
-			} else {
-				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-				if err != nil {
-					log.Fatal(err)
-				}
+	// check if data exists
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
 
-				stringData = strings.ReplaceAll(stringData, "'", "''")
+	conn := helpers.Database()
+	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+	defer cursor.Close()
 
-				if len(stringData) > 300 {
-					stringData = stringData[0:300]
-				}
+	res := make([]toolkit.M, 0)
+	err = cursor.Fetchs(&res, 0)
 
-				if stringData != "" {
-					isRowEmpty = false
-				}
+	//only insert if len of datas is 0 / if no data yet
+	if len(res) == 0 {
+		//iterate over rows
+		no := 1
+		for index := 0; true; index++ {
+			rowData := toolkit.M{}
+			currentRow := firstDataRow + index
 
-				rowData.Set(header.DBFieldName, stringData)
+			if currentRow > 60 {
+				break
 			}
-		}
 
-		if isRowEmpty {
-			continue
-		}
+			isRowEmpty := true
+			for _, header := range headers {
+				if header.DBFieldName == "No" {
+					rowData.Set(header.DBFieldName, no)
+				} else if header.DBFieldName == "Tahun" {
+					rowData.Set(header.DBFieldName, tahun)
+				} else if header.DBFieldName == "Bulan" {
+					rowData.Set(header.DBFieldName, bulan)
+				} else {
+					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-		param := helpers.InsertParam{
-			TableName: "Rekap_TTL3",
-			Data:      rowData,
-		}
+					stringData = strings.ReplaceAll(stringData, "'", "''")
 
-		err = helpers.Insert(param)
-		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
-		} else {
-			log.Println("Row", currentRow, "inserted.")
-		}
+					if len(stringData) > 300 {
+						stringData = stringData[0:300]
+					}
 
-		rowCount++
-		no++
+					if stringData != "" {
+						isRowEmpty = false
+					}
+
+					rowData.Set(header.DBFieldName, stringData)
+				}
+			}
+
+			if isRowEmpty {
+				continue
+			}
+
+			c.InsertRowData(currentRow, rowData, tablename)
+
+			rowCount++
+			no++
+		}
 	}
 
 	if err == nil {
