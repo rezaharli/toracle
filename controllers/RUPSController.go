@@ -979,7 +979,7 @@ func (c *RUPSController) readTrafik(sheetName string) error {
 
 	//only insert if len of datas is 0 / if no data yet
 	if len(res) == 0 {
-		for _, config := range configs {
+		for tipe, config := range configs {
 			columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
 
 			firstDataRow := 0
@@ -1029,6 +1029,8 @@ func (c *RUPSController) readTrafik(sheetName string) error {
 				for _, header := range headers {
 					if header.DBFieldName == "Tahun" {
 						rowData.Set(header.DBFieldName, tahun)
+					} else if header.DBFieldName == "Tipe" {
+						rowData.Set(header.DBFieldName, tipe)
 					} else {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {

@@ -144,6 +144,7 @@
         "Taksasi": {
             "columnsMapping": {
                 "Tahun": "",
+                "Tipe": "",
                 "No": "B",
                 "Asumsi": "C",
                 "Satuan": "D",
@@ -156,6 +157,7 @@
         "RKAP": {
             "columnsMapping": {
                 "Tahun": "",
+                "Tipe": "",
                 "No": "B",
                 "Asumsi": "C",
                 "Satuan": "D",
