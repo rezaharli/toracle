@@ -161,7 +161,7 @@ func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 				}
 			}
 
-			if strings.TrimSpace(rowData.GetString("KODE")) == "" {
+			if strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "" {
 				skipRow = true
 			}
 
@@ -405,8 +405,7 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 				}
 			}
 
-			if strings.TrimSpace(rowData.GetString("KODE")) == "" ||
-				(strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "") {
+			if strings.TrimSpace(rowData.GetString("KODE")) == "" && strings.TrimSpace(rowData.GetString("URAIAN")) == "" {
 				skipRow = true
 			}
 
@@ -494,7 +493,7 @@ func (c *PencapaianController) ReadDataRekapLegi2(sheetName string) error {
 			rowData := toolkit.M{}
 			currentRow := firstDataRow + index
 
-			if currentRow > 52 {
+			if currentRow > 53 {
 				break
 			}
 
@@ -839,7 +838,7 @@ func (c *PencapaianController) ReadDataRekapTTL2(sheetName string) error {
 			rowData := toolkit.M{}
 			currentRow := firstDataRow + index
 
-			if currentRow > 52 {
+			if currentRow > 53 {
 				break
 			}
 
