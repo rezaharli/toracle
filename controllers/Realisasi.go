@@ -7,11 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eaciit/clit"
-	"github.com/eaciit/toolkit"
-
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/sebar/dbflex"
+	"github.com/eaciit/clit"
+	"github.com/eaciit/toolkit"
 )
 
 // RealisasiController is a controller for every kind of Realisasi files.
@@ -177,7 +176,17 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 				} else if header.DBFieldName == "Bulan" {
 					rowData.Set(header.DBFieldName, currentBulan)
 				} else if header.DBFieldName == "Sumber" {
-					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					sumber := "TTL"
+					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
+						sumber = "KONSOLIDASI"
+					}
+
+					rowData.Set(header.DBFieldName, sumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
@@ -366,7 +375,17 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 
 					rowData.Set(header.DBFieldName, norek[len(norek)-3:])
 				} else if header.DBFieldName == "SUMBER" {
-					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					sumber := "TTL"
+					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
+						sumber = "KONSOLIDASI"
+					}
+
+					rowData.Set(header.DBFieldName, sumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
@@ -511,7 +530,17 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 				} else if header.DBFieldName == "BULAN" {
 					rowData.Set(header.DBFieldName, currentBulan)
 				} else if header.DBFieldName == "Sumber" {
-					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					sumber := "TTL"
+					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
+						sumber = "KONSOLIDASI"
+					}
+
+					rowData.Set(header.DBFieldName, sumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
@@ -569,6 +598,7 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 				break
 			}
 		}
+
 		i++
 	}
 
@@ -645,7 +675,17 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 				} else if header.DBFieldName == "Bulan" {
 					rowData.Set(header.DBFieldName, currentBulan)
 				} else if header.DBFieldName == "Sumber" {
-					rowData.Set(header.DBFieldName, "KONSOLIDASI / TTL")
+					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					sumber := "TTL"
+					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
+						sumber = "KONSOLIDASI"
+					}
+
+					rowData.Set(header.DBFieldName, sumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
