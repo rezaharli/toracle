@@ -158,9 +158,9 @@
             "columnsMapping": {
                 "Tahun": "",
                 "Tipe": "",
-                "No": "B",
-                "Asumsi": "C",
-                "Satuan": "D",
+                "No": "K",
+                "Asumsi": "L",
+                "Satuan": "M",
                 "Realisasi_TL": "N",
                 "RKAP": "F",
                 "Taksasi": "O",
