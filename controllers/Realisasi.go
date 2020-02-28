@@ -370,7 +370,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 					} else {
 						rowData.Set(header.DBFieldName, "")
 					}
-				} else if header.DBFieldName == "GRUP" {
+				} else if header.DBFieldName == "GROUP_NO" {
 					norek := strings.TrimSpace(stringKode)
 
 					rowData.Set(header.DBFieldName, norek[len(norek)-3:])
