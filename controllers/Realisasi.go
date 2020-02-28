@@ -113,12 +113,22 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
+	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	currentSumber := "TTL"
+	if strings.Contains(strings.ToUpper(stringSumber), "KONSOLIDASI") {
+		currentSumber = "KONSOLIDASI"
+	}
+
 	countEmpty := 0
 
 	tablename := "Neraca"
 
 	// check if data exists
-	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "' AND sumber = '" + currentSumber + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -178,17 +188,7 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 				} else if header.DBFieldName == "Bulan" {
 					rowData.Set(header.DBFieldName, currentBulan)
 				} else if header.DBFieldName == "Sumber" {
-					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					sumber := "TTL"
-					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
-						sumber = "KONSOLIDASI"
-					}
-
-					rowData.Set(header.DBFieldName, sumber)
+					rowData.Set(header.DBFieldName, currentSumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
@@ -278,12 +278,22 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
+	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	currentSumber := "TTL"
+	if strings.Contains(strings.ToUpper(stringSumber), "KONSOLIDASI") {
+		currentSumber = "KONSOLIDASI"
+	}
+
 	countEmpty := 0
 
 	tablename := "Arus_Kas"
 
 	// check if data exists
-	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "' AND sumber = '" + currentSumber + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -379,17 +389,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 
 					rowData.Set(header.DBFieldName, norek[len(norek)-3:])
 				} else if header.DBFieldName == "SUMBER" {
-					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					sumber := "TTL"
-					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
-						sumber = "KONSOLIDASI"
-					}
-
-					rowData.Set(header.DBFieldName, sumber)
+					rowData.Set(header.DBFieldName, currentSumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
@@ -478,12 +478,22 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
+	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	currentSumber := "TTL"
+	if strings.Contains(strings.ToUpper(stringSumber), "KONSOLIDASI") {
+		currentSumber = "KONSOLIDASI"
+	}
+
 	countEmpty := 0
 
 	tablename := "Laba_Rugi"
 
 	// check if data exists
-	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "' AND sumber = '" + currentSumber + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -536,17 +546,7 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 				} else if header.DBFieldName == "BULAN" {
 					rowData.Set(header.DBFieldName, currentBulan)
 				} else if header.DBFieldName == "Sumber" {
-					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					sumber := "TTL"
-					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
-						sumber = "KONSOLIDASI"
-					}
-
-					rowData.Set(header.DBFieldName, sumber)
+					rowData.Set(header.DBFieldName, currentSumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
@@ -634,12 +634,22 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
+	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	currentSumber := "TTL"
+	if strings.Contains(strings.ToUpper(stringSumber), "KONSOLIDASI") {
+		currentSumber = "KONSOLIDASI"
+	}
+
 	countEmpty := 0
 
 	tablename := "Rasio_Summary"
 
 	// check if data exists
-	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "'"
+	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "' AND bulan = '" + currentBulan + "' AND sumber = '" + currentSumber + "'"
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
@@ -683,17 +693,7 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 				} else if header.DBFieldName == "Bulan" {
 					rowData.Set(header.DBFieldName, currentBulan)
 				} else if header.DBFieldName == "Sumber" {
-					stringData, err := c.Engine.GetCellValue(sheetName, "A2")
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					sumber := "TTL"
-					if strings.Contains(strings.ToUpper(stringData), "KONSOLIDASI") {
-						sumber = "KONSOLIDASI"
-					}
-
-					rowData.Set(header.DBFieldName, sumber)
+					rowData.Set(header.DBFieldName, currentSumber)
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
