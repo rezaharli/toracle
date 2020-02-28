@@ -21,7 +21,7 @@
             "KELOMPOK": "",
             "INCOME_YTD": "AF",
             "EXP_YTD": "AF",
-            "GRUP": "",
+            "GROUP_NO": "",
             "SUMBER": ""
         }
     },
@@ -29,7 +29,7 @@
         "columnsMapping": {
             "No": "",
             "Tipe": "",
-            "GRUP": "A",
+            "GROUP_NO": "A",
             "DETAIL_TIPE": "B",
             "LR_ANGGARAN": "C", 
             "LR_ANGGARAN_YTD": "D", 
