@@ -102,13 +102,15 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 	currentTipe := ""
 	currentSubTipe := ""
 
+	months := clit.Config("realisasiAnggaran", "months", nil).([]interface{})
+
 	stringData, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	splitted := strings.Split(stringData, " ")
-	currentBulan := splitted[len(splitted)-2]
+	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
 	countEmpty := 0
@@ -265,13 +267,15 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 	currentKelompok := ""
 	currentSubTipe := ""
 
+	months := clit.Config("realisasiAnggaran", "months", nil).([]interface{})
+
 	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	splitted := strings.Split(stringTanggalan, " ")
-	currentBulan := splitted[len(splitted)-2]
+	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
 	countEmpty := 0
@@ -463,13 +467,15 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 
 	currentTipe := ""
 
+	months := clit.Config("realisasiAnggaran", "months", nil).([]interface{})
+
 	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	splitted := strings.Split(stringTanggalan, " ")
-	currentBulan := splitted[len(splitted)-2]
+	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
 	countEmpty := 0
@@ -617,13 +623,15 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 	rowCount := 0
 	no := 1
 
+	months := clit.Config("realisasiAnggaran", "months", nil).([]interface{})
+
 	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	splitted := strings.Split(stringTanggalan, " ")
-	currentBulan := splitted[len(splitted)-2]
+	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
 	countEmpty := 0
