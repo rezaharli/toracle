@@ -249,6 +249,7 @@ func (c *RUPSController) readHighlight(sheetName string) error {
 	//only insert if len of datas is 0 / if no data yet
 	if len(res) == 0 {
 		for tipe, config := range configs {
+			toolkit.Println("Read data", tipe)
 			columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
 
 			firstDataRow := 0
@@ -1121,23 +1122,30 @@ func (c *RUPSController) getNumVal(str string, exceptions []string) []string {
 
 	numberFound := false
 	var nums []string
-	for _, val := range str {
+	for i, val := range str {
+		if i == 0 { //cek karakter pertama
+			_, err := charToNum(val)
+			if err == nil { //jika angka maka tambah titik sebagai pengecualian
+				exceptions = append(exceptions, ".")
+			}
+		}
+
 		if !numberFound {
 			_, err := charToNum(val)
-			if err != nil {
+			if err != nil { //jika bukan angka maka skip
 				continue
 			}
 		} else {
 			if !stringInSlice(string(val), exceptions) {
 				_, err := charToNum(val)
-				if err != nil {
+				if err != nil { //jika bukan angka maka skip
 					continue
 				}
 			}
 		}
 
 		numberFound = true
-		nums = append(nums, string(val))
+		nums = append(nums, string(val)) //jika angka maka append ke array
 	}
 
 	return nums
