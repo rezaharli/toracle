@@ -95,7 +95,6 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 	}
 
 	var err error
-	// var rowDatas []toolkit.M
 	rowCount := 0
 	no := 1
 
@@ -260,7 +259,6 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 	}
 
 	var err error
-	// var rowDatas []toolkit.M
 	rowCount := 0
 	no := 1
 
@@ -461,7 +459,6 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 	}
 
 	var err error
-	// var rowDatas []toolkit.M
 	rowCount := 0
 	no := 1
 
@@ -579,50 +576,10 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 
 func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 	timeNow := time.Now()
+	var err error
 
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
-	config := clit.Config("realisasiAnggaran", "RasioSummary", nil).(map[string]interface{})
-	columnsMapping := config["columnsMapping"].(map[string]interface{})
-
-	firstDataRow := 0
-	i := 1
-	for {
-		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if cellValue == "KODE" {
-			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if cellValueAfter != "KODE" {
-				firstDataRow = i + 2
-				break
-			}
-		}
-
-		i++
-	}
-
-	var headers []Header
-	for key, column := range columnsMapping {
-		header := Header{
-			DBFieldName: key,
-			Column:      column.(string),
-		}
-
-		headers = append(headers, header)
-	}
-
-	var err error
-	// var rowDatas []toolkit.M
-	rowCount := 0
-	no := 1
-
 	months := clit.Config("realisasiAnggaran", "months", nil).([]interface{})
 
 	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
@@ -644,8 +601,6 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 		currentSumber = "KONSOLIDASI"
 	}
 
-	countEmpty := 0
-
 	tablename := "Rasio_Summary"
 
 	// check if data exists
@@ -660,66 +615,113 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 
 	//only insert if len of datas is 0 / if no data yet
 	if len(res) == 0 {
-		//iterate over rows
-		for index := 0; true; index++ {
-			rowData := toolkit.M{}
-			currentRow := firstDataRow + index
-
-			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+		firstDataRow := 0
+		i := 1
+		for {
+			cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			stringSatuan, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
-			if err != nil {
-				log.Fatal(err)
-			}
+			if cellValue == "KODE" {
+				cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
+				if err != nil {
+					log.Fatal(err)
+				}
 
-			if strings.TrimSpace(stringSatuan) == "" || !strings.Contains(stringUraian, ".") { //jika cell satuan kosong maka skip saja ehe
-				countEmpty++
-
-				if countEmpty >= 100 {
+				if cellValueAfter != "KODE" {
+					firstDataRow = i + 2
 					break
 				}
-
-				continue
 			}
 
-			for _, header := range headers {
-				if header.DBFieldName == "No" {
-					rowData.Set(header.DBFieldName, no)
-				} else if header.DBFieldName == "Tahun" {
-					rowData.Set(header.DBFieldName, currentTahun)
-				} else if header.DBFieldName == "Bulan" {
-					rowData.Set(header.DBFieldName, currentBulan)
-				} else if header.DBFieldName == "Sumber" {
-					rowData.Set(header.DBFieldName, currentSumber)
-				} else {
-					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-					if err != nil {
-						log.Fatal(err)
-					}
+			i++
+		}
 
-					stringData = strings.ReplaceAll(stringData, "'", "''")
+		configs := clit.Config("realisasiAnggaran", "RasioSummary", nil).(map[string]interface{})
+		for tipe, config := range configs {
+			rowCount := 0
+			no := 1
 
-					if len(stringData) > 300 {
-						stringData = stringData[0:300]
-					}
+			countEmpty := 0
 
-					rowData.Set(header.DBFieldName, stringData)
+			toolkit.Println("Read data", tipe)
+			columnsMapping := config.(map[string]interface{})["columnsMapping"].(map[string]interface{})
+
+			var headers []Header
+			for key, column := range columnsMapping {
+				header := Header{
+					DBFieldName: key,
+					Column:      column.(string),
 				}
+
+				headers = append(headers, header)
 			}
 
-			c.InsertRowData(currentRow, rowData, tablename)
+			//iterate over rows
+			for index := 0; true; index++ {
+				rowData := toolkit.M{}
+				currentRow := firstDataRow + index
 
-			rowCount++
-			no++
+				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringSatuan, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if strings.TrimSpace(stringSatuan) == "" || !strings.Contains(stringUraian, ".") { //jika cell satuan kosong maka skip saja ehe
+					countEmpty++
+
+					if countEmpty >= 100 {
+						break
+					}
+
+					continue
+				}
+
+				for _, header := range headers {
+					if header.DBFieldName == "No" {
+						rowData.Set(header.DBFieldName, no)
+					} else if header.DBFieldName == "Tipe" {
+						rowData.Set(header.DBFieldName, tipe)
+					} else if header.DBFieldName == "Tahun" {
+						rowData.Set(header.DBFieldName, currentTahun)
+					} else if header.DBFieldName == "Bulan" {
+						rowData.Set(header.DBFieldName, currentBulan)
+					} else if header.DBFieldName == "Sumber" {
+						rowData.Set(header.DBFieldName, currentSumber)
+					} else {
+						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						stringData = strings.ReplaceAll(stringData, "'", "''")
+
+						if len(stringData) > 300 {
+							stringData = stringData[0:300]
+						}
+
+						rowData.Set(header.DBFieldName, stringData)
+					}
+				}
+
+				c.InsertRowData(currentRow, rowData, tablename)
+
+				rowCount++
+				no++
+			}
+
+			if err == nil {
+				log.Println("SUCCESS Processing", rowCount, "rows")
+			}
 		}
 	}
 
-	if err == nil {
-		log.Println("SUCCESS Processing", rowCount, "rows")
-	}
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 	return err
 }

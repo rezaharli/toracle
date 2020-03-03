@@ -42,13 +42,27 @@
         }
     },
     "RasioSummary": {
-        "columnsMapping": {
-            "No": "",
-            "Uraian": "B",
-            "Nilai": "AF",
-            "Bulan": "",
-            "Tahun": "",
-            "Sumber": ""
+        "65%": {
+            "columnsMapping": {
+                "No": "",
+                "Tipe": "",
+                "Uraian": "B",
+                "Nilai": "F",
+                "Bulan": "",
+                "Tahun": "",
+                "Sumber": ""
+            }
+        },
+        "100%": {
+            "columnsMapping": {
+                "No": "",
+                "Tipe": "",
+                "Uraian": "J",
+                "Nilai": "N",
+                "Bulan": "",
+                "Tahun": "",
+                "Sumber": ""
+            }
         }
     }
 }
