@@ -10,9 +10,8 @@ import (
 	"github.com/eaciit/clit"
 	"github.com/eaciit/toolkit"
 
-	"git.eaciitapp.com/sebar/dbflex"
-
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type KinerjaTerminalController struct {
@@ -71,8 +70,10 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 		i++
 	}
 
-	monthRow := firstDataRow - 2
 	var monthHeaders []Header
+
+	monthRow := firstDataRow - 2
+	monthsFound := []interface{}{}
 	isHeaderDetected := false
 	currentTahun := ""
 
@@ -91,6 +92,7 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 			log.Fatal(err)
 		}
 
+		dateString := strings.TrimSpace(cellText)
 		_, timeParseErr := time.Parse("Jan-06", strings.TrimSpace(cellText))
 		if isHeaderDetected == false && timeParseErr == nil {
 			isHeaderDetected = true
@@ -105,6 +107,12 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 		if isHeaderDetected {
 			if timeParseErr == nil {
 				if strings.TrimSpace(cellText) != strings.TrimSpace(prevCell) {
+					if helpers.IndexOf(dateString, monthsFound) != -1 { //jika bulan sudah ditemukan sebelumnya
+						break
+					} else {
+						monthsFound = append(monthsFound, dateString)
+					}
+
 					header.HeaderName = cellText
 					header.Column = currentCol
 
@@ -133,7 +141,7 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 	res := make([]toolkit.M, 0)
 	err = cursor.Fetchs(&res, 0)
 
-	//only insert if len of datas is 0 / if no data yet
+	// only insert if len of datas is 0 / if no data yet
 	if len(res) == 0 {
 		for _, monthHeader := range monthHeaders {
 			var headers []Header
@@ -153,8 +161,12 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 					header.Column = monthHeader.Column
 				}
 
-				if key == "Realisasi" {
+				if key == "RKAP_Bulanan" {
 					header.Column = monthHeader.Column
+				}
+
+				if key == "Realisasi" {
+					header.Column = helpers.ToCharStr(helpers.CharStrToNum(monthHeader.Column) + 12)
 				}
 
 				headers = append(headers, header)
@@ -173,19 +185,7 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 					} else if header.DBFieldName == "Tahun" {
 						rowData.Set(header.DBFieldName, header.Value)
 					} else {
-						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-						if err != nil {
-							log.Fatal(err)
-						}
-
-						stringData = strings.ReplaceAll(stringData, "'", "''")
-						stringData = strings.ReplaceAll(stringData, "-", "")
-
-						stringData = strings.TrimSpace(stringData)
-
-						if len(stringData) > 300 {
-							stringData = stringData[0:300]
-						}
+						stringData := c.readCell(sheetName, header.Column+toolkit.ToString(currentRow))
 
 						if header.DBFieldName != "Uraian" && stringData != "" {
 							isRowEmpty = false
@@ -219,7 +219,6 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 				rowCount++
 			}
 		}
-
 	}
 
 	if err == nil {
@@ -228,4 +227,22 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
 	return err
+}
+
+func (c *KinerjaTerminalController) readCell(sheetName, cellID string) string {
+	stringData, err := c.Engine.GetCellValue(sheetName, cellID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stringData = strings.ReplaceAll(stringData, "'", "''")
+	stringData = strings.ReplaceAll(stringData, "-", "")
+
+	stringData = strings.TrimSpace(stringData)
+
+	if len(stringData) > 300 {
+		stringData = stringData[0:300]
+	}
+
+	return stringData
 }
