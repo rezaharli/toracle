@@ -37,6 +37,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "pencapaian", filepath.Join(clit.ExeDir(), "config", "pencapaian.json"))
 	clit.LoadConfigFromFlag("config", "RUPS", filepath.Join(clit.ExeDir(), "config", "RUPS.json"))
 	clit.LoadConfigFromFlag("config", "kinerjaTerminal", filepath.Join(clit.ExeDir(), "config", "kinerjaTerminal.json"))
+	clit.LoadConfigFromFlag("config", "kinerjaCuker", filepath.Join(clit.ExeDir(), "config", "kinerjaCuker.json"))
 
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
@@ -89,6 +90,7 @@ func main() {
 				(&c.Base{Controller: &c.RealisasiController{}}).Extract()
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
+				(&c.Base{Controller: &c.KinerjaCukerController{}}).Extract()
 
 				// READ Proc API DAILY
 				if i%totalRunInADay == 0 {
