@@ -24,7 +24,7 @@ func (c *KinerjaCukerController) New(base interface{}) {
 }
 
 func (c *KinerjaCukerController) FileCriteria(file string) bool {
-	return strings.Contains(filepath.Base(file), "01t. Dry Bulk Handling")
+	return strings.Contains(filepath.Base(file), "Dry Bulk Handling")
 }
 
 func (c *KinerjaCukerController) ReadExcel() {
