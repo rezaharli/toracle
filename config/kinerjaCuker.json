@@ -1,13 +1,14 @@
 {
-    "months": ["JANUARI", "FEBRUARI", "MARET", "Apr", "MEI", "JUNI", "JULI", "AGUSTUS", "Sep", "OKTOBER", "NOVEMBER", "DESEMBER"],
+    "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
     "columnsMapping": {
-        "Tahun": "",
-        "Bulan": "",
-        "VESSEL_ID": "C",
-        "Commodity": "O",
-        "Tonase": "P",
-        "TGH": "V",
-        "TSD_Gross": "W",
-        "TSD_Nett": "X"
+        "Tahun": "A",
+        "Bulan": "A",
+        "VESSEL_ID": "E",
+        "Commodity": "Q",
+        "Tonase": "R",
+        "TGH_Gross": "AD",
+        "TGH_Nett": "AE",
+        "TSD_Gross": "AF",
+        "TSD_Nett": "AG"
     }
 }

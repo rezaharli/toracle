@@ -41,108 +41,124 @@ func (c *KinerjaCukerController) readSheet(sheetName string) error {
 	toolkit.Println()
 	log.Println("ReadData", sheetName)
 	columnsMapping := clit.Config("kinerjaCuker", "columnsMapping", nil).(map[string]interface{})
-
-	stringData, err := c.Engine.GetCellValue(sheetName, "B1")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	splitted := strings.Split(stringData, " ")
-
 	months := clit.Config("kinerjaCuker", "months", []interface{}{}).([]interface{})
-	bulan := toolkit.ToString(helpers.IndexOf(splitted[3], months) + 1)
 
-	tahun := splitted[4]
 	rowCount := 0
 
-	toolkit.Println(tahun, bulan)
-
-	tablename := "BOD_Kinerja_Cuker"
-
-	// check if data exists
-	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + tahun + "' AND bulan = '" + bulan + "'"
-
-	conn := helpers.Database()
-	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
-	defer cursor.Close()
-
-	res := make([]toolkit.M, 0)
-	err = cursor.Fetchs(&res, 0)
-
-	//only insert if len of datas is 0 / if no data yet
-	if len(res) == 0 {
-		firstDataRow := 0
-		i := 1
-		for {
-			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if cellValue == "NO" {
-				firstDataRow = i + 2
-				break
-			}
-			i++
+	firstDataRow := 0
+	i := 1
+	for {
+		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		var headers []Header
-		for key, column := range columnsMapping {
-			header := Header{
-				DBFieldName: key,
-				Column:      column.(string),
-			}
+		if cellValue == "NO" {
+			firstDataRow = i + 2
+			break
+		}
+		i++
+	}
 
-			headers = append(headers, header)
+	var headers []Header
+	for key, column := range columnsMapping {
+		header := Header{
+			DBFieldName: key,
+			Column:      column.(string),
 		}
 
-		no := 1
-		emptyCount := 0
-		//iterate over rows
-		for index := 0; true; index++ {
-			rowData := toolkit.M{}
-			currentRow := firstDataRow + index
-			isRowEmpty := true
+		headers = append(headers, header)
+	}
 
-			for _, header := range headers {
-				if header.DBFieldName == "Tahun" {
-					rowData.Set(header.DBFieldName, tahun)
-				} else if header.DBFieldName == "Bulan" {
-					rowData.Set(header.DBFieldName, bulan)
-				} else {
-					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
-					if err != nil {
-						log.Fatal(err)
-					}
+	no := 1
+	emptyCount := 0
+	//iterate over rows
+	for index := 0; true; index++ {
+		rowData := toolkit.M{}
+		currentRow := firstDataRow + index
+		isRowEmpty := true
 
-					stringData = strings.ReplaceAll(stringData, "'", "''")
-
-					if len(stringData) > 300 {
-						stringData = stringData[0:300]
-					}
-
-					if strings.TrimSpace(stringData) != "" {
-						isRowEmpty = false
-					}
-
-					rowData.Set(header.DBFieldName, stringData)
+		for _, header := range headers {
+			if header.DBFieldName == "Tahun" {
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
 				}
+
+				if strings.TrimSpace(stringData) != "" {
+					isRowEmpty = false
+				}
+
+				splitted := strings.Split(stringData, "-")
+				if len(splitted) > 1 {
+					rowData.Set(header.DBFieldName, splitted[1])
+				} else {
+					rowData.Set(header.DBFieldName, "")
+				}
+			} else if header.DBFieldName == "Bulan" {
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if strings.TrimSpace(stringData) != "" {
+					isRowEmpty = false
+				}
+
+				splitted := strings.Split(stringData, "-")
+				if len(splitted) > 0 {
+					rowData.Set(header.DBFieldName, toolkit.ToString(helpers.IndexOf(splitted[0], months)+1))
+				} else {
+					rowData.Set(header.DBFieldName, "")
+				}
+			} else {
+				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				stringData = strings.ReplaceAll(stringData, "'", "''")
+
+				if len(stringData) > 300 {
+					stringData = stringData[0:300]
+				}
+
+				if strings.TrimSpace(stringData) != "" {
+					isRowEmpty = false
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
 			}
-
-			if emptyCount >= 2 {
-				break
-			}
-
-			if isRowEmpty {
-				emptyCount++
-				continue
-			}
-
-			c.InsertRowData(currentRow, rowData, tablename)
-
-			rowCount++
-			no++
 		}
+
+		if emptyCount >= 2 {
+			break
+		}
+
+		if isRowEmpty {
+			emptyCount++
+			continue
+		}
+
+		tablename := "BOD_Kinerja_Cuker"
+
+		// check if data exists
+		sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + rowData["Tahun"].(string) + "' AND bulan = '" + rowData["Bulan"].(string) + "' AND VESSEL_ID = '" + rowData["VESSEL_ID"].(string) + "'"
+
+		conn := helpers.Database()
+		cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
+		defer cursor.Close()
+
+		res := make([]toolkit.M, 0)
+		err = cursor.Fetchs(&res, 0)
+
+		//only insert if len of datas is 0 / if no data yet
+		if len(res) == 0 {
+			c.InsertRowData(currentRow, rowData, tablename)
+		}
+
+		rowCount++
+		no++
 	}
 
 	if err == nil {
