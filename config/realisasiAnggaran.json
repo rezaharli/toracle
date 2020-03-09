@@ -1,5 +1,5 @@
 {
-    "months": ["January", "February", "March", "April", "May", "June", "July", "Agustus", "September", "October", "November", "December"],
+    "months": ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"],
     "Neraca": {
         "columnsMapping": {
             "No": "",
