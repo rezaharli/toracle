@@ -30,7 +30,7 @@
         "columnsMapping": {
             "No": "",
             "Tipe": "",
-            "GROUP_NO": "A",
+            "GROUP_NO": "",
             "DETAIL_TIPE": "B",
             "LR_ANGGARAN": "C", 
             "LR_ANGGARAN_YTD": "D", 

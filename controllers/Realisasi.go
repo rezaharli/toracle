@@ -511,26 +511,35 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 				helpers.HandleError(err)
 			}
 
-			if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
-				countEmpty++
-
-				if countEmpty >= 100 {
-					break
-				}
-
-				continue
-			}
-
-			_, err = strconv.Atoi(stringKode)
-			if err != nil { //jika error maka tipe
+			if strings.TrimSpace(stringKode) == "" {
 				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
 					helpers.HandleError(err)
 				}
 
-				currentTipe = stringUraian
+				if strings.TrimSpace(stringUraian) == "" { //jika cell kode dan cell uraian kosong maka skip saja ehe
+					countEmpty++
 
-				continue
+					if countEmpty >= 100 {
+						break
+					}
+
+					continue
+				} else { // jika cell uraian tidak kosong maka set kolom uraian menjadi value field "tipe" dan "detail tipe"
+					currentTipe = stringUraian
+				}
+			} else { // jika cell kode tidak kosong maka set kolom uraian menjadi value field "tipe"
+				_, err = strconv.Atoi(stringKode)
+				if err != nil { //jika huruf maka row khusus "tipe"
+					stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+					if err != nil {
+						helpers.HandleError(err)
+					}
+
+					currentTipe = stringUraian
+
+					continue
+				}
 			}
 
 			for _, header := range headers {
@@ -544,6 +553,12 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 					rowData.Set(header.DBFieldName, currentBulan)
 				} else if header.DBFieldName == "Sumber" {
 					rowData.Set(header.DBFieldName, currentSumber)
+				} else if header.DBFieldName == "GROUP_NO" {
+					if strings.TrimSpace(stringKode) == "" {
+						rowData.Set(header.DBFieldName, "0")
+					} else {
+						rowData.Set(header.DBFieldName, stringKode)
+					}
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
