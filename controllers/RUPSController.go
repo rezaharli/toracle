@@ -89,7 +89,7 @@ func (c *RUPSController) readAsumsi(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO." {
@@ -138,7 +138,7 @@ func (c *RUPSController) readAsumsi(sheetName string) error {
 
 			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			_, errConvert := strconv.Atoi(cellValue)
@@ -146,7 +146,7 @@ func (c *RUPSController) readAsumsi(sheetName string) error {
 			if cellValue == "NO." {
 				currentTipe, err = c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				isDataRow = false
@@ -162,7 +162,7 @@ func (c *RUPSController) readAsumsi(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -257,7 +257,7 @@ func (c *RUPSController) readHighlight(sheetName string) error {
 			for {
 				cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if cellValue == "Uraian" {
@@ -288,7 +288,7 @@ func (c *RUPSController) readHighlight(sheetName string) error {
 				// kalau col A ada isinya, berenti
 				cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if cellValue != "" {
@@ -303,7 +303,7 @@ func (c *RUPSController) readHighlight(sheetName string) error {
 					} else {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -374,13 +374,13 @@ func (c *RUPSController) readRKM(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "PROGRAM STRATEGIS" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter != "PROGRAM STRATEGIS" {
@@ -432,7 +432,7 @@ func (c *RUPSController) readRKM(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -488,13 +488,13 @@ func (c *RUPSController) readFinancialReport(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "L"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "Uraian" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "L"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(cellValueAfter) != "Uraian" {
@@ -547,7 +547,7 @@ func (c *RUPSController) readFinancialReport(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -604,13 +604,13 @@ func (c *RUPSController) readInvestasi(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "URAIAN INVESTASI" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(cellValueAfter) != "URAIAN INVESTASI" {
@@ -663,7 +663,7 @@ func (c *RUPSController) readInvestasi(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -720,13 +720,13 @@ func (c *RUPSController) readSDM(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if strings.TrimSpace(cellValue) == "SDM Organik" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(cellValueAfter) != "SDM Organik" {
@@ -776,7 +776,7 @@ func (c *RUPSController) readSDM(sheetName string) error {
 			for _, header := range headers {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -862,7 +862,7 @@ func (c *RUPSController) readFinancialRatio(sheetName string) error {
 					if tableFound == false {
 						cellValue, err := c.Engine.GetCellValue(sheetName, columnsMapping["Uraian"].(string)+toolkit.ToString(i))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						if strings.Contains(strings.ToUpper(cellValue), strings.ToUpper(gridIdentifier)) {
@@ -897,7 +897,7 @@ func (c *RUPSController) readFinancialRatio(sheetName string) error {
 					for _, header := range headers {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -988,13 +988,13 @@ func (c *RUPSController) readTrafik(sheetName string) error {
 			for {
 				cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if cellValue == "No." {
 					cellValue, err = c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if cellValue != "No." {
@@ -1035,7 +1035,7 @@ func (c *RUPSController) readTrafik(sheetName string) error {
 					} else {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						stringData = strings.ReplaceAll(stringData, "'", "''")

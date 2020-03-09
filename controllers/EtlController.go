@@ -67,7 +67,7 @@ func (c *EtlController) ReadDataGRK(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		_, err = strconv.Atoi(cellValue)
@@ -103,7 +103,7 @@ func (c *EtlController) ReadDataGRK(sheetName string) error {
 
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue != "" {
@@ -124,12 +124,12 @@ func (c *EtlController) ReadDataGRK(sheetName string) error {
 			if header.DBFieldName == "PERIOD" {
 				stringDataYear, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringDataMonth, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData := "1/" + toolkit.ToString(helpers.IndexOf(stringDataMonth, months)+1) + "/" + stringDataYear
@@ -156,7 +156,7 @@ func (c *EtlController) ReadDataGRK(sheetName string) error {
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -201,7 +201,7 @@ func (c *EtlController) ReadDataGRK(sheetName string) error {
 
 			err = helpers.Insert(param)
 			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				helpers.HandleError(err)
 			} else {
 				log.Println("Row", currentRow, "inserted.")
 			}
@@ -232,7 +232,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		_, err = strconv.Atoi(cellValue)
@@ -262,7 +262,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 		currentCol := helpers.ToCharStr(i)
 		cellText, err := c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if isHeaderDetected == false && strings.TrimSpace(cellText) != "" {
@@ -327,7 +327,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 
 			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(cellValue) != "" {
@@ -374,7 +374,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 				} else if header.DBFieldName == "ITEM_ID" {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					resultRows := make([]toolkit.M, 0)
@@ -385,7 +385,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 
 					err = c.selectItemID(param)
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if stringData != "" {
@@ -406,7 +406,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -471,7 +471,7 @@ func (c *EtlController) ReadDataEnergyItemBBM(sheetName string) error {
 
 					err = helpers.Insert(param)
 					if err != nil {
-						log.Fatal("Error inserting "+monthHeader.HeaderName+",", currentAlat+", ERROR:", err.Error())
+						helpers.HandleError(err)
 					} else {
 						log.Println(monthHeader.HeaderName+",", currentAlat+", inserted.")
 					}
@@ -503,7 +503,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		_, err = strconv.Atoi(cellValue)
@@ -533,7 +533,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 		currentCol := helpers.ToCharStr(i)
 		cellText, err := c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if isHeaderDetected == false && strings.TrimSpace(cellText) != "" {
@@ -598,7 +598,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 
 			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(cellValue) != "" {
@@ -645,7 +645,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 				} else if header.DBFieldName == "ITEM_ID" {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					resultRows := make([]toolkit.M, 0)
@@ -656,7 +656,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 
 					err = c.selectItemID(param)
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if stringData != "" {
@@ -677,7 +677,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -742,7 +742,7 @@ func (c *EtlController) ReadDataEnergyItemListrik(sheetName string) error {
 
 					err = helpers.Insert(param)
 					if err != nil {
-						log.Fatal("Error inserting "+monthHeader.HeaderName+",", currentAlat+", ERROR:", err.Error())
+						helpers.HandleError(err)
 					} else {
 						log.Println(monthHeader.HeaderName+",", currentAlat+", inserted.")
 					}
@@ -773,7 +773,7 @@ func (c *EtlController) ReadDataPerformance(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		_, err = strconv.Atoi(cellValue)
@@ -808,7 +808,7 @@ func (c *EtlController) ReadDataPerformance(sheetName string) error {
 
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue != "" {
@@ -827,12 +827,12 @@ func (c *EtlController) ReadDataPerformance(sheetName string) error {
 			if strings.EqualFold(header.DBFieldName, "PERIOD") {
 				stringDataYear, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringDataMonth, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData := "1/" + toolkit.ToString(helpers.IndexOf(stringDataMonth, months)+1) + "/" + stringDataYear
@@ -859,7 +859,7 @@ func (c *EtlController) ReadDataPerformance(sheetName string) error {
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -902,7 +902,7 @@ func (c *EtlController) ReadDataPerformance(sheetName string) error {
 
 			err = helpers.Insert(param)
 			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				helpers.HandleError(err)
 			} else {
 				log.Println("Row", currentRow, "inserted.")
 			}

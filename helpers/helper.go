@@ -5,12 +5,17 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/eaciit/toolkit"
 )
+
+var CurrentFile = ""
+var CurrentSheet = ""
 
 func KillApp(err error) {
 	fmt.Printf("error. %s \n", err.Error())
@@ -111,4 +116,50 @@ func IndexOf(element string, data []interface{}) int {
 		}
 	}
 	return -1 //not found.
+}
+
+func HandleError(theError error) {
+	PrintlnAndWriteErrorToLogFile(theError)
+}
+
+func PrintlnAndWriteToLogFile(message ...interface{}) {
+	log.Println(message...)
+
+	f, err := os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Println("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
+	log.Println(message...)
+	log.SetOutput(os.Stdout)
+}
+
+func PrintlnAndWriteErrorToLogFile(theError error) {
+	log.Println("ERROR:", theError.Error())
+
+	dir := "logfiles"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, os.ModePerm)
+	}
+
+	filePath := filepath.Join(dir, "errorlog_"+time.Now().Format("2006-01-02")+".txt")
+	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Println("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
+
+	buf := make([]byte, 1<<16)
+	stackSize := runtime.Stack(buf, true)
+
+	log.Println("File:", CurrentFile)
+	log.Println("Sheet", CurrentSheet)
+	log.Println("ERROR:", theError.Error())
+	log.Println(string(buf[0:stackSize]), "\n------------------------------------------------------------------------------------------------------------------------")
+
+	log.SetOutput(os.Stdout)
 }

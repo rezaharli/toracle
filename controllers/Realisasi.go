@@ -66,13 +66,13 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "KODE" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter != "KODE" {
@@ -105,7 +105,7 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 
 	stringData, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	splitted := strings.Split(stringData, " ")
@@ -114,7 +114,7 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 
 	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	currentSumber := "TTL"
@@ -145,7 +145,7 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 
 			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(stringData) == "" { //jika cell kode kosong maka skip saja ehe
@@ -162,7 +162,7 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 			if err != nil { //jika error maka tipe atau subtipe
 				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if !strings.Contains(stringData, ".") { //jika tidak mengandung titik maka tipe
@@ -191,7 +191,7 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -231,13 +231,13 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "KODE" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter != "KODE" {
@@ -269,7 +269,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 
 	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	splitted := strings.Split(stringTanggalan, " ")
@@ -278,7 +278,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 
 	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	currentSumber := "TTL"
@@ -309,7 +309,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 
 			stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
@@ -327,7 +327,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 				if !strings.Contains(stringKode, ".") {
 					stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					currentKelompok = stringUraian
@@ -339,13 +339,13 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 
 			stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(stringData) == "" {
 				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				currentSubTipe = stringUraian
@@ -363,7 +363,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 				} else if header.DBFieldName == "INCOME_YTD" {
 					stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if strings.TrimSpace(currentSubTipe) == "PENERIMAAN" {
@@ -374,7 +374,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 				} else if header.DBFieldName == "EXP_YTD" {
 					stringData, err := c.Engine.GetCellValue(sheetName, "AF"+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if strings.TrimSpace(currentSubTipe) == "PENGELUARAN" {
@@ -391,7 +391,7 @@ func (c *RealisasiController) ReadDataArusKas(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -431,13 +431,13 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "KODE" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter != "KODE" {
@@ -468,7 +468,7 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 
 	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	splitted := strings.Split(stringTanggalan, " ")
@@ -477,7 +477,7 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 
 	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	currentSumber := "TTL"
@@ -508,7 +508,7 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 
 			stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(stringKode) == "" { //jika cell kode kosong maka skip saja ehe
@@ -525,7 +525,7 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 			if err != nil { //jika error maka tipe
 				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				currentTipe = stringUraian
@@ -547,7 +547,7 @@ func (c *RealisasiController) ReadDataLabaRugi(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -584,7 +584,7 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 
 	stringTanggalan, err := c.Engine.GetCellValue(sheetName, "A3")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	splitted := strings.Split(stringTanggalan, " ")
@@ -593,7 +593,7 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 
 	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	currentSumber := "TTL"
@@ -620,13 +620,13 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 		for {
 			cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValue == "KODE" {
 				cellValueAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if cellValueAfter != "KODE" {
@@ -665,12 +665,12 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 
 				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringSatuan, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if strings.TrimSpace(stringSatuan) == "" || !strings.Contains(stringUraian, ".") { //jika cell satuan kosong maka skip saja ehe
@@ -697,7 +697,7 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 					} else {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						stringData = strings.ReplaceAll(stringData, "'", "''")

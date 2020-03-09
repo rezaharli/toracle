@@ -50,7 +50,7 @@ func (c *KinerjaCukerController) readSheet(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO" {
@@ -82,7 +82,7 @@ func (c *KinerjaCukerController) readSheet(sheetName string) error {
 			if header.DBFieldName == "Tahun" {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if strings.TrimSpace(stringData) != "" {
@@ -98,7 +98,7 @@ func (c *KinerjaCukerController) readSheet(sheetName string) error {
 			} else if header.DBFieldName == "Bulan" {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if strings.TrimSpace(stringData) != "" {
@@ -114,7 +114,7 @@ func (c *KinerjaCukerController) readSheet(sheetName string) error {
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData = strings.ReplaceAll(stringData, "'", "''")

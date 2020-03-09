@@ -136,7 +136,7 @@ func (c *ProductivityController) InsertProductivityDatas(results []toolkit.M, js
 				if dateString != "0000-00-00" {
 					t, err := time.Parse("2006-01-02", dateString)
 					if err != nil {
-						log.Fatal("Error parsing time, ERROR:", err.Error())
+						helpers.HandleError(err)
 					}
 					rowData.Set(header.DBFieldName, t)
 				} else {
@@ -156,7 +156,7 @@ func (c *ProductivityController) InsertProductivityDatas(results []toolkit.M, js
 		log.Println("Inserting data Productivity")
 		err := helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting data, ERROR:", err.Error())
+			helpers.HandleError(err)
 		}
 	}
 

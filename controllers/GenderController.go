@@ -300,7 +300,7 @@ func (c *GenderController) InsertGenderDatas(results []toolkit.M, jsonconf strin
 		log.Println("Inserting data gender")
 		err := helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting data, ERROR:", err.Error())
+			helpers.HandleError(err)
 		}
 	}
 

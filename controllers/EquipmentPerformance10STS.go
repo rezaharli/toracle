@@ -60,7 +60,7 @@ func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 	for {
 		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		splitted := strings.Split(stringData, " ")
@@ -82,7 +82,7 @@ func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 		if strings.EqualFold(strings.TrimSpace(stringData), strings.TrimSpace("NO")) {
 			stringDataAfter, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.EqualFold(strings.TrimSpace(stringDataAfter), strings.TrimSpace("NO")) {
@@ -117,7 +117,7 @@ func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 
 		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if strings.Contains(stringData, "Total") {
@@ -130,7 +130,7 @@ func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 			} else if header.DBFieldName == "ITEM_ID" {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				resultRows := make([]toolkit.M, 0)
@@ -141,7 +141,7 @@ func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 
 				err = c.selectItemID(param)
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if stringData != "" {
@@ -157,7 +157,7 @@ func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 				if header.Column != "" {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
@@ -186,7 +186,7 @@ func (c *EquipmentPerformance10STSController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row", currentRow, "inserted.")
 		}

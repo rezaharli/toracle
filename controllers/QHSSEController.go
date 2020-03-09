@@ -50,7 +50,7 @@ func (c *QhsseController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO." {
@@ -85,7 +85,7 @@ func (c *QhsseController) ReadData(sheetName string) error {
 				c.Engine.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData = strings.ReplaceAll(stringData, "'", "")
@@ -110,7 +110,7 @@ func (c *QhsseController) ReadData(sheetName string) error {
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -138,7 +138,7 @@ func (c *QhsseController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row", currentRow, "inserted.")
 		}

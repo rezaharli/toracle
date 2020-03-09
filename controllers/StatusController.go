@@ -138,7 +138,7 @@ func (c *StatusController) InsertStatusDatas(results []toolkit.M, jsonconf strin
 		log.Println("Inserting data Status")
 		err := helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting data, ERROR:", err.Error())
+			helpers.HandleError(err)
 		}
 	}
 

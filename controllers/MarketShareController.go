@@ -100,7 +100,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -133,7 +133,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -165,7 +165,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -198,7 +198,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -231,7 +231,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -264,7 +264,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -297,7 +297,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -330,7 +330,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -363,7 +363,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -396,7 +396,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -429,7 +429,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}
@@ -462,7 +462,7 @@ func (c *MarketShareController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row, ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row inserted.")
 		}

@@ -69,7 +69,7 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 			c.Engine.SetCellStyle(sheetName, "A"+toolkit.ToString(row), "A"+toolkit.ToString(row), style)
 			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			//check if value is a period
@@ -80,7 +80,7 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 
 				stringData, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if strings.EqualFold(strings.TrimSpace(stringData), strings.TrimSpace("UNIT")) {
@@ -145,7 +145,7 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 					} else if header.DBFieldName == "ITEM_ID" {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						if currentItemID == stringData {
@@ -162,7 +162,7 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 
 						err = c.selectItemID(param)
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						if stringData != "" {
@@ -180,13 +180,13 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 						c.Engine.SetCellStyle(sheetName, cellID, cellID, style)
 						startDate, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
 						startTime, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						if startDate != "" && startTime != "" {
@@ -202,13 +202,13 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 						c.Engine.SetCellStyle(sheetName, cellID, cellID, style)
 						startDate, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						cellID = helpers.ToCharStr(helpers.CharStrToNum(header.Column)+2) + toolkit.ToString(currentRow)
 						startTime, err := c.Engine.GetCellValue(sheetName, cellID)
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						if startDate != "" && startTime != "" {
@@ -221,7 +221,7 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 					} else if header.DBFieldName == "QTY" {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						stringData = strings.ReplaceAll(stringData, "-", "")
@@ -239,7 +239,7 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 					} else {
 						stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
@@ -272,7 +272,7 @@ func (c *CttController) ReadDataDaily(sheetName string) error {
 				toolkit.Println("Inserting...")
 				err = helpers.Insert(param)
 				if err != nil {
-					log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+					helpers.HandleError(err)
 				} else {
 					log.Println("Row", currentRow, "inserted.")
 				}
@@ -322,7 +322,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 				c.Engine.SetCellStyle(sheetName, "A"+toolkit.ToString(row), "A"+toolkit.ToString(row), style)
 				stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				splitted := strings.Split(stringData, " ")
@@ -338,7 +338,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 
 					stringDataAcuan, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row-1))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if !strings.Contains(stringDataAcuan, "EQUIPMENT PERFORMANCE DATA") {
@@ -351,7 +351,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 
 					stringData, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if strings.EqualFold(strings.TrimSpace(stringData), strings.TrimSpace("NO")) {
@@ -418,7 +418,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 
 			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.Contains(stringData, "Total") {
@@ -431,7 +431,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 				} else if header.DBFieldName == "ITEM_ID" {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if currentItemID == stringData {
@@ -448,7 +448,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 
 					err = c.selectItemID(param)
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if len(resultRows) > 0 {
@@ -461,7 +461,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
@@ -485,7 +485,7 @@ func (c *CttController) ReadDataMonthly(sheetName string) error {
 
 			err = helpers.Insert(param)
 			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				helpers.HandleError(err)
 			} else {
 				log.Println("Row", currentRow, "inserted.")
 			}

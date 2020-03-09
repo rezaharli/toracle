@@ -53,7 +53,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO" {
@@ -92,17 +92,17 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 
 		number, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		codingMask, err := c.Engine.GetCellValue(sheetName, "C"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		namaAktiva, err := c.Engine.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		//reset category cekno nemu category baru setiap nemu jumlah
@@ -125,7 +125,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if stringData != "" {
@@ -173,7 +173,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 				if isAktiva {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
@@ -187,7 +187,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 				} else if !isCategory && !isProjectName {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
@@ -201,7 +201,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 				if isCategory {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
@@ -215,7 +215,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 				} else if !isAktiva && !isProjectName {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
@@ -229,7 +229,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 				if isProjectName {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
@@ -243,7 +243,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 				} else if !isAktiva && !isCategory {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 
@@ -256,7 +256,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 				stringData = strings.ReplaceAll(stringData, "'", "''")
 				stringData = strings.ReplaceAll(stringData, "-", "")
@@ -288,7 +288,7 @@ func (c *InvestmentController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row", currentRow, "inserted.")
 		}

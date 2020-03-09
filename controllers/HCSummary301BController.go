@@ -142,7 +142,7 @@ func (c *HcSummary301BController) InsertTrainingDatas(results []toolkit.M) error
 		log.Println("Inserting data training summary")
 		err := helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting data, ERROR:", err.Error())
+			helpers.HandleError(err)
 		}
 	}
 

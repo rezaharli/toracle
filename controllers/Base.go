@@ -60,14 +60,15 @@ func (c *Base) Extract() {
 	toolkit.Println()
 
 	for _, filePath := range filenames {
-		log.Println("Processing sheets...")
 		timeNow := time.Now()
 
+		helpers.CurrentFile = filePath
 		err := c.Engine.OpenExcel(filePath)
 		if err != nil {
-			log.Fatal(err.Error())
+			helpers.HandleError(err)
 		}
 
+		log.Println("Processing sheets...")
 		c.Controller.ReadExcel()
 
 		if err == nil {
@@ -83,6 +84,7 @@ func (c *Base) Extract() {
 }
 
 func (c *Base) ReadSheet(readSheet readSheet, sheetToRead string) {
+	helpers.CurrentSheet = sheetToRead
 	err := readSheet(sheetToRead)
 	if err != nil {
 		log.Println("Error reading", sheetToRead, "sheet data. ERROR:", err)
@@ -109,7 +111,7 @@ func (c *Base) InsertRowData(rowIdentifier interface{}, rowData interface{}, tab
 
 	err := helpers.Insert(param)
 	if err != nil {
-		log.Fatal("Error inserting row "+toolkit.ToString(rowIdentifier)+", ERROR:", err.Error())
+		helpers.HandleError(err)
 	} else {
 		log.Println("Row", rowIdentifier, "inserted.")
 	}
@@ -125,7 +127,7 @@ func (c *Base) MoveToArchive(filePath string) {
 
 	err := os.Rename(filePath, filepath.Join(archivePath, filepath.Base(filePath)))
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 }
 

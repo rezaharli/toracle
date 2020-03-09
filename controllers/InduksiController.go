@@ -51,13 +51,13 @@ func (c *InduksiController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "No" {
 			cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValue == "No" {
@@ -87,7 +87,7 @@ func (c *InduksiController) ReadData(sheetName string) error {
 		//mengambil BULAN
 		cellValueBulan, err := c.Engine.GetCellValue(sheetName, col+rowBulan)
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValueBulan == "" {
@@ -99,7 +99,7 @@ func (c *InduksiController) ReadData(sheetName string) error {
 
 		period, err := time.Parse("2-1-2006", "1-"+toolkit.ToString(helpers.IndexOf(cellValueBulan, months)+1)+"-"+tahun)
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		emptyCount := 0
@@ -129,12 +129,12 @@ func (c *InduksiController) ReadData(sheetName string) error {
 				//mengambil Value di kolom
 				cellValueJenisInduksi, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				cellValue, err := c.Engine.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if cellValueJenisInduksi == "" {

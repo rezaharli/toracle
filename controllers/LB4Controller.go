@@ -175,7 +175,7 @@ func (c *LB4Controller) InsertAPIDatas(results []toolkit.M, jsonconf string) err
 		// log.Println("Inserting data API")
 		err := helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting data, ERROR:", err.Error())
+			helpers.HandleError(err)
 		}
 	}
 

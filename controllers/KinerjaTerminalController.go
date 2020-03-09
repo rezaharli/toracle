@@ -52,13 +52,13 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if strings.EqualFold(strings.TrimSpace(cellValue), "Uraian") {
 			cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if !strings.EqualFold(strings.TrimSpace(cellValue), "Uraian") {
@@ -89,7 +89,7 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 		currentCol := helpers.ToCharStr(i)
 		cellText, err := c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(monthRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		dateString := strings.TrimSpace(cellText)
@@ -211,7 +211,7 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 
 				err = helpers.Insert(param)
 				if err != nil {
-					log.Fatal("Error inserting "+monthHeader.HeaderName+", ERROR:", err.Error())
+					helpers.HandleError(err)
 				} else {
 					log.Println(monthHeader.HeaderName + ", inserted.")
 				}
@@ -232,7 +232,7 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 func (c *KinerjaTerminalController) readCell(sheetName, cellID string) string {
 	stringData, err := c.Engine.GetCellValue(sheetName, cellID)
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	stringData = strings.ReplaceAll(stringData, "'", "''")

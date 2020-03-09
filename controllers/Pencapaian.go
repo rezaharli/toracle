@@ -67,13 +67,13 @@ func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "KODE" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter != "KODE" {
@@ -138,7 +138,7 @@ func (c *PencapaianController) ReadDataRekapKonsol(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -263,7 +263,7 @@ func (c *PencapaianController) ReadDataRekapKonsol2(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -311,13 +311,13 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter != "NO" {
@@ -382,7 +382,7 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -421,7 +421,7 @@ func (c *PencapaianController) ReadDataRekapLegi(sheetName string) error {
 
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter == "NO" {
@@ -508,7 +508,7 @@ func (c *PencapaianController) ReadDataRekapLegi2(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -608,7 +608,7 @@ func (c *PencapaianController) ReadDataRekapLegi3(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -656,13 +656,13 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO" {
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter != "NO" {
@@ -727,7 +727,7 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -766,7 +766,7 @@ func (c *PencapaianController) ReadDataRekapTTL(sheetName string) error {
 
 			cellValueAfter, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueAfter == "NO" {
@@ -853,7 +853,7 @@ func (c *PencapaianController) ReadDataRekapTTL2(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")
@@ -954,7 +954,7 @@ func (c *PencapaianController) ReadDataRekapTTL3(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.ReplaceAll(stringData, "'", "''")

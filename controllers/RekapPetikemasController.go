@@ -70,13 +70,13 @@ func (c *RekapPetikemasController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "No" {
 			cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValue == "No" {
@@ -106,13 +106,13 @@ func (c *RekapPetikemasController) ReadData(sheetName string) error {
 		//mengambil tahun
 		cellValueTahun, err := c.Engine.GetCellValue(sheetName, col+rowTahun)
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		//mengambil terminal
 		cellValueTerminal, err := c.Engine.GetCellValue(sheetName, col+rowTerminal)
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValueTahun == "" && cellValueTerminal == "" {
@@ -138,17 +138,17 @@ func (c *RekapPetikemasController) ReadData(sheetName string) error {
 			//mengambil Value di kolom
 			cellValueIntDom, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			cellValue, err := c.Engine.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			cellValueSat, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValueSat == "BOX" {

@@ -54,7 +54,7 @@ func (c *AscController) readMonthlyData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "1" {
@@ -85,7 +85,7 @@ func (c *AscController) readMonthlyData(sheetName string) error {
 			currentCol := helpers.ToCharStr(i)
 			cellText, err := c.Engine.GetCellValue(sheetName, currentCol+headerRow)
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if isHeaderDetected == false && strings.TrimSpace(cellText) != "" {
@@ -119,7 +119,7 @@ func (c *AscController) readMonthlyData(sheetName string) error {
 		// end jika udah nemu total
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow+index))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "Total" {
@@ -133,7 +133,7 @@ func (c *AscController) readMonthlyData(sheetName string) error {
 			if header.DBFieldName == "PERIOD" {
 				stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow-4))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				monthYear := strings.Split(stringData, " ")
@@ -142,14 +142,14 @@ func (c *AscController) readMonthlyData(sheetName string) error {
 
 				t, err := time.Parse("2006-1-02", year+"-"+toolkit.ToString(helpers.IndexOf(month, months)+1)+"-01")
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				rowData.Set(header.DBFieldName, t)
 			} else if header.DBFieldName == "ITEM_ID" {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if stringData == "" {
@@ -164,14 +164,14 @@ func (c *AscController) readMonthlyData(sheetName string) error {
 
 				err = c.SelectItemID(param)
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 				if stringData == "" {
 					stringData = "0"
@@ -214,7 +214,7 @@ func (c *AscController) readDailyData(sheetName string) error {
 
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		_, err = time.Parse("2-Jan-06", cellValue)
@@ -244,7 +244,7 @@ func (c *AscController) readDailyData(sheetName string) error {
 			currentCol := helpers.ToCharStr(i)
 			cellText, err := c.Engine.GetCellValue(sheetName, currentCol+headerRow)
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if isHeaderDetected == false && strings.TrimSpace(cellText) != "" {
@@ -255,7 +255,7 @@ func (c *AscController) readDailyData(sheetName string) error {
 				//kalo header ga nemu coba sekali lagi mbok bilih di atasnya
 				cellText, err = c.Engine.GetCellValue(sheetName, currentCol+toolkit.ToString(toolkit.ToInt(headerRow, "")-1))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if strings.TrimSpace(cellText) == "" {
@@ -285,7 +285,7 @@ func (c *AscController) readDailyData(sheetName string) error {
 		// end jika udah nemu total
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow+index))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "Total" {
@@ -301,7 +301,7 @@ func (c *AscController) readDailyData(sheetName string) error {
 				c.Engine.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if stringData == "" {
@@ -310,7 +310,7 @@ func (c *AscController) readDailyData(sheetName string) error {
 
 				t, err := time.Parse("2-Jan-06", stringData)
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				rowData.Set(header.DBFieldName, t)
@@ -323,14 +323,14 @@ func (c *AscController) readDailyData(sheetName string) error {
 
 				err := c.SelectItemID(param)
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				rowData.Set(header.DBFieldName, resultRows[0].GetString("ITEM_ID"))
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 				if stringData == "" {
 					stringData = "0"

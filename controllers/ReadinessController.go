@@ -62,7 +62,7 @@ func (c *ReadinessController) ReadData(sheetName string) error {
 			if row >= 1 {
 				stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(row))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if strings.Contains(stringData, "Shift") {
@@ -75,7 +75,7 @@ func (c *ReadinessController) ReadData(sheetName string) error {
 
 					stringData, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(firstDataRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					if strings.EqualFold(strings.TrimSpace(stringData), strings.TrimSpace("No")) {
@@ -120,7 +120,7 @@ func (c *ReadinessController) ReadData(sheetName string) error {
 
 			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.Contains(stringData, "Total") {
@@ -133,7 +133,7 @@ func (c *ReadinessController) ReadData(sheetName string) error {
 				} else if header.DBFieldName == "STATUS" {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
@@ -146,7 +146,7 @@ func (c *ReadinessController) ReadData(sheetName string) error {
 					if stringData == "" {
 						stringData, err := c.Engine.GetCellValue(sheetName, helpers.ToCharStr(helpers.CharStrToNum(header.Column)+1)+toolkit.ToString(currentRow))
 						if err != nil {
-							log.Fatal(err)
+							helpers.HandleError(err)
 						}
 
 						stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
@@ -166,7 +166,7 @@ func (c *ReadinessController) ReadData(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData = strings.TrimSpace(strings.ReplaceAll(stringData, "'", "''"))
@@ -194,7 +194,7 @@ func (c *ReadinessController) ReadData(sheetName string) error {
 
 			err = helpers.Insert(param)
 			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				helpers.HandleError(err)
 			} else {
 				log.Println("Row", currentRow, "inserted.")
 			}

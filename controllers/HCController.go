@@ -133,7 +133,7 @@ func (c *HcController) InsertTrainingDatas(results []toolkit.M) error {
 				dateString := result[header.Column].(string)
 				t, err := time.Parse("2006-01-02", dateString)
 				if err != nil {
-					log.Fatal("Error parsing time, ERROR:", err.Error())
+					helpers.HandleError(err)
 				}
 
 				rowData.Set(header.DBFieldName, t)
@@ -151,7 +151,7 @@ func (c *HcController) InsertTrainingDatas(results []toolkit.M) error {
 		log.Println("Inserting data training")
 		err := helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting data, ERROR:", err.Error())
+			helpers.HandleError(err)
 		}
 	}
 

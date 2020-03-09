@@ -42,7 +42,7 @@ func main() {
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
 	if err := clit.Commit(); err != nil {
-		log.Fatal("Error reading config file, ERROR:", err.Error())
+		helpers.HandleError(err)
 	}
 
 	defer clit.Close()
@@ -98,7 +98,7 @@ func main() {
 					procController.FirstTimer = firstTimer
 					// err = procController.ReadAPI()
 					if err != nil {
-						log.Fatal(err.Error())
+						helpers.HandleError(err)
 					}
 
 					firstTimer = false
@@ -108,76 +108,76 @@ func main() {
 				hcController := c.NewHcController()
 				err = hcController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				// READ Hc API Summary 201
 				hcsumController := c.NewHcSummaryController()
 				err = hcsumController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				// READ Hc API Summary 301A
 				hcsum301AController := c.NewHcSummary301AController()
 				err = hcsum301AController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				// READ Hc API Summary 301B
 				hcsum301BController := c.NewHcSummary301BController()
 				err = hcsum301BController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				genderController := c.NewGenderController()
 				err = genderController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				educationController := c.NewEducationController()
 				err = educationController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				attendanceController := c.NewAttendanceController()
 				err = attendanceController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				statusController := c.NewStatusController()
 				err = statusController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				productivityController := c.NewProductivityController()
 				err = productivityController.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				lb1Controller := c.NewLB1Controller()
 				err = lb1Controller.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				lb2Controller := c.NewLB2Controller()
 				err = lb2Controller.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				lb4Controller := c.NewLB4Controller()
 				err = lb4Controller.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				if isExecute {
@@ -185,7 +185,7 @@ func main() {
 					lb13Controller := c.NewLB13Controller()
 					err = lb13Controller.ReadAPI()
 					if err != nil {
-						log.Fatal(err.Error())
+						helpers.HandleError(err)
 					}
 
 				}
@@ -193,19 +193,19 @@ func main() {
 				lb5Controller := c.NewLB5Controller()
 				err = lb5Controller.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				lb10Controller := c.NewLB10Controller()
 				err = lb10Controller.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				lb11Controller := c.NewLB11Controller()
 				err = lb11Controller.ReadAPI()
 				if err != nil {
-					log.Fatal(err.Error())
+					helpers.HandleError(err)
 				}
 
 				i++

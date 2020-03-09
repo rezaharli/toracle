@@ -54,13 +54,13 @@ func (c *KinerjaController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "No" {
 			cellValue, err = c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValue == "No" {
@@ -108,7 +108,7 @@ Rowloop:
 				// f.SetCellStyle(sheetName, cellID, cellID, style)
 				stringData, err := c.Engine.GetCellValue(sheetName, cellID)
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				splitted := strings.Split(stringData, " ")
@@ -153,7 +153,7 @@ Rowloop:
 
 				stringData, err := c.Engine.GetCellValue(sheetName, col+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				if strings.TrimSpace(stringData) != "" {
@@ -161,7 +161,7 @@ Rowloop:
 					newCol := helpers.ToCharStr(colNum)
 					stringData, err = c.Engine.GetCellValue(sheetName, newCol+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 				}
 
@@ -224,7 +224,7 @@ Rowloop:
 
 			err = helpers.Insert(param)
 			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				helpers.HandleError(err)
 			} else {
 				log.Println("Row", currentRow, "inserted.")
 			}

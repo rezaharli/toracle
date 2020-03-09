@@ -51,13 +51,13 @@ func (c *FTWController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "TANGGAL" {
 			cellValue, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValue == "TANGGAL" {
@@ -104,7 +104,7 @@ func (c *FTWController) ReadData(sheetName string) error {
 				c.Engine.SetCellStyle(sheetName, header.Column+toolkit.ToString(currentRow), header.Column+toolkit.ToString(currentRow), style)
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				var t time.Time
@@ -127,7 +127,7 @@ func (c *FTWController) ReadData(sheetName string) error {
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 				stringData = strings.ReplaceAll(stringData, "'", "''")
 				stringData = strings.ReplaceAll(stringData, "-", "")
@@ -160,7 +160,7 @@ func (c *FTWController) ReadData(sheetName string) error {
 
 			err = helpers.Insert(param)
 			if err != nil {
-				log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+				helpers.HandleError(err)
 			} else {
 				log.Println("Row", currentRow, "inserted.")
 			}

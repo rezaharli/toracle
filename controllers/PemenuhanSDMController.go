@@ -70,13 +70,13 @@ func (c *PemenuhanSDMController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO" {
 			cellValue, err = c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i+1))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if cellValue == "NO" {
@@ -116,14 +116,14 @@ func (c *PemenuhanSDMController) ReadData(sheetName string) error {
 
 		stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		//check if value is a SUB_DIR
 		if strings.TrimSpace(stringData) != "" {
 			stringSubDir, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if strings.TrimSpace(stringSubDir) != "" {
@@ -135,7 +135,7 @@ func (c *PemenuhanSDMController) ReadData(sheetName string) error {
 
 		stringB, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if currentSubDir == "" || strings.Contains(stringB, "SUB JUMLAH") {
@@ -151,7 +151,7 @@ func (c *PemenuhanSDMController) ReadData(sheetName string) error {
 				} else {
 					stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 					stringData = strings.ReplaceAll(stringData, "'", "''")
 					stringData = strings.ReplaceAll(stringData, "-", "")
@@ -187,7 +187,7 @@ func (c *PemenuhanSDMController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row", currentRow, "inserted.")
 		}

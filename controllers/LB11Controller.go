@@ -175,7 +175,7 @@ func (c *LB11Controller) InsertAPIDatas(results []toolkit.M, jsonconf string) er
 		log.Println("Inserting data API")
 		err := helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting data, ERROR:", err.Error())
+			helpers.HandleError(err)
 		}
 	}
 

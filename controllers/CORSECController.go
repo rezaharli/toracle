@@ -55,7 +55,7 @@ func (c *CorsecController) ReadData(sheetName string) error {
 	for {
 		cellValue, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(i))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValue == "NO" {
@@ -92,14 +92,14 @@ func (c *CorsecController) ReadData(sheetName string) error {
 
 		styleID, err := c.Engine.GetCellStyle(sheetName, "D"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		fillID := c.Engine.GetFillID(styleID)
 
 		number, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		fgColorTheme := c.Engine.GetFgColorTheme(fillID)
@@ -114,7 +114,7 @@ func (c *CorsecController) ReadData(sheetName string) error {
 		if fgColorRGB == "FFEAF1DD" || fgColorRGB == "FF00B0F0" {
 			newCategory, err := c.Engine.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			if newCategory != currentCategory {
@@ -127,7 +127,7 @@ func (c *CorsecController) ReadData(sheetName string) error {
 		} else if fgColorRGB == "FFFFF2CC" {
 			currentArea, err = c.Engine.GetCellValue(sheetName, "D"+toolkit.ToString(currentRow))
 			if err != nil {
-				log.Fatal(err)
+				helpers.HandleError(err)
 			}
 
 			continue
@@ -161,12 +161,12 @@ func (c *CorsecController) ReadData(sheetName string) error {
 				getStringData = func(row int) string {
 					isProses, err := c.Engine.GetCellValue(sheetName, "AA"+toolkit.ToString(row))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					isSelesai, err := c.Engine.GetCellValue(sheetName, "AB"+toolkit.ToString(row))
 					if err != nil {
-						log.Fatal(err)
+						helpers.HandleError(err)
 					}
 
 					stringData := ""
@@ -198,7 +198,7 @@ func (c *CorsecController) ReadData(sheetName string) error {
 			} else {
 				stringData, err := c.Engine.GetCellValue(sheetName, header.Column+toolkit.ToString(currentRow))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 				stringData = strings.ReplaceAll(stringData, "'", "''")
 
@@ -225,7 +225,7 @@ func (c *CorsecController) ReadData(sheetName string) error {
 
 		err = helpers.Insert(param)
 		if err != nil {
-			log.Fatal("Error inserting row "+toolkit.ToString(currentRow)+", ERROR:", err.Error())
+			helpers.HandleError(err)
 		} else {
 			log.Println("Row", currentRow, "inserted.")
 		}

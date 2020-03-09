@@ -49,7 +49,7 @@ func (c *RKAPController) ReadData(sheetName string) error {
 
 	tahunCell, err := c.Engine.GetCellValue(sheetName, "S5")
 	if err != nil {
-		log.Fatal(err)
+		helpers.HandleError(err)
 	}
 
 	splitted := strings.Split(tahunCell, " ")
@@ -68,7 +68,7 @@ func (c *RKAPController) ReadData(sheetName string) error {
 		//mengambil bulan
 		cellValueBulan, err := c.Engine.GetCellValue(sheetName, col+rowBulan)
 		if err != nil {
-			log.Fatal(err)
+			helpers.HandleError(err)
 		}
 
 		if cellValueBulan == "" {
@@ -94,7 +94,7 @@ func (c *RKAPController) ReadData(sheetName string) error {
 			for kind, row := range kinds.(toolkit.M) {
 				cellValue, err := c.Engine.GetCellValue(sheetName, col+row.(string))
 				if err != nil {
-					log.Fatal(err)
+					helpers.HandleError(err)
 				}
 
 				obj.Set(kind, cellValue)
