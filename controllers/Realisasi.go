@@ -606,13 +606,10 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 	currentBulan := toolkit.ToString(helpers.IndexOf(splitted[len(splitted)-2], months) + 1)
 	currentTahun := splitted[len(splitted)-1]
 
-	stringSumber, err := c.Engine.GetCellValue(sheetName, "A2")
-	if err != nil {
-		helpers.HandleError(err)
-	}
+	filename := filepath.Base(c.Engine.GetExcelPath())
 
 	currentSumber := "TTL"
-	if strings.Contains(strings.ToUpper(stringSumber), "KONSOLIDASI") {
+	if strings.Contains(strings.ToUpper(filename), "KONSOL") {
 		currentSumber = "KONSOLIDASI"
 	}
 
