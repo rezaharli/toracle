@@ -35,18 +35,20 @@ func (c *PencapaianController) FileCriteria(file string) bool {
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
 func (c *PencapaianController) ReadExcel() {
 	for _, sheetName := range c.Engine.GetSheetMap() {
-		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP KONSOL")) {
+		sheetNameTrimmed := strings.TrimSpace(strings.ReplaceAll(sheetName, "(CLOSING)", ""))
+
+		if strings.EqualFold(sheetNameTrimmed, "REKAP KONSOL") {
 			c.ReadSheet(c.ReadDataRekapKonsol, sheetName)
 			c.ReadSheet(c.ReadDataRekapKonsol2, sheetName)
 		}
 
-		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP LEGI")) {
+		if strings.EqualFold(sheetNameTrimmed, "REKAP LEGI") {
 			c.ReadSheet(c.ReadDataRekapLegi, sheetName)
 			c.ReadSheet(c.ReadDataRekapLegi2, sheetName)
 			c.ReadSheet(c.ReadDataRekapLegi3, sheetName)
 		}
 
-		if strings.Contains(strings.ToUpper(sheetName), strings.ToUpper("REKAP TTL")) {
+		if strings.EqualFold(sheetNameTrimmed, "REKAP TTL") {
 			c.ReadSheet(c.ReadDataRekapTTL, sheetName)
 			c.ReadSheet(c.ReadDataRekapTTL2, sheetName)
 			c.ReadSheet(c.ReadDataRekapTTL3, sheetName)
