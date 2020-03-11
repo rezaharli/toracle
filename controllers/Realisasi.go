@@ -713,6 +713,7 @@ func (c *RealisasiController) ReadDataRasioSummary(sheetName string) error {
 						}
 
 						stringData = strings.ReplaceAll(stringData, "'", "''")
+						stringData = strings.ReplaceAll(strings.ReplaceAll(stringData, "(", ""), ")", "")
 
 						if len(stringData) > 300 {
 							stringData = stringData[0:300]
