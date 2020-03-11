@@ -142,37 +142,30 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 		for index := 0; true; index++ {
 			rowData := toolkit.M{}
 			currentRow := firstDataRow + index
+			isRowEmpty := true
 
-			stringData, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
+			stringKode, err := c.Engine.GetCellValue(sheetName, "A"+toolkit.ToString(currentRow))
 			if err != nil {
 				helpers.HandleError(err)
 			}
 
-			if strings.TrimSpace(stringData) == "" { //jika cell kode kosong maka skip saja ehe
-				countEmpty++
-
-				if countEmpty >= 100 {
-					break
-				}
-
-				continue
+			stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
+			if err != nil {
+				helpers.HandleError(err)
 			}
 
-			_, err = strconv.Atoi(stringData)
-			if err != nil { //jika error maka tipe atau subtipe
-				stringUraian, err := c.Engine.GetCellValue(sheetName, "B"+toolkit.ToString(currentRow))
-				if err != nil {
-					helpers.HandleError(err)
-				}
+			if strings.TrimSpace(stringKode) != "" { // jika kode tidak kosong maka lakukan pengecekan tipe atau subtipe
+				_, err = strconv.ParseFloat(stringKode, 64)
+				if err != nil { //jika tidak bisa diconvert ke integer maka tipe atau subtipe
+					if !strings.Contains(stringKode, ".") { //jika tidak mengandung titik maka tipe
+						currentTipe = stringUraian
+						currentSubTipe = ""
+					} else {
+						currentSubTipe = stringUraian
+					}
 
-				if !strings.Contains(stringData, ".") { //jika tidak mengandung titik maka tipe
-					currentTipe = stringUraian
-					currentSubTipe = ""
-				} else {
-					currentSubTipe = stringUraian
+					continue
 				}
-
-				continue
 			}
 
 			for _, header := range headers {
@@ -200,8 +193,24 @@ func (c *RealisasiController) ReadDataNeraca(sheetName string) error {
 						stringData = stringData[0:300]
 					}
 
+					if strings.TrimSpace(stringData) != "" {
+						isRowEmpty = false
+					}
+
 					rowData.Set(header.DBFieldName, stringData)
 				}
+			}
+
+			if isRowEmpty || (strings.TrimSpace(stringKode) == "" && strings.TrimSpace(stringUraian) == "") {
+				countEmpty++
+
+				if countEmpty >= 100 {
+					break
+				}
+
+				continue
+			} else {
+				countEmpty = 0
 			}
 
 			c.InsertRowData(currentRow, rowData, tablename)
