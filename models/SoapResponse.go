@@ -467,3 +467,70 @@ type LB11Response struct {
 		} `xml:"ZFM_FI_21.Response"`
 	}
 }
+
+type HCEmployee struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			ZHRS002 struct {
+				Item []struct {
+					PERNR string
+					STAT2 string
+					WAUSW string
+					PERSG string
+					PLANS string
+					STEXT string
+					TRFGR string
+					FNAME string
+					GBDAT string
+					GESCH string
+					KONFE string
+					EMAIL string
+					BTRTL string
+					SUBDR string
+				} `xml:"item"`
+			} `xml:"ZHRS002"`
+			// Return  []interface{}
+		} `xml:"ZFM_VIEW_PEGAWAI.Response"`
+	}
+}
+
+type HCFullTraining struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			ZHRS001 struct {
+				Item []struct {
+					PERNR  string
+					BEGDA  string
+					ENDDA  string
+					STEXT  string
+					OTYPE  string
+					OBJID  string
+					SCLAS  string
+					SOBID  string
+					SNAME  string
+					AEDTM  string
+					PLANS  string
+					BTRTL  string
+					PLSTX  string
+					WERKS  string
+					NVNDR  string
+					NMVNDR string
+					NLOCT  string
+					NMLOC  string
+					KAPZ1  string
+					KAPZ3  string
+					DAYS   string
+					VDAYS  string
+					VDAY   string
+				} `xml:"item"`
+			} `xml:"ZHRS001"`
+			// Return  []interface{}
+		} `xml:"ZFM_VIEW_TRAINING.Response"`
+	}
+}

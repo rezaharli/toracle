@@ -168,5 +168,54 @@
             "COUNT_DAYS": "KALTG",
             "DEPARTMENT": "ZDEPT"
         }
+    },
+    "employee": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_DJP_PEGAWAI&receiverParty=&receiverService=&interface=DJP_PEGAWAI_oB&interfaceNamespace=DJP_VIEW_PEGAWAI",
+        "columnsMapping": {
+            "PERSONNEL_NUMBER": "PERNR",
+            "STATUS": "STAT2",
+            "NIPP": "WAUSW",
+            "STATUS_EMPLOYEE": "PERSG",
+            "ID_POSITION": "PLANS",
+            "POSITION_NAME": "STEXT",
+            "POSITION_CLASS": "TRFGR",
+            "FULL_NAME": "FNAME",
+            "DOB": "GBDAT",
+            "GENDER": "GESCH",
+            "RELIGION": "KONFE",
+            "EMAIL": "EMAIL",
+            "ID_SUBDIR": "BTRTL",
+            "SUBDIR": "SUBDR"
+        }
+    },
+    "full_training": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_DJP_TRAINING&receiverParty=&receiverService=&interface=DJP_TRAINING_OB&interfaceNamespace=DJP_VIEW_TRAINING",
+        "columnsMapping": {
+            "PERSONNEL_NUMBER": "PERNR",
+            "BEGIN_DATE": "BEGDA",
+            "END_DATE": "ENDDA",
+            "OBJ_NAME": "STEXT",
+            "OBJ_TYPE": "OTYPE",
+            "OBJ_ID": "OBJID",
+            "TYPE_RELATED_OBJ": "SCLAS",
+            "ID_RELATED_OBJ": "SOBID",
+            "EMPLOYEE_NAME": "SNAME",
+            "CHANGED_ON": "AEDTM",
+            "POSITION": "PLANS",
+            "ID_SUBDIR": "BTRTL",
+            "POSITION_TEXT": "PLSTX",
+            "PERSONNEL_AREA": "WERKS",
+            "PERSONNEL_SUBAREA": "BTEXT",
+            "ID_VENDOR": "NVNDR",
+            "VENDOR_NAME": "NMVNDR",
+            "LOCATION": "NLOCT",
+            "LOCATION_NAME": "NMLOC",
+            "MIN_QTY": "KAPZ1",
+            "MAX_QTY": "KAPZ3",
+            "DAYS_QTY": "DAYS",
+            "VDAYS_QTY": "VDAYS",
+            "VDAY_QTY": "VDAY"
+
+        }
     }
 }
