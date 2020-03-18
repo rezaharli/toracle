@@ -111,6 +111,20 @@ func main() {
 					helpers.HandleError(err)
 				}
 
+				// READ Hc Employee API
+				hcEmployeeController := c.NewHcEmployeeController()
+				err = hcEmployeeController.ReadAPI()
+				if err != nil {
+					helpers.HandleError(err)
+				}
+
+				// READ Hc Training Full API
+				hcFullTrainingController := c.NewHcFullTrainingController()
+				err = hcFullTrainingController.ReadAPI()
+				if err != nil {
+					helpers.HandleError(err)
+				}
+
 				// READ Hc API Summary 201
 				hcsumController := c.NewHcSummaryController()
 				err = hcsumController.ReadAPI()
