@@ -185,7 +185,7 @@ func (c *HcEmployeeController) InsertEmployeeDatas(results []toolkit.M) error {
 			helpers.HandleError(err)
 		}
 
-		defer conn.Close()
+		// defer conn.Close()
 	}
 
 	return err
