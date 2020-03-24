@@ -125,6 +125,13 @@ func main() {
 					helpers.HandleError(err)
 				}
 
+				// READ Hc Absences API
+				hcAbsenceController := c.NewHCAbsencesController()
+				err = hcAbsenceController.ReadAPI()
+				if err != nil {
+					helpers.HandleError(err)
+				}
+
 				// READ Hc API Summary 201
 				hcsumController := c.NewHcSummaryController()
 				err = hcsumController.ReadAPI()

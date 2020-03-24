@@ -534,3 +534,24 @@ type HCFullTraining struct {
 		} `xml:"ZFM_VIEW_TRAINING.Response"`
 	}
 }
+
+type HCAbsence struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			T_DATA  struct {
+				Item []struct {
+					PERNR string
+					CNAME string
+					DATUM string
+					ZTART string
+					ZTEXT string
+					ANZHL string
+				} `xml:"item"`
+			} `xml:"T_DATA"`
+			// Return  []interface{}
+		} `xml:"ZFM_HC_400.Response"`
+	}
+}

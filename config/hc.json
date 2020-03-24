@@ -1,6 +1,9 @@
 {
     "username": "ttlsupport",
     "password": "teluklamong17",
+    "firsttimer": false,
+    "startdate": "20190101",
+    "enddate": "20200313",
     "training": {
         "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_TRAINING_SRC_BC_EMPL_TRAINING",
         "columnsMapping": {
@@ -215,6 +218,18 @@
             "DAYS_QTY": "DAYS",
             "VDAYS_QTY": "VDAYS",
             "VDAY_QTY": "VDAY"
+
+        }
+    },
+    "absence": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_EMPL_DAYBALANCE_SRC_BC_EMPL_DAYBALANCE",
+        "columnsMapping": {
+            "PERSONNEL_NUMBER": "PERNR",
+            "FULL_NAME": "CNAME",
+            "EVENT_DATE": "DATUM",
+            "EVENT_CODE": "ZTART",
+            "EVENT_NAME": "ZTEXT",
+            "EVENT_COUNT": "ANZHL"
 
         }
     }
