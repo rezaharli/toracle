@@ -14,6 +14,7 @@ import (
 
 	"git.eaciitapp.com/rezaharli/toracle/helpers"
 	"git.eaciitapp.com/rezaharli/toracle/models"
+	"git.eaciitapp.com/sebar/dbflex"
 )
 
 type EducationController struct {
@@ -148,13 +149,26 @@ func (c *EducationController) InsertEducationDatas(results []toolkit.M, jsonconf
 		}
 
 		// toolkit.Println(rowData)
+
+		sql := "DELETE FROM F_HC_EDUCATION WHERE PERSONNEL_NUMBER = " + rowData.GetString("PERSONNEL_NUMBER")
+		conn := helpers.Database()
+		query, err := conn.Prepare(dbflex.From("F_HC_EDUCATION").SQL(sql))
+		if err != nil {
+			log.Println(err)
+		}
+
+		_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+		if err != nil {
+			log.Println(err)
+		}
+
 		param := helpers.InsertParam{
 			TableName: "F_HC_EDUCATION",
 			Data:      rowData,
 		}
 
 		log.Println("Inserting data Education")
-		err := helpers.Insert(param)
+		err = helpers.Insert(param)
 		if err != nil {
 			helpers.HandleError(err)
 		}
