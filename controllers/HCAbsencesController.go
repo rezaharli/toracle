@@ -117,6 +117,14 @@ func (c *HCAbsencesController) InsertAPIDatas(results []toolkit.M) error {
 				}
 
 				rowData.Set(header.DBFieldName, t)
+			} else if header.DBFieldName == "FULL_NAME" {
+				if strings.Contains(result[header.Column].(string), ",") {
+					rowData.Set(header.DBFieldName, strings.Replace(result[header.Column].(string), ",", "", -1))
+				} else if strings.Contains(result[header.Column].(string), "'") {
+					rowData.Set(header.DBFieldName, strings.Replace(result[header.Column].(string), "'", "", -1))
+				} else {
+					rowData.Set(header.DBFieldName, result[header.Column])
+				}
 			} else {
 				rowData.Set(header.DBFieldName, result[header.Column])
 			}
