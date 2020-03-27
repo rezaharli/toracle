@@ -38,6 +38,7 @@ func main() {
 	clit.LoadConfigFromFlag("config", "RUPS", filepath.Join(clit.ExeDir(), "config", "RUPS.json"))
 	clit.LoadConfigFromFlag("config", "kinerjaTerminal", filepath.Join(clit.ExeDir(), "config", "kinerjaTerminal.json"))
 	clit.LoadConfigFromFlag("config", "kinerjaCuker", filepath.Join(clit.ExeDir(), "config", "kinerjaCuker.json"))
+	clit.LoadConfigFromFlag("config", "master", filepath.Join(clit.ExeDir(), "config", "master.json"))
 
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
 
@@ -225,6 +226,24 @@ func main() {
 
 				lb11Controller := c.NewLB11Controller()
 				err = lb11Controller.ReadAPI()
+				if err != nil {
+					helpers.HandleError(err)
+				}
+
+				masterController := c.NewMasterController()
+				err = masterController.ReadAPI()
+				if err != nil {
+					helpers.HandleError(err)
+				}
+
+				piutangController := c.NewPiutangController()
+				err = piutangController.ReadAPI()
+				if err != nil {
+					helpers.HandleError(err)
+				}
+
+				vendorController := c.NewHutangController()
+				err = vendorController.ReadAPI()
 				if err != nil {
 					helpers.HandleError(err)
 				}

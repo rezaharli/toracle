@@ -1,0 +1,49 @@
+{
+    "username": "ttlsupport",
+    "password": "teluklamong17",
+    "compcode": "PTTL",
+    "keydate": "20151231",
+    "vendor": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZFMFI_VENDOR_GETLIST_SRC_BC_ZFMFI_VENDOR_GETLIST",
+        "columnsMapping": {
+            "VENDOR_NO": "VENDOR_NO",
+            "VENDOR_NAME": "NAME"
+        }
+    },
+    "customer": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZFMFI_CUSTOMER_GETLIST_SRC_BC_ZFMFI_CUSTOMER_GETLIST",
+        "columnsMapping": {
+            "CUST_NO": "CUSTOMER_NO",
+            "CUST_NAME": "NAME"
+        }
+    },
+    "piutang_customer": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_BAPI_AR_ACC_GETOPENITEMS_SRC_BC_BAPI_AR_ACC_GETOPENITEMS",
+        "columnsMapping": {
+            "CUSTOMER": "CUSTOMER",
+            "DOCUMENT_DATE": "DOC_DATE",
+            "AMOUNT": "LC_AMOUNT",
+            "TEXT": "ITEM_TEXT",
+            "COMPANY": "COMP_CODE",
+            "POSTING_DATE": "PSTNG_DATE",
+            "BASELINE_PAYMENT_DATE": "BLINE_DATE",
+            "DISC_DAYS": "DSCT_DAYS1"
+
+        }
+    },
+    "hutang_vendor": {
+        "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_BAPI_AP_ACC_GETOPENITEMS_SRC_BC_BAPI_AP_ACC_GETOPENITEMS",
+        "columnsMapping": {
+            "VENDOR": "VENDOR",
+            "DOCUMENT_DATE": "DOC_DATE",
+            "AMOUNT": "LC_AMOUNT",
+            "TEXT": "ITEM_TEXT",
+            "COMPANY": "COMP_CODE",
+            "POSTING_DATE": "PSTNG_DATE",
+            "BASELINE_PAYMENT_DATE": "BLINE_DATE",
+            "DISC_DAYS": "DSCT_DAYS1"
+
+        }
+    }
+
+}

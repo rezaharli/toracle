@@ -555,3 +555,83 @@ type HCAbsence struct {
 		} `xml:"ZFM_HC_400.Response"`
 	}
 }
+
+type MasterVendor struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName xml.Name
+			VENDOR  struct {
+				Item []struct {
+					VENDOR_NO string
+					NAME      string
+				} `xml:"item"`
+			} `xml:"VENDOR"`
+			// Return  []interface{}
+		} `xml:"ZFMFI_VENDOR_GETLIST.Response"`
+	}
+}
+
+type MasterCustomer struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName  xml.Name
+			CUSTOMER struct {
+				Item []struct {
+					CUSTOMER_NO string
+					NAME        string
+				} `xml:"item"`
+			} `xml:"CUSTOMER"`
+			// Return  []interface{}
+		} `xml:"ZFMFI_CUSTOMER_GETLIST.Response"`
+	}
+}
+
+type PiutangCustomer struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName   xml.Name
+			LINEITEMS struct {
+				Item []struct {
+					CUSTOMER   string
+					DOC_DATE   string
+					LC_AMOUNT  string
+					ITEM_TEXT  string
+					COMP_CODE  string
+					PSTNG_DATE string
+					BLINE_DATE string
+					DSCT_DAYS1 string
+				} `xml:"item"`
+			} `xml:"LINEITEMS"`
+			// Return  []interface{}
+		} `xml:"BAPI_AR_ACC_GETOPENITEMS.Response"`
+	}
+}
+
+type HutangVendor struct {
+	XMLName xml.Name
+	Body    struct {
+		XMLName xml.Name
+		Urn     struct {
+			XMLName   xml.Name
+			LINEITEMS struct {
+				Item []struct {
+					VENDOR     string
+					DOC_DATE   string
+					LC_AMOUNT  string
+					ITEM_TEXT  string
+					COMP_CODE  string
+					PSTNG_DATE string
+					BLINE_DATE string
+					DSCT_DAYS1 string
+				} `xml:"item"`
+			} `xml:"LINEITEMS"`
+			// Return  []interface{}
+		} `xml:"BAPI_AP_ACC_GETOPENITEMS.Response"`
+	}
+}
