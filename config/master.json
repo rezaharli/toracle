@@ -7,14 +7,16 @@
         "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZFMFI_VENDOR_GETLIST_SRC_BC_ZFMFI_VENDOR_GETLIST",
         "columnsMapping": {
             "VENDOR_NO": "VENDOR_NO",
-            "VENDOR_NAME": "NAME"
+            "VENDOR_NAME": "NAME",
+            "COMP_CODE": "COMP_CODE"
         }
     },
     "customer": {
         "url": "http://sappipttl.teluklamong.co.id:50000/WSAdapter/CC_ZFMFI_CUSTOMER_GETLIST_SRC_BC_ZFMFI_CUSTOMER_GETLIST",
         "columnsMapping": {
             "CUST_NO": "CUSTOMER_NO",
-            "CUST_NAME": "NAME"
+            "CUST_NAME": "NAME",
+            "COMP_CODE": "COMP_CODE"
         }
     },
     "piutang_customer": {

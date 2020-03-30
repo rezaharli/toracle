@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,14 +26,12 @@ func NewPiutangController() *PiutangController {
 	return new(PiutangController)
 }
 
-func (c *PiutangController) FetchPiutang(customer string) ([]toolkit.M, error) {
-	log.Println("Fetch Piutang Customers")
-
+func (c *PiutangController) FetchPiutang(customer string, compcode string, keydate string) ([]toolkit.M, error) {
 	config := clit.Config("master", "piutang_customer", map[string]interface{}{}).(map[string]interface{})
 	username := clit.Config("master", "username", nil).(string)
 	password := clit.Config("master", "password", nil).(string)
-	compcode := clit.Config("master", "compcode", nil).(string)
-	keydate := clit.Config("master", "keydate", nil).(string)
+	// compcode := clit.Config("master", "compcode", nil).(string)
+	// keydate := clit.Config("master", "keydate", nil).(string)
 
 	parambody := `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
 					<Body>
@@ -93,12 +92,12 @@ func (c *PiutangController) FetchPiutang(customer string) ([]toolkit.M, error) {
 	return results, err
 }
 
-func (c *PiutangController) InsertData(results []toolkit.M) error {
+func (c *PiutangController) InsertData(results []toolkit.M, keydate string) error {
 	var err error
 
 	config := clit.Config("master", "piutang_customer", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
-	keydate := clit.Config("master", "keydate", nil).(string)
+	// keydate := clit.Config("master", "keydate", nil).(string)
 
 	var headers []Header
 	for dbFieldName, attributeName := range columnsMapping {
@@ -133,6 +132,20 @@ func (c *PiutangController) InsertData(results []toolkit.M) error {
 		}
 		rowData.Set("PERIODE", key)
 
+		keyQStr := strings.Split(key.String(), " ")
+
+		sql := "DELETE FROM PIUTANG_CUSTOMER WHERE CUSTOMER = '" + rowData.GetString("CUSTOMER") + "' AND TRUNC(PERIODE) = TO_DATE('" + keyQStr[0] + "','YYYY-MM-DD')"
+		conn := helpers.Database()
+		query, err := conn.Prepare(dbflex.From("PIUTANG_CUSTOMER").SQL(sql))
+		if err != nil {
+			log.Println(err)
+		}
+
+		_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+		if err != nil {
+			log.Println(err)
+		}
+
 		param := helpers.InsertParam{
 			TableName: "PIUTANG_CUSTOMER",
 			Data:      rowData,
@@ -148,10 +161,35 @@ func (c *PiutangController) InsertData(results []toolkit.M) error {
 	return err
 }
 
+func (c *PiutangController) CreateParamToday() string {
+	thisYear := time.Now().Year()
+	thisMonth := int(time.Now().Month())
+	thisDay := time.Now().Day() - 1
+
+	stryear := strconv.Itoa(thisYear)
+	strmonth := ""
+	strday := ""
+	if thisMonth < 10 {
+		strmonth = "0" + strconv.Itoa(thisMonth)
+	} else {
+		strmonth = strconv.Itoa(thisMonth)
+	}
+	if thisDay < 10 {
+		strday = "0" + strconv.Itoa(thisDay)
+	} else {
+		strday = strconv.Itoa(thisDay)
+	}
+
+	return stryear + strmonth + strday
+}
+
 func (c *PiutangController) ReadAPI() error {
 	log.Println("\n--------------------------------------\nReading Master Customer Data")
 
 	sqlQuery := "SELECT * FROM SAP_CUSTOMER"
+
+	keydate := c.CreateParamToday()
+	compcode := []string{"PTTL", "ZTOS"}
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From("SAP_CUSTOMER").SQL(sqlQuery), nil)
@@ -162,19 +200,22 @@ func (c *PiutangController) ReadAPI() error {
 
 	for _, cust := range res {
 		cust_no := cust.GetString("CUST_NO")
-		resultsPiutang, err := c.FetchPiutang(cust_no)
-		if err != nil {
-			log.Println(err.Error())
-			return err
-		}
-
-		if len(resultsPiutang) > 0 {
-			err = c.InsertData(resultsPiutang)
+		for _, cc := range compcode {
+			resultsPiutang, err := c.FetchPiutang(cust_no, cc, keydate)
 			if err != nil {
 				log.Println(err.Error())
 				return err
 			}
+
+			if len(resultsPiutang) > 0 {
+				err = c.InsertData(resultsPiutang, keydate)
+				if err != nil {
+					log.Println(err.Error())
+					return err
+				}
+			}
 		}
+
 	}
 
 	return err

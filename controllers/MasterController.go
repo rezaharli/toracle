@@ -26,48 +26,63 @@ func NewMasterController() *MasterController {
 }
 
 func (c *MasterController) ReadAPI() error {
-	log.Println("\n--------------------------------------\nReading Master Vendor API")
+	var err error
+	compcode := []string{"PTTL", "ZTOS"}
 
-	resultsVendor, err := c.FetchVendor()
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
+	for _, cc := range compcode {
 
-	log.Println("\n--------------------------------------\nInserting Master Vendor API")
+		log.Println("\n--------------------------------------\nReading Master Vendor API", cc)
 
-	err = c.InsertData(resultsVendor, "vendor")
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
+		resultsVendor, err := c.FetchVendor(cc)
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
 
-	log.Println("\n--------------------------------------\nReading Master Customer API")
+		for _, vendor := range resultsVendor {
+			vendor.Set("COMP_CODE", cc)
+		}
 
-	resultsCustomer, err := c.FetchCustomer()
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
+		log.Println("\n--------------------------------------\nInserting", len(resultsVendor), "Rows Master Vendor API")
 
-	log.Println("\n--------------------------------------\nInserting Master Customer API")
+		err = c.InsertData(resultsVendor, "vendor")
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
 
-	err = c.InsertData(resultsCustomer, "customer")
-	if err != nil {
-		log.Println(err.Error())
-		return err
+		log.Println("\n--------------------------------------\nReading Master Customer API", cc)
+
+		resultsCustomer, err := c.FetchCustomer(cc)
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
+
+		for _, cust := range resultsCustomer {
+			cust.Set("COMP_CODE", cc)
+		}
+
+		log.Println("\n--------------------------------------\nInserting", len(resultsCustomer), " Master Customer API")
+
+		err = c.InsertData(resultsCustomer, "customer")
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
+
 	}
 
 	return err
 }
 
-func (c *MasterController) FetchCustomer() ([]toolkit.M, error) {
+func (c *MasterController) FetchCustomer(compcode string) ([]toolkit.M, error) {
 	log.Println("Fetch Customers")
 
 	config := clit.Config("master", "customer", map[string]interface{}{}).(map[string]interface{})
 	username := clit.Config("master", "username", nil).(string)
 	password := clit.Config("master", "password", nil).(string)
-	compcode := clit.Config("master", "compcode", nil).(string)
+	// compcode := clit.Config("master", "compcode", nil).(string)
 
 	parambody := `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
 					<Body>
@@ -121,13 +136,13 @@ func (c *MasterController) FetchCustomer() ([]toolkit.M, error) {
 	return results, err
 }
 
-func (c *MasterController) FetchVendor() ([]toolkit.M, error) {
+func (c *MasterController) FetchVendor(compcode string) ([]toolkit.M, error) {
 	log.Println("Fetch Vendor")
 
 	config := clit.Config("master", "vendor", map[string]interface{}{}).(map[string]interface{})
 	username := clit.Config("master", "username", nil).(string)
 	password := clit.Config("master", "password", nil).(string)
-	compcode := clit.Config("master", "compcode", nil).(string)
+	// compcode := clit.Config("master", "compcode", nil).(string)
 
 	parambody := `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
 					<Body>
@@ -186,13 +201,13 @@ func (c *MasterController) InsertData(results []toolkit.M, configname string) er
 
 	config := clit.Config("master", configname, nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
-	compcode := clit.Config("master", "compcode", nil).(string)
+	// compcode := clit.Config("master", "compcode", nil).(string)
 	tablename := ""
 	wherecol := ""
 	if configname == "vendor" {
 		tablename = "SAP_VENDOR"
 		wherecol = "VENDOR_NO"
-	} else {
+	} else if configname == "customer" {
 		tablename = "SAP_CUSTOMER"
 		wherecol = "CUST_NO"
 	}
@@ -223,7 +238,7 @@ func (c *MasterController) InsertData(results []toolkit.M, configname string) er
 			}
 		}
 		rowData.Set("UPDATE_DATE", time.Now())
-		rowData.Set("COMP_CODE", compcode)
+		// rowData.Set("COMP_CODE", compcode)
 
 		sql := "DELETE FROM " + tablename + " WHERE " + wherecol + " = '" + rowData.GetString(wherecol) + "'"
 		conn := helpers.Database()
@@ -237,12 +252,13 @@ func (c *MasterController) InsertData(results []toolkit.M, configname string) er
 			log.Println(err)
 		}
 
+		// log.Println(tablename, rowData)
 		param := helpers.InsertParam{
 			TableName: tablename,
 			Data:      rowData,
 		}
 
-		log.Println("Inserting Data:", configname)
+		// log.Println("Inserting Data:", configname)
 		err = helpers.Insert(param)
 		if err != nil {
 			helpers.HandleError(err)

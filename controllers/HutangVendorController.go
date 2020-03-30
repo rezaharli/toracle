@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,14 +26,14 @@ func NewHutangController() *HutangController {
 	return new(HutangController)
 }
 
-func (c *HutangController) FetchHutang(vendor string) ([]toolkit.M, error) {
-	log.Println("Fetch Hutang Vendor")
+func (c *HutangController) FetchHutang(vendor string, compcode string, keydate string) ([]toolkit.M, error) {
+	// log.Println("Fetch Hutang Vendor")
 
 	config := clit.Config("master", "hutang_vendor", map[string]interface{}{}).(map[string]interface{})
 	username := clit.Config("master", "username", nil).(string)
 	password := clit.Config("master", "password", nil).(string)
-	compcode := clit.Config("master", "compcode", nil).(string)
-	keydate := clit.Config("master", "keydate", nil).(string)
+	// compcode := clit.Config("master", "compcode", nil).(string)
+	// keydate := clit.Config("master", "keydate", nil).(string)
 
 	parambody := `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
 					<Body>
@@ -91,12 +92,12 @@ func (c *HutangController) FetchHutang(vendor string) ([]toolkit.M, error) {
 	return results, err
 }
 
-func (c *HutangController) InsertData(results []toolkit.M) error {
+func (c *HutangController) InsertData(results []toolkit.M, keydate string) error {
 	var err error
 
 	config := clit.Config("master", "hutang_vendor", nil).(map[string]interface{})
 	columnsMapping := config["columnsMapping"].(map[string]interface{})
-	keydate := clit.Config("master", "keydate", nil).(string)
+	// keydate := clit.Config("master", "keydate", nil).(string)
 
 	var headers []Header
 	for dbFieldName, attributeName := range columnsMapping {
@@ -131,6 +132,21 @@ func (c *HutangController) InsertData(results []toolkit.M) error {
 		}
 		rowData.Set("PERIOD", key)
 
+		keyQStr := strings.Split(key.String(), " ")
+
+		sql := "DELETE FROM HUTANG_VENDOR WHERE VENDOR = '" + rowData.GetString("VENDOR") + "' AND TRUNC(PERIOD) = TO_DATE('" + keyQStr[0] + "','YYYY-MM-DD')"
+		log.Println(sql)
+		conn := helpers.Database()
+		query, err := conn.Prepare(dbflex.From("HUTANG_VENDOR").SQL(sql))
+		if err != nil {
+			log.Println(err)
+		}
+
+		_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+		if err != nil {
+			log.Println(err)
+		}
+
 		param := helpers.InsertParam{
 			TableName: "HUTANG_VENDOR",
 			Data:      rowData,
@@ -146,10 +162,34 @@ func (c *HutangController) InsertData(results []toolkit.M) error {
 	return err
 }
 
+func (c *HutangController) CreateParamToday() string {
+	thisYear := time.Now().Year()
+	thisMonth := int(time.Now().Month())
+	thisDay := time.Now().Day() - 1
+
+	stryear := strconv.Itoa(thisYear)
+	strmonth := ""
+	strday := ""
+	if thisMonth < 10 {
+		strmonth = "0" + strconv.Itoa(thisMonth)
+	} else {
+		strmonth = strconv.Itoa(thisMonth)
+	}
+	if thisDay < 10 {
+		strday = "0" + strconv.Itoa(thisDay)
+	} else {
+		strday = strconv.Itoa(thisDay)
+	}
+
+	return stryear + strmonth + strday
+}
+
 func (c *HutangController) ReadAPI() error {
 	log.Println("\n--------------------------------------\nReading Master Vendor Data")
 
 	sqlQuery := "SELECT * FROM SAP_VENDOR"
+	keydate := c.CreateParamToday()
+	compcode := []string{"PTTL", "ZTOS"}
 
 	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From("SAP_VENDOR").SQL(sqlQuery), nil)
@@ -160,19 +200,22 @@ func (c *HutangController) ReadAPI() error {
 
 	for _, cust := range res {
 		vend_no := cust.GetString("VENDOR_NO")
-		resultsHutang, err := c.FetchHutang(vend_no)
-		if err != nil {
-			log.Println(err.Error())
-			return err
-		}
-
-		if len(resultsHutang) > 0 {
-			err = c.InsertData(resultsHutang)
+		for _, cc := range compcode {
+			resultsHutang, err := c.FetchHutang(vend_no, cc, keydate)
 			if err != nil {
 				log.Println(err.Error())
 				return err
 			}
+
+			if len(resultsHutang) > 0 {
+				err = c.InsertData(resultsHutang, keydate)
+				if err != nil {
+					log.Println(err.Error())
+					return err
+				}
+			}
 		}
+
 	}
 
 	return err
