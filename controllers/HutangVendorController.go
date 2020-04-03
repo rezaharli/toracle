@@ -27,7 +27,7 @@ func NewHutangController() *HutangController {
 }
 
 func (c *HutangController) FetchHutang(vendor string, compcode string, keydate string) ([]toolkit.M, error) {
-	// log.Println("Fetch Hutang Vendor")
+	log.Println(vendor, compcode)
 
 	config := clit.Config("master", "hutang_vendor", map[string]interface{}{}).(map[string]interface{})
 	username := clit.Config("master", "username", nil).(string)
@@ -134,8 +134,8 @@ func (c *HutangController) InsertData(results []toolkit.M, keydate string) error
 
 		keyQStr := strings.Split(key.String(), " ")
 
-		sql := "DELETE FROM HUTANG_VENDOR WHERE VENDOR = '" + rowData.GetString("VENDOR") + "' AND TRUNC(PERIOD) = TO_DATE('" + keyQStr[0] + "','YYYY-MM-DD')"
-		log.Println(sql)
+		sql := "DELETE FROM HUTANG_VENDOR WHERE VENDOR = '" + rowData.GetString("VENDOR") + "' AND DOCUMENT_NO = '" + rowData.GetString("DOCUMENT_NO") + "' AND TRUNC(BASELINE_PAYMENT_DATE) = TO_DATE('" + keyQStr[0] + "','YYYY-MM-DD')"
+		// log.Println(sql)
 		conn := helpers.Database()
 		query, err := conn.Prepare(dbflex.From("HUTANG_VENDOR").SQL(sql))
 		if err != nil {
@@ -152,7 +152,7 @@ func (c *HutangController) InsertData(results []toolkit.M, keydate string) error
 			Data:      rowData,
 		}
 
-		log.Println("Inserting Data:hutang")
+		log.Println("Inserting Data:Hutang Vendor")
 		err = helpers.Insert(param)
 		if err != nil {
 			helpers.HandleError(err)

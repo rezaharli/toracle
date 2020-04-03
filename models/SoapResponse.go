@@ -606,6 +606,8 @@ type PiutangCustomer struct {
 					PSTNG_DATE string
 					BLINE_DATE string
 					DSCT_DAYS1 string
+					DOC_NO     string
+					ITEM_NUM   string
 				} `xml:"item"`
 			} `xml:"LINEITEMS"`
 			// Return  []interface{}
@@ -629,6 +631,8 @@ type HutangVendor struct {
 					PSTNG_DATE string
 					BLINE_DATE string
 					DSCT_DAYS1 string
+					DOC_NO     string
+					ITEM_NUM   string
 				} `xml:"item"`
 			} `xml:"LINEITEMS"`
 			// Return  []interface{}

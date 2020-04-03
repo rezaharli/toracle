@@ -134,7 +134,7 @@ func (c *PiutangController) InsertData(results []toolkit.M, keydate string) erro
 
 		keyQStr := strings.Split(key.String(), " ")
 
-		sql := "DELETE FROM PIUTANG_CUSTOMER WHERE CUSTOMER = '" + rowData.GetString("CUSTOMER") + "' AND TRUNC(PERIODE) = TO_DATE('" + keyQStr[0] + "','YYYY-MM-DD')"
+		sql := "DELETE FROM PIUTANG_CUSTOMER WHERE CUSTOMER = '" + rowData.GetString("CUSTOMER") + "'AND DOCUMENT_NO = '" + rowData.GetString("DOCUMENT_NO") + "' AND TRUNC(BASELINE_PAYMENT_DATE) = TO_DATE('" + keyQStr[0] + "','YYYY-MM-DD')"
 		conn := helpers.Database()
 		query, err := conn.Prepare(dbflex.From("PIUTANG_CUSTOMER").SQL(sql))
 		if err != nil {
@@ -151,7 +151,7 @@ func (c *PiutangController) InsertData(results []toolkit.M, keydate string) erro
 			Data:      rowData,
 		}
 
-		log.Println("Inserting Data:piutang")
+		log.Println("Inserting Data:Piutang Customer")
 		err = helpers.Insert(param)
 		if err != nil {
 			helpers.HandleError(err)

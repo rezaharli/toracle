@@ -29,8 +29,9 @@
             "COMPANY": "COMP_CODE",
             "POSTING_DATE": "PSTNG_DATE",
             "BASELINE_PAYMENT_DATE": "BLINE_DATE",
-            "DISC_DAYS": "DSCT_DAYS1"
-
+            "DISC_DAYS": "DSCT_DAYS1",
+            "DOCUMENT_NO": "DOC_NO",
+            "ITEM_NO": "ITEM_NUM"
         }
     },
     "hutang_vendor": {
@@ -43,8 +44,9 @@
             "COMPANY": "COMP_CODE",
             "POSTING_DATE": "PSTNG_DATE",
             "BASELINE_PAYMENT_DATE": "BLINE_DATE",
-            "DISC_DAYS": "DSCT_DAYS1"
-
+            "DISC_DAYS": "DSCT_DAYS1",
+            "DOCUMENT_NO": "DOC_NO",
+            "ITEM_NO": "ITEM_NUM"
         }
     }
 
