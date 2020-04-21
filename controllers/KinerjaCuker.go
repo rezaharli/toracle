@@ -141,11 +141,30 @@ func (c *KinerjaCukerController) readSheet(sheetName string) error {
 		}
 
 		tablename := "BOD_Kinerja_Cuker"
+		
+		log.Println("Deleting datas.")
+
+		sql := "DELETE FROM " + tablename + " WHERE tahun = '" + rowData["Tahun"].(string) + "' AND bulan = '" + rowData["Bulan"].(string) + "' AND VESSEL_ID = '" + rowData["VESSEL_ID"].(string) + "'"
+
+		conn := helpers.Database()
+		query, err := conn.Prepare(dbflex.From(tablename).SQL(sql))
+		if err != nil {
+			log.Println(err)
+		}
+
+		_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+		if err != nil {
+			log.Println(err)
+		}
+
+		log.Println("Data deleted.")
+
+		toolkit.Println()
 
 		// check if data exists
 		sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + rowData["Tahun"].(string) + "' AND bulan = '" + rowData["Bulan"].(string) + "' AND VESSEL_ID = '" + rowData["VESSEL_ID"].(string) + "'"
 
-		conn := helpers.Database()
+		conn = helpers.Database()
 		cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
 		defer cursor.Close()
 
