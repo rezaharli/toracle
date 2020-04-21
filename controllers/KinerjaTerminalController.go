@@ -130,11 +130,29 @@ func (c *KinerjaTerminalController) readSheet(sheetName string) error {
 	months := clit.Config("kinerjaTerminal", "months", nil).([]interface{})
 
 	tablename := "BOD_Kinerja_Terminal"
+	
+	log.Println("Deleting datas.")
+
+	sql := "DELETE FROM " + tablename + " WHERE tahun = '" + currentTahun + "'"
+
+	conn := helpers.Database()
+	query, err := conn.Prepare(dbflex.From(tablename).SQL(sql))
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Data deleted.")
+
+	toolkit.Println()
 
 	// check if data exists
 	sqlQuery := "SELECT tahun FROM " + tablename + " WHERE tahun = '" + currentTahun + "'"
 
-	conn := helpers.Database()
 	cursor := conn.Cursor(dbflex.From(tablename).SQL(sqlQuery), nil)
 	defer cursor.Close()
 
