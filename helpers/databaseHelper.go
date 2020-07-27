@@ -92,6 +92,37 @@ func Insert(param InsertParam) error {
 	query, err := Database().Prepare(
 		dbflex.From(param.TableName).Insert(),
 	)
+
+	if err != nil {
+		return err
+	}
+
+	var lastError error
+
+	switch reflect.TypeOf(param.Data).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(param.Data)
+
+		for i := 0; i < s.Len(); i++ {
+			_, err = query.Execute(toolkit.M{}.Set("data", s.Index(i).Interface()))
+			lastError = err
+			if !param.ContinueOnError && err != nil {
+				return err
+			}
+		}
+	default:
+		_, err = query.Execute(toolkit.M{}.Set("data", param.Data))
+		lastError = err
+	}
+
+	return lastError
+}
+
+func InsertWithConn(param InsertParam, conn dbflex.IConnection) error {
+	query, err := conn.Prepare(
+		dbflex.From(param.TableName).Insert(),
+	)
+
 	if err != nil {
 		return err
 	}

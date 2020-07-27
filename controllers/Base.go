@@ -21,6 +21,8 @@ type Base struct {
 	Controller interfaces.ExcelController
 
 	FileExtension string
+
+	Conn dbflex.IConnection
 }
 
 func (c *Base) New() {
@@ -44,7 +46,6 @@ func (c *Base) Extract() {
 
 	resourcePath := clit.Config("default", "resourcePath", filepath.Join(clit.ExeDir(), "resource")).(string)
 	filePaths := helpers.FetchFilePathsWithExt(resourcePath, c.FileExtension)
-
 	filenames := []string{}
 	for _, file := range filePaths {
 		if strings.HasPrefix(filepath.Base(file), "~") {

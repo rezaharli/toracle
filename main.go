@@ -38,6 +38,9 @@ func main() {
 	clit.LoadConfigFromFlag("config", "RUPS", filepath.Join(clit.ExeDir(), "config", "RUPS.json"))
 	clit.LoadConfigFromFlag("config", "kinerjaTerminal", filepath.Join(clit.ExeDir(), "config", "kinerjaTerminal.json"))
 	clit.LoadConfigFromFlag("config", "kinerjaCuker", filepath.Join(clit.ExeDir(), "config", "kinerjaCuker.json"))
+	clit.LoadConfigFromFlag("config", "kk_bod_boc_rkm", filepath.Join(clit.ExeDir(), "config", "kk_bod_boc_rkm.json"))
+	clit.LoadConfigFromFlag("config", "kk_bod_boc_investasi", filepath.Join(clit.ExeDir(), "config", "kk_bod_boc_investasi.json"))
+	clit.LoadConfigFromFlag("config", "kk_bod_boc_sdm", filepath.Join(clit.ExeDir(), "config", "kk_bod_boc_sdm.json"))
 	clit.LoadConfigFromFlag("config", "master", filepath.Join(clit.ExeDir(), "config", "master.json"))
 
 	firstTimer := clit.Config("default", "fetchApiFromFirstTime", false).(bool)
@@ -49,6 +52,7 @@ func main() {
 	defer clit.Close()
 
 	conn := helpers.Database()
+	defer conn.Close()
 	if conn != nil {
 		var ticker *time.Ticker = nil
 
@@ -63,13 +67,11 @@ func main() {
 			ticker = time.NewTicker(durationInterval)
 		}
 		isExecute := true
-
 		// do the loop
 		i := 0
 		for {
 			go func() {
 				var err error
-
 				(&c.Base{Controller: &c.AscController{}}).Extract()
 				(&c.Base{Controller: &c.QhsseController{}}).Extract()
 				(&c.Base{Controller: &c.CorsecController{}}).Extract()
@@ -92,6 +94,7 @@ func main() {
 				(&c.Base{Controller: &c.RUPSController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaTerminalController{}}).Extract()
 				(&c.Base{Controller: &c.KinerjaCukerController{}}).Extract()
+				(&c.Base{Controller: &c.RKMController{}, Conn: conn}).Extract()
 
 				// READ Proc API DAILY
 				if i%totalRunInADay == 0 {
@@ -256,6 +259,8 @@ func main() {
 
 			<-ticker.C
 		}
+
+		_ = isExecute
 		//loop ends
 	}
 }
