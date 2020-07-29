@@ -14,6 +14,11 @@ import (
 	"github.com/eaciit/toolkit"
 )
 
+var (
+	dataPT   []string
+	dataPTKV toolkit.M
+)
+
 type RKMController struct {
 	*Base
 }
@@ -32,6 +37,8 @@ func (c *RKMController) FileCriteria(file string) bool {
 func (c *RKMController) ReadExcel() {
 	sheetAllowed := []string{"RKM", "INVESTASI", "SDM"}
 
+	dataPT = []string{}
+	dataPTKV = make(toolkit.M, 0)
 	for _, sheetName := range c.Engine.GetSheetMap() {
 		if sheetName == sheetAllowed[0] {
 			c.ReadSheet(c.ReadDataRKM, sheetName)
@@ -40,6 +47,11 @@ func (c *RKMController) ReadExcel() {
 		} else if sheetName == sheetAllowed[2] {
 			c.ReadSheet(c.ReadDataSDM, sheetName)
 		}
+	}
+
+	err := c.SetDataPTHub()
+	if err != nil {
+		log.Println(err)
 	}
 }
 
@@ -137,9 +149,23 @@ func (c *RKMController) ReadDataRKM(sheetName string) error {
 		helpers.HandleError(err)
 	}
 
+	if tipeTTL != "" {
+		if _, ok := dataPTKV[tipeTTL]; !ok {
+			dataPT = append(dataPT, tipeTTL)
+			dataPTKV.Set(tipeTTL, tipeTTL)
+		}
+	}
+
 	tipeLEGI, err := c.Engine.GetCellValue(sheetName, "H1")
 	if err != nil {
 		helpers.HandleError(err)
+	}
+
+	if tipeLEGI != "" {
+		if _, ok := dataPTKV[tipeLEGI]; !ok {
+			dataPT = append(dataPT, tipeLEGI)
+			dataPTKV.Set(tipeLEGI, tipeLEGI)
+		}
 	}
 
 	tahun := toolkit.ToInt(tahunStr, "")
@@ -465,6 +491,16 @@ func (c *RKMController) ReadDataSDM(sheetName string) error {
 				isSkippedRow = true
 			} else if strings.Contains(stringData, "TOTAL") {
 				isBreak = true
+			} else {
+				if header.DBFieldName == "URAIAN" {
+
+					if _, ok := dataPTKV[stringData]; !ok {
+						dataPT = append(dataPT, stringData)
+						dataPTKV.Set(stringData, stringData)
+					}
+				}
+
+				rowData.Set(header.DBFieldName, stringData)
 			}
 
 			isIntRow := false
@@ -477,8 +513,6 @@ func (c *RKMController) ReadDataSDM(sheetName string) error {
 
 			if isIntRow {
 				rowData.Set(header.DBFieldName, toolkit.ToInt(stringData, ""))
-			} else {
-				rowData.Set(header.DBFieldName, stringData)
 			}
 
 			return rowData
@@ -534,5 +568,61 @@ func (c *RKMController) ReadDataSDM(sheetName string) error {
 		log.Println("SUCCESS Processing", rowCount, "rows")
 	}
 	log.Println("Process time:", time.Since(timeNow).Seconds(), "seconds")
+	return err
+}
+
+func (c *RKMController) SetDataPTHub() error {
+	sqlQuery := "SELECT * FROM BOD_PT_HUB"
+
+	conn := c.Conn
+	cursor := conn.Cursor(dbflex.From("FROM BOD_PT_HUB").SQL(sqlQuery), nil)
+	defer cursor.Close()
+
+	datas := []toolkit.M{}
+
+	err := cursor.Fetchs(datas, 0)
+
+	for _, data := range datas {
+		pt := data.GetString("PT")
+		if pt != "" {
+			if _, ok := dataPTKV[pt]; !ok {
+				dataPT = append(dataPT, pt)
+				dataPTKV.Set(pt, pt)
+			}
+		}
+	}
+
+	log.Println("Deleting data")
+
+	sql := "DELETE FROM BOD_PT_HUB"
+	query, err := conn.Prepare(dbflex.From("BOD_PT_HUB").SQL(sql))
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("Done prepare")
+	_, err = query.Execute(toolkit.M{}.Set("data", toolkit.M{}))
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Data deleted.")
+
+	rowDatas := []toolkit.M{}
+	for _, pt := range dataPT {
+		rowData := toolkit.M{"PT": pt}
+		rowDatas = append(rowDatas, rowData)
+	}
+
+	param := helpers.InsertParam{
+		TableName: "BOD_PT_HUB",
+		Data:      rowDatas,
+	}
+
+	err = helpers.InsertWithConn(param, c.Conn)
+	if err == nil {
+		log.Println("data inserted")
+	}
+
 	return err
 }
