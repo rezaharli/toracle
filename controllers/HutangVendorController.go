@@ -167,6 +167,11 @@ func (c *HutangController) CreateParamToday() string {
 	thisMonth := int(time.Now().Month())
 	thisDay := time.Now().Day() - 1
 
+	currentLocation := time.Now().Location()
+
+	firstOfMonth := time.Date(thisYear, time.Now().Month(), 1, 0, 0, 0, 0, currentLocation)
+	thisDay = firstOfMonth.AddDate(0, 1, -1).Day()
+
 	stryear := strconv.Itoa(thisYear)
 	strmonth := ""
 	strday := ""
@@ -204,7 +209,7 @@ func (c *HutangController) ReadAPI() error {
 			resultsHutang, err := c.FetchHutang(vend_no, cc, keydate)
 			if err != nil {
 				log.Println(err.Error())
-				return err
+				continue
 			}
 
 			if len(resultsHutang) > 0 {

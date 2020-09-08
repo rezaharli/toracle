@@ -260,7 +260,7 @@ func main() {
 			<-ticker.C
 		}
 
-		_ = isExecute
+		// _ = isExecute
 		//loop ends
 	}
 }
