@@ -29,7 +29,7 @@ func (c *RekapPetikemasController) New(base interface{}) {
 // FileCriteria is a callback function
 // Used to filter file that is going to extract
 func (c *RekapPetikemasController) FileCriteria(file string) bool {
-	return strings.Contains(filepath.Base(file), "Rekap Petikemas Perak sd September 2019")
+	return strings.Contains(filepath.Base(file), "Rekap Petikemas Perak sd")
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition

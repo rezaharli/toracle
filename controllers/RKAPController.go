@@ -28,7 +28,7 @@ func (c *RKAPController) New(base interface{}) {
 // FileCriteria is a callback function
 // Used to filter file that is going to extract
 func (c *RKAPController) FileCriteria(file string) bool {
-	return strings.Contains(filepath.Base(file), "MASTER RKAP PRODUKSI TTL 2019 - Arahan BOC 1 - Rapat Teknis Bahas SM ubah kurs")
+	return strings.Contains(filepath.Base(file), "MASTER RKAP PRODUKSI TTL") && strings.Contains(filepath.Base(file), "Arahan BOC 1 - Rapat Teknis Bahas SM ubah kurs")
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
@@ -97,7 +97,11 @@ func (c *RKAPController) ReadData(sheetName string) error {
 					helpers.HandleError(err)
 				}
 
-				obj.Set(kind, cellValue)
+				if kind == "CUKER" {
+					obj.Set(kind, helpers.IndexOf(cellValue, months)+1)
+				} else {
+					obj.Set(kind, cellValue)
+				}
 			}
 
 			objs = append(objs, obj)
