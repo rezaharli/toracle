@@ -29,7 +29,7 @@ func (c *PemenuhanSDMController) New(base interface{}) {
 // FileCriteria is a callback function
 // Used to filter file that is going to extract
 func (c *PemenuhanSDMController) FileCriteria(file string) bool {
-	return strings.Contains(filepath.Base(file), "PEMENUHAN SDM NOVEMBER 2019 (INTERNAL) - Contoh buat BI")
+	return strings.Contains(filepath.Base(file), "PEMENUHAN SDM") && strings.Contains(filepath.Base(file), "(INTERNAL) - UNTUK BI")
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition

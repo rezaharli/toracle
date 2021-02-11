@@ -29,7 +29,7 @@ func (c *KinerjaController) New(base interface{}) {
 // FileCriteria is a callback function
 // Used to filter file that is going to extract
 func (c *KinerjaController) FileCriteria(file string) bool {
-	return strings.Contains(filepath.Base(file), "formulirperhitungan kinerja MK3L 2019 with TKBM")
+	return strings.Contains(filepath.Base(file), "formulir perhitungan kinerja MK3L") && strings.Contains(filepath.Base(file), "with TKBM")
 }
 
 // ReadExcel fetch sheets of the excel and call ReadSheet for every sheet that match the condition
