@@ -75,8 +75,8 @@ func (c *LB10Controller) ReadAPI() error {
 			}
 			if lastmonth <= 12 {
 				toolkit.Println(lastyear, lastmonth)
-				monthparam := strconv.Itoa(monthcounter)
-				yearparam := strconv.Itoa(startyear)
+				monthparam := strconv.Itoa(lastmonth)
+				yearparam := strconv.Itoa(lastyear)
 				err = c.ExecProcess(yearparam, monthparam)
 
 				if lastmonth == 12 {
